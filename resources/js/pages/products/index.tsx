@@ -1,6 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,9 +13,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { products, productsCreate, productsShow, productsEdit, productsDestroy, dashboard } from '@/feature-routes';
 import type { Product } from '@/types';
-import { products, productsCreate, productsShow, productsEdit, productsDestroy, productsToggleActive, dashboard } from '@/feature-routes';
 
 type Props = {
     products: { data: Product[] };
@@ -22,10 +22,6 @@ type Props = {
 
 export default function ProductsIndex({ products: productsData }: Props) {
     const [search, setSearch] = useState('');
-
-    const handleToggleActive = (product: Product) => {
-        router.patch(productsToggleActive({ id: product.id }).url, {}, { preserveScroll: true });
-    };
 
     const handleDelete = (product: Product) => {
         if (confirm(`Delete "${product.name}"?`)) {

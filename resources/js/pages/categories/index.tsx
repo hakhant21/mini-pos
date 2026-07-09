@@ -1,11 +1,10 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
     Dialog,
     DialogContent,
@@ -15,6 +14,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -23,17 +24,15 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { useForm } from '@inertiajs/react';
-import type { Category, CategoryForm } from '@/types';
+import { Textarea } from '@/components/ui/textarea';
 import { categories, categoriesStore, categoriesUpdate, categoriesDestroy, categoriesToggleActive, dashboard } from '@/feature-routes';
+import type { Category, CategoryForm } from '@/types';
 
 type Props = {
     categories: { data: Category[] };
 };
 
 export default function CategoriesIndex({ categories: categoriesData }: Props) {
-    const { errors } = usePage().props;
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
 
@@ -61,6 +60,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingCategory) {
             patch(categoriesUpdate({ id: editingCategory.id }).url, {
                 preserveScroll: true,
@@ -78,7 +78,10 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
     };
 
     const handleDelete = () => {
-        if (!deleteTarget) return;
+        if (!deleteTarget) {
+return;
+}
+
         destroy(categoriesDestroy({ id: deleteTarget.id }).url, {
             preserveScroll: true,
             onSuccess: () => setDeleteTarget(null),
@@ -95,7 +98,11 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Categories</h1>
-                    <Dialog onOpenChange={(open) => { if (!open) { setEditingCategory(null); reset(); } }}>
+                    <Dialog onOpenChange={(open) => {
+ if (!open) {
+ setEditingCategory(null); reset(); 
+} 
+}}>
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" /> Add Category
@@ -126,7 +133,10 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                         accept="image/jpeg,image/png,image/jpg,image/webp"
                                         onChange={(e) => {
                                             const file = e.target.files?.[0];
-                                            if (file) setData('image', file);
+
+                                            if (file) {
+setData('image', file);
+}
                                         }}
                                     />
                                     {editingCategory && data.image && typeof data.image === 'string' && (
@@ -191,7 +201,11 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                         </Button>
                                                     </DialogTrigger>
                                                 </Dialog>
-                                                <Dialog onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+                                                <Dialog onOpenChange={(open) => {
+ if (!open) {
+setDeleteTarget(null);
+} 
+}}>
                                                     <DialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(category)}>
                                                             <Trash2 className="h-4 w-4 text-destructive" />

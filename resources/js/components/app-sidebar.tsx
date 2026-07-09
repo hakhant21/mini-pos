@@ -2,16 +2,15 @@ import { Link } from '@inertiajs/react';
 import {
     LayoutGrid,
     Package,
-    Boxes,
     Ruler,
     Warehouse,
     BarChart3,
     Tags,
+    ShoppingCart,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
-import { NavFooter } from '@/components/nav-footer';
+import { LocaleSwitcher } from '@/components/locale-switcher';
 import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
 import {
     Sidebar,
     SidebarContent,
@@ -28,10 +27,16 @@ import {
     products,
     inventory,
     reportsProfitLoss,
+    sales,
 } from '@/feature-routes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
+    {
+        title: 'POS',
+        href: sales(),
+        icon: ShoppingCart,
+    },
     {
         title: 'Dashboard',
         href: dashboard(),
@@ -82,6 +87,10 @@ export function AppSidebar() {
             <SidebarContent>
                 <NavMain items={mainNavItems} />
             </SidebarContent>
+
+            <SidebarFooter>
+                <LocaleSwitcher />
+            </SidebarFooter>
         </Sidebar>
     );
 }

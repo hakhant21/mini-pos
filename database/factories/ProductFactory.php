@@ -13,7 +13,7 @@ class ProductFactory extends Factory
 
     public function definition(): array
     {
-        $name = fake()->unique()->randomElement([
+        $name = fake()->randomElement([
             'Spring Water', 'Cola Soda', 'Orange Juice', 'Potato Chips',
             'Chocolate Bar', 'Milk', 'Cheddar Cheese', 'White Bread',
             'All-Purpose Cleaner', 'Tomato Soup', 'Frozen Pizza',

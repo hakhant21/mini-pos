@@ -7,3 +7,4 @@ export type * from './product';
 export type * from './inventory';
 export type * from './dashboard';
 export type * from './report';
+export type * from './sale';

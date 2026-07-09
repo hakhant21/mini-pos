@@ -1,8 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import { AlertTriangle, PackageX } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
@@ -11,8 +11,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { ProductVariant } from '@/types';
 import { inventory, inventoryCreate, dashboard } from '@/feature-routes';
+import type { ProductVariant } from '@/types';
 
 type Props = {
     lowStockVariants: ProductVariant[];

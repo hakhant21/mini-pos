@@ -1,7 +1,8 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { Pencil, ArrowLeft } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import {
     Table,
     TableBody,
@@ -10,9 +11,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Pencil, ArrowLeft } from 'lucide-react';
-import type { Product } from '@/types';
 import { products, productsEdit, dashboard } from '@/feature-routes';
+import type { Product } from '@/types';
 
 type Props = {
     product: Product;

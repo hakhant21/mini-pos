@@ -4,4 +4,5 @@ export { index as units, store as unitsStore, update as unitsUpdate, destroy as 
 export { index as products, create as productsCreate, store as productsStore, show as productsShow, edit as productsEdit, update as productsUpdate, destroy as productsDestroy, toggleActive as productsToggleActive, restore as productsRestore } from './routes/products'
 export { index as inventory, create as inventoryCreate, store as inventoryStore, searchProducts as inventorySearchProducts } from './routes/inventory'
 export { profitLoss as reportsProfitLoss } from './routes/reports'
+export { index as sales, checkout as salesCheckout } from './routes/sales'
 export { store as variantsStore, update as variantsUpdate, destroy as variantsDestroy } from './routes/variants'

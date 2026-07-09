@@ -15,3 +15,4 @@ require __DIR__.'/units.php';
 require __DIR__.'/products.php';
 require __DIR__.'/inventory.php';
 require __DIR__.'/reports.php';
+require __DIR__.'/sales.php';

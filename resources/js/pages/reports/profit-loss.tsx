@@ -8,8 +8,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import type { ProductReport, ReportSummary } from '@/types';
 import { reportsProfitLoss, dashboard } from '@/feature-routes';
+import type { ProductReport, ReportSummary } from '@/types';
 
 type Props = {
     products: ProductReport[];

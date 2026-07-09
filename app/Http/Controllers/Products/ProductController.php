@@ -61,7 +61,7 @@ class ProductController extends Controller
 
     public function edit(Product $product): Response
     {
-        $product->load('variants');
+        $product->load('variants.unit');
 
         return inertia('products/edit', [
             'product' => new ProductResource($product),

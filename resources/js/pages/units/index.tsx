@@ -1,10 +1,9 @@
-import { Head, router } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, LoaderCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Dialog,
     DialogContent,
@@ -14,6 +13,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -22,9 +23,8 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { useForm, usePage } from '@inertiajs/react';
-import type { Unit, UnitForm } from '@/types';
 import { units, unitsStore, unitsUpdate, unitsDestroy, dashboard } from '@/feature-routes';
+import type { Unit, UnitForm } from '@/types';
 
 type Props = {
     units: { data: Unit[] };
@@ -51,10 +51,13 @@ export default function UnitsIndex({ units: unitsData }: Props) {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
         if (editingUnit) {
             patch(unitsUpdate({ id: editingUnit.id }).url, {
                 preserveScroll: true,
-                onSuccess: () => { setEditingUnit(null); reset(); },
+                onSuccess: () => {
+ setEditingUnit(null); reset(); 
+},
             });
         } else {
             post(unitsStore().url, {
@@ -65,7 +68,10 @@ export default function UnitsIndex({ units: unitsData }: Props) {
     };
 
     const handleDelete = () => {
-        if (!deleteTarget) return;
+        if (!deleteTarget) {
+return;
+}
+
         destroy(unitsDestroy({ id: deleteTarget.id }).url, {
             preserveScroll: true,
             onSuccess: () => setDeleteTarget(null),
@@ -78,7 +84,11 @@ export default function UnitsIndex({ units: unitsData }: Props) {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Units</h1>
-                    <Dialog onOpenChange={(open) => { if (!open) { setEditingUnit(null); reset(); } }}>
+                    <Dialog onOpenChange={(open) => {
+ if (!open) {
+ setEditingUnit(null); reset(); 
+} 
+}}>
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" /> Add Unit
@@ -142,7 +152,11 @@ export default function UnitsIndex({ units: unitsData }: Props) {
                                                         </Button>
                                                     </DialogTrigger>
                                                 </Dialog>
-                                                <Dialog onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+                                                <Dialog onOpenChange={(open) => {
+ if (!open) {
+setDeleteTarget(null);
+} 
+}}>
                                                     <DialogTrigger asChild>
                                                         <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(unit)}>
                                                             <Trash2 className="h-4 w-4 text-destructive" />

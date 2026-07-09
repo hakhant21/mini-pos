@@ -1,4 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,8 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import {
     Table,
     TableBody,
@@ -100,7 +100,10 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     accept="image/jpeg,image/png,image/jpg,image/webp"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
-                                        if (file) setData('image', file);
+
+                                        if (file) {
+setData('image', file);
+}
                                     }}
                                 />
                                 {data.image && typeof data.image === 'string' && product.image_url && (

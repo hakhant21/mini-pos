@@ -1,4 +1,6 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,8 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { useForm, usePage } from '@inertiajs/react';
-import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
 import { products, productsCreate, productsStore, dashboard } from '@/feature-routes';
 import type { Category, Unit } from '@/types';
 
@@ -22,8 +22,6 @@ type Props = {
 };
 
 export default function ProductsCreate({ categories, units }: Props) {
-    const { errors } = usePage().props;
-
     const { data, setData, post, processing, errors: formErrors } = useForm({
         category_id: '',
         name: '',
@@ -98,7 +96,10 @@ export default function ProductsCreate({ categories, units }: Props) {
                                     accept="image/jpeg,image/png,image/jpg,image/webp"
                                     onChange={(e) => {
                                         const file = e.target.files?.[0];
-                                        if (file) setData('image', file);
+
+                                        if (file) {
+setData('image', file);
+}
                                     }}
                                 />
                                 {formErrors.image && <p className="text-sm text-destructive">{formErrors.image}</p>}

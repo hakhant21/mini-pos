@@ -1,13 +1,13 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
+import { LoaderCircle, Search } from 'lucide-react';
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Search } from 'lucide-react';
-import type { Product, ProductVariant } from '@/types';
 import { inventory, inventoryCreate, inventoryStore, inventorySearchProducts, dashboard } from '@/feature-routes';
+import type { Product, ProductVariant } from '@/types';
 
 export default function InventoryCreate() {
     const { data, setData, post, processing, errors } = useForm({
@@ -22,8 +22,12 @@ export default function InventoryCreate() {
     const [isSearching, setIsSearching] = useState(false);
 
     const handleSearch = useCallback(async () => {
-        if (!searchQuery.trim()) return;
+        if (!searchQuery.trim()) {
+return;
+}
+
         setIsSearching(true);
+
         try {
             const res = await fetch(inventorySearchProducts.get().url + `&search=${encodeURIComponent(searchQuery)}`);
             const results = await res.json();

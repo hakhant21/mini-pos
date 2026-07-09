@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Package, PackageOpen, AlertTriangle, DollarSign } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard, productsShow, inventory } from '@/feature-routes';
 import type { DashboardData } from '@/types';
 
