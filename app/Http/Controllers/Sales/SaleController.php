@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\CheckoutRequest;
+use App\Http\Resources\SaleResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
@@ -16,6 +17,28 @@ class SaleController extends Controller
 {
     public function index(): Response
     {
+        $todaySales = Sale::with('items')
+            ->whereDate('created_at', today())
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $summary = [
+            'total_sales' => $todaySales->count(),
+            'total_revenue' => round($todaySales->sum('total_amount'), 2),
+            'total_items' => round($todaySales->sum(fn ($s) => $s->items->sum('quantity')), 2),
+            'avg_sale' => $todaySales->count() > 0
+                ? round($todaySales->avg('total_amount'), 2)
+                : 0,
+        ];
+
+        return inertia('sales/index', [
+            'sales' => SaleResource::collection($todaySales),
+            'summary' => $summary,
+        ]);
+    }
+
+    public function checkoutPage(): Response
+    {
         $products = Product::with(['category', 'variants' => function ($q) {
             $q->where('is_active', true)->with('unit');
         }])
@@ -23,7 +46,7 @@ class SaleController extends Controller
             ->orderBy('name')
             ->get();
 
-        return inertia('sales/index', [
+        return inertia('sales/checkout', [
             'products' => $products,
         ]);
     }
@@ -38,7 +61,7 @@ class SaleController extends Controller
             $saleItems = [];
 
             foreach ($data['items'] as $item) {
-                $variant = ProductVariant::lockForUpdate()->findOrFail($item['variant_id']);
+                $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
 
                 if ($variant->stock_quantity < $item['quantity']) {
                     throw ValidationException::withMessages([

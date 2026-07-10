@@ -1,8 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
-import { Package, PackageOpen, AlertTriangle, DollarSign } from 'lucide-react';
+import { Package, PackageOpen, AlertTriangle, Banknote } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { dashboard, productsShow, inventory } from '@/feature-routes';
+import { dashboard, productsShow } from '@/feature-routes';
+import { ks } from '@/lib/utils';
 import type { DashboardData } from '@/types';
 
 const stockStatusConfig = {
@@ -12,6 +13,7 @@ const stockStatusConfig = {
 };
 
 export default function Dashboard({ totalStock, totalProducts, totalVariants, inventoryValue, lowStockVariants }: DashboardData) {
+
     return (
         <>
             <Head title="Dashboard" />
@@ -40,10 +42,10 @@ export default function Dashboard({ totalStock, totalProducts, totalVariants, in
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">Inventory Value</CardTitle>
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
+                            <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">${Number(inventoryValue).toLocaleString()}</div>
+                            <div className="text-2xl font-bold">Ks {ks(inventoryValue)}</div>
                             <p className="text-xs text-muted-foreground">total cost value</p>
                         </CardContent>
                     </Card>
@@ -86,11 +88,6 @@ export default function Dashboard({ totalStock, totalProducts, totalVariants, in
                                         </div>
                                     </div>
                                 ))}
-                            </div>
-                            <div className="mt-4">
-                                <Link href={inventory()} className="text-sm text-primary hover:underline">
-                                    View all inventory
-                                </Link>
                             </div>
                         </CardContent>
                     </Card>

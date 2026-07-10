@@ -3,10 +3,9 @@ import {
     LayoutGrid,
     Package,
     Ruler,
-    Warehouse,
-    BarChart3,
     Tags,
     ShoppingCart,
+    Receipt,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { LocaleSwitcher } from '@/components/locale-switcher';
@@ -25,22 +24,26 @@ import {
     categories,
     units,
     products,
-    inventory,
-    reportsProfitLoss,
     sales,
+    salesCheckoutPage,
 } from '@/feature-routes';
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'POS',
-        href: sales(),
-        icon: ShoppingCart,
-    },
-    {
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Sale',
+        href: salesCheckoutPage(),
+        icon: ShoppingCart,
+    },
+    {
+        title: 'History',
+        href: sales(),
+        icon: Receipt,
     },
     {
         title: 'Categories',
@@ -56,16 +59,6 @@ const mainNavItems: NavItem[] = [
         title: 'Products',
         href: products(),
         icon: Package,
-    },
-    {
-        title: 'Inventory',
-        href: inventory(),
-        icon: Warehouse,
-    },
-    {
-        title: 'Reports',
-        href: reportsProfitLoss(),
-        icon: BarChart3,
     },
 ];
 

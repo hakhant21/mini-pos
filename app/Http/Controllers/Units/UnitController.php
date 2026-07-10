@@ -17,7 +17,7 @@ class UnitController extends Controller
         $units = Unit::query()
             ->withCount('productVariants')
             ->orderBy('name')
-            ->paginate(10);
+            ->get();
 
         return inertia('units/index', [
             'units' => UnitResource::collection($units),

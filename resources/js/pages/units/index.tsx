@@ -27,12 +27,14 @@ import { units, unitsStore, unitsUpdate, unitsDestroy, dashboard } from '@/featu
 import type { Unit, UnitForm } from '@/types';
 
 type Props = {
-    units: { data: Unit[] };
+    units: Unit[];
 };
 
 export default function UnitsIndex({ units: unitsData }: Props) {
     const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Unit | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     const { data, setData, post, patch, delete: destroy, processing, reset, errors } = useForm<UnitForm>({
         name: '',
@@ -42,11 +44,13 @@ export default function UnitsIndex({ units: unitsData }: Props) {
     const openCreate = () => {
         reset();
         setEditingUnit(null);
+        setDialogOpen(true);
     };
 
     const openEdit = (unit: Unit) => {
         setEditingUnit(unit);
         setData({ name: unit.name, abbreviation: unit.abbreviation });
+        setDialogOpen(true);
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -56,13 +60,18 @@ export default function UnitsIndex({ units: unitsData }: Props) {
             patch(unitsUpdate({ id: editingUnit.id }).url, {
                 preserveScroll: true,
                 onSuccess: () => {
- setEditingUnit(null); reset(); 
-},
+                    setEditingUnit(null);
+                    setDialogOpen(false);
+                    reset();
+                },
             });
         } else {
             post(unitsStore().url, {
                 preserveScroll: true,
-                onSuccess: () => reset(),
+                onSuccess: () => {
+                    setDialogOpen(false);
+                    reset();
+                },
             });
         }
     };
@@ -74,7 +83,10 @@ return;
 
         destroy(unitsDestroy({ id: deleteTarget.id }).url, {
             preserveScroll: true,
-            onSuccess: () => setDeleteTarget(null),
+            onSuccess: () => {
+                setDeleteTarget(null);
+                setDeleteDialogOpen(false);
+            },
         });
     };
 
@@ -84,11 +96,14 @@ return;
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Units</h1>
-                    <Dialog onOpenChange={(open) => {
- if (!open) {
- setEditingUnit(null); reset(); 
-} 
-}}>
+                    <Dialog open={dialogOpen} onOpenChange={(open) => {
+                        setDialogOpen(open);
+
+                        if (!open) {
+                            setEditingUnit(null);
+                            reset();
+                        }
+                    }}>
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
                                 <Plus className="mr-2 h-4 w-4" /> Add Unit
@@ -138,27 +153,27 @@ return;
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {unitsData.data.map((unit) => (
+                                {unitsData.map((unit) => (
                                     <TableRow key={unit.id}>
                                         <TableCell className="font-medium">{unit.name}</TableCell>
                                         <TableCell>{unit.abbreviation}</TableCell>
                                         <TableCell>{unit.product_variants_count ?? 0}</TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Dialog>
-                                                    <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => openEdit(unit)}>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                </Dialog>
-                                                <Dialog onOpenChange={(open) => {
- if (!open) {
+                                                <Button variant="ghost" size="icon" onClick={() => openEdit(unit)}>
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
+                                                    setDeleteDialogOpen(open);
+
+                                                    if (!open) {
 setDeleteTarget(null);
-} 
-}}>
+}
+                                                }}>
                                                     <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(unit)}>
+                                                        <Button variant="ghost" size="icon" onClick={() => {
+ setDeleteTarget(unit); setDeleteDialogOpen(true); 
+}}>
                                                             <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </DialogTrigger>
@@ -170,7 +185,7 @@ setDeleteTarget(null);
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>
-                                                            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Cancel</Button>
+                                                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
                                                             <Button variant="destructive" onClick={handleDelete} disabled={processing}>
                                                                 {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                                                                 Delete

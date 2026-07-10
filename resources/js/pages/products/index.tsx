@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search, Eye, Pencil, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Search, Eye, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,20 +13,40 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { products, productsCreate, productsShow, productsEdit, productsDestroy, dashboard } from '@/feature-routes';
+import { products, productsCreate, productsShow, productsEdit, productsDestroy, productsToggleActive, dashboard } from '@/feature-routes';
 import type { Product } from '@/types';
 
 type Props = {
-    products: { data: Product[] };
+    products: Product[];
 };
 
 export default function ProductsIndex({ products: productsData }: Props) {
     const [search, setSearch] = useState('');
 
+    const filteredProducts = useMemo(() => {
+        if (!search.trim()) {
+            return productsData;
+        }
+
+        const q = search.toLowerCase();
+
+        return productsData.filter(
+            (p) =>
+                p.name.toLowerCase().includes(q) ||
+                p.sku.toLowerCase().includes(q) ||
+                (p.brand && p.brand.toLowerCase().includes(q)) ||
+                (p.category?.name && p.category.name.toLowerCase().includes(q)),
+        );
+    }, [productsData, search]);
+
     const handleDelete = (product: Product) => {
         if (confirm(`Delete "${product.name}"?`)) {
             router.delete(productsDestroy({ id: product.id }).url, { preserveScroll: true });
         }
+    };
+
+    const handleToggleActive = (product: Product) => {
+        router.patch(productsToggleActive({ id: product.id }).url, {}, { preserveScroll: true });
     };
 
     return (
@@ -71,7 +91,7 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {productsData.data.map((product) => (
+                                {filteredProducts.map((product) => (
                                     <TableRow key={product.id}>
                                         <TableCell>{product.category?.name || '—'}</TableCell>
                                         <TableCell>
@@ -92,6 +112,9 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
+                                                <Button variant="ghost" size="icon" onClick={() => handleToggleActive(product)} title={product.is_active ? 'Deactivate' : 'Activate'}>
+                                                    {product.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
+                                                </Button>
                                                 <Link href={productsShow({ id: product.id })}>
                                                     <Button variant="ghost" size="icon">
                                                         <Eye className="h-4 w-4" />
@@ -109,6 +132,13 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {filteredProducts.length === 0 && (
+                                    <TableRow>
+                                        <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
+                                            No products found.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>

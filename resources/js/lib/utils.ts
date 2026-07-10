@@ -10,3 +10,9 @@ export function cn(...inputs: ClassValue[]) {
 export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
     return typeof url === 'string' ? url : url.url;
 }
+
+export const num = (v: unknown): number => Number(v) || 0;
+
+export const ks = (v: unknown): string => {
+    return num(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};

@@ -8,6 +8,7 @@ use App\Http\Requests\Products\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -21,7 +22,7 @@ class ProductController extends Controller
             ->with(['category', 'variants.unit'])
             ->withCount('variants')
             ->orderBy('name')
-            ->paginate(10);
+            ->get();
 
         return inertia('products/index', [
             'products' => ProductResource::collection($products),
@@ -44,7 +45,17 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('images/products', 'public');
         }
 
+        $data['sku'] = $this->generateSku($data['name']);
+
+        $variants = $data['variants'] ?? [];
+        unset($data['variants']);
+
         $product = Product::create($data);
+
+        foreach ($variants as $variant) {
+            $variant['sku'] = $this->generateVariantSku($product->sku, $variant['name'] ?? '');
+            $product->variants()->create($variant);
+        }
 
         return redirect()->route('products.show', $product)
             ->with('success', 'Product created successfully.');
@@ -108,5 +119,21 @@ class ProductController extends Controller
         $product->update(['is_active' => !$product->is_active]);
 
         return redirect()->back()->with('success', 'Product status updated successfully.');
+    }
+
+    private function generateSku(string $name): string
+    {
+        $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $name), 0, 3));
+        $number = Product::count() + 1;
+
+        return sprintf('%s-%04d', $prefix, $number);
+    }
+
+    private function generateVariantSku(string $productSku, string $variantName): string
+    {
+        $suffix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $variantName), 0, 2));
+        $variantCount = ProductVariant::where('sku', 'like', $productSku . '-%')->count();
+
+        return sprintf('%s-%s%02d', $productSku, $suffix ?: 'VN', $variantCount + 1);
     }
 }

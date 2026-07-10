@@ -61,5 +61,22 @@
     "Invoice": "ငွေတောင်းခံလွှာ",
     "Date": "နေ့စွဲ",
     "Items": "ပစ္စည်းများ",
-    "Payment": "ငွေပေးချေမှု"
+    "Payment": "ငွေပေးချေမှု",
+    "Sales History": "အရောင်းစာရင်း",
+    "Sales": "အရောင်းစာရင်း",
+    "transactions today": "ယနေ့ရောင်းအား",
+    "Revenue": "ဝင်ငွေ",
+    "total collected": "စုစုပေါင်းရရှိငွေ",
+    "Items Sold": "ရောင်းပြီးပစ္စည်း",
+    "total units": "စုစုပေါင်းအရေအတွက်",
+    "Avg Sale": "ပရမျှင်းရောင်းစျေး",
+    "per transaction": "တစ်ကြိမ်ရောင်းချမှု",
+    "Today's Transactions": "ယနေ့ရောင်းချမှုများ",
+    "Search invoice...": "ငွေတောင်းခံလွှာရှာရန်...",
+    "No sales recorded today.": "ယနေ့ရောင်းချမှုမရှိပါ။",
+    "Time": "အချိန်",
+    "Paid": "ပေးပြီး",
+    "Qty": "အရေအတွက်",
+    "Product": "ပစ္စည်း",
+    "Notes": "မှတ်ချက်"
 }

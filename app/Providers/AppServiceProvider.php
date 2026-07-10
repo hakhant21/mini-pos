@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
+use Psy\Util\Json;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -31,20 +33,23 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function configureDefaults(): void
     {
+        JsonResource::withoutWrapping();
+
         Date::use(CarbonImmutable::class);
 
         DB::prohibitDestructiveCommands(
             app()->isProduction(),
         );
 
-        Password::defaults(fn (): ?Password => app()->isProduction()
-            ? Password::min(12)
+        Password::defaults(
+            fn(): ?Password => app()->isProduction()
+                ? Password::min(12)
                 ->mixedCase()
                 ->letters()
                 ->numbers()
                 ->symbols()
                 ->uncompromised()
-            : null,
+                : null,
         );
     }
 }

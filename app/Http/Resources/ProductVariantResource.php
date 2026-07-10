@@ -27,7 +27,7 @@ class ProductVariantResource extends JsonResource
             'is_active' => $this->is_active,
             'stock_status' => $this->stock_status,
             'product' => new ProductResource($this->whenLoaded('product')),
-            'unit' => new UnitResource($this->whenLoaded('unit')),
+            'unit' => $this->whenLoaded('unit') ? new UnitResource($this->unit) : null,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

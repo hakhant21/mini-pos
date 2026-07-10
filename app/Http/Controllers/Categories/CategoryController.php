@@ -18,7 +18,7 @@ class CategoryController extends Controller
         $categories = Category::query()
             ->withCount('products')
             ->orderBy('name')
-            ->paginate(10);
+            ->get();
 
         return inertia('categories/index', [
             'categories' => CategoryResource::collection($categories),

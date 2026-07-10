@@ -12,6 +12,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { products, productsEdit, dashboard } from '@/feature-routes';
+import { ks } from '@/lib/utils';
 import type { Product } from '@/types';
 
 type Props = {
@@ -100,8 +101,8 @@ export default function ProductsShow({ product }: Props) {
                                         <TableCell className="font-mono text-sm">{variant.sku}</TableCell>
                                         <TableCell>{variant.unit?.abbreviation || '—'}</TableCell>
                                         <TableCell>{variant.units_per_package}</TableCell>
-                                        <TableCell>${variant.cost_price}</TableCell>
-                                        <TableCell>${variant.selling_price}</TableCell>
+                                        <TableCell>Ks {ks(variant.cost_price)}</TableCell>
+                                        <TableCell>Ks {ks(variant.selling_price)}</TableCell>
                                         <TableCell>{variant.stock_quantity}</TableCell>
                                         <TableCell>
                                             <Badge variant={stockStatusBadge[variant.stock_status].variant}>

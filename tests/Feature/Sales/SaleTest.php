@@ -31,14 +31,14 @@ beforeEach(function () {
         ]);
 });
 
-test('sales page loads with products', function () {
+test('sales page loads with sales data', function () {
     $response = $this->get(route('sales.index'));
 
     $response->assertOk();
     $response->assertInertia(fn ($page) => $page
         ->component('sales/index')
-        ->has('products', 1)
-        ->where('products.0.name', 'Cola Soda')
+        ->has('sales')
+        ->has('summary')
     );
 });
 

@@ -33,7 +33,7 @@ class DashboardController extends Controller
             'totalProducts' => $totalProducts,
             'totalVariants' => $totalVariants,
             'inventoryValue' => $inventoryValue,
-            'lowStockVariants' => ProductVariantResource::collection($lowStockVariants)->resolve(request()),
+            'lowStockVariants' => ProductVariantResource::collection($lowStockVariants),
         ]);
     }
 }

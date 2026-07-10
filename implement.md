@@ -82,7 +82,31 @@ All new tests pass (118 Feature + 4 skipped = 122 total). The only Feature failu
 
 ## 🔄 In Progress
 
-- (none)
+### Bug Fixes (2026-07-10)
+| # | Severity | File | Issue | Fix |
+|---|----------|------|-------|-----|
+| 1 | HIGH | `resources/js/pages/inventory/create.tsx:32` | Inventory search URL uses `&search=` instead of `?search=` — produces malformed URL, search always fails | Change `&` to `?` |
+| 2 | HIGH | `resources/js/pages/products/edit.tsx` | No UI control to toggle `is_active` — users cannot activate/deactivate products from edit page | Add `is_active` toggle switch |
+| 3 | HIGH | `resources/js/pages/products/index.tsx` | Search input is cosmetic — `search` state never filters `productsData.data` | Add client-side filter with `useMemo` |
+| 4 | HIGH | `resources/js/pages/products/index.tsx` | No active/inactive toggle button — `productsToggleActive` route exists but is unused | Add toggle button per row |
+| 5 | HIGH | `app/Http/Resources/ProductResource.php:20` | `new CategoryResource($this->whenLoaded('category'))` crashes when category is null | Use conditional: `$this->whenLoaded('category') ? new CategoryResource($this->category) : null` |
+| 6 | HIGH | `app/Http/Resources/ProductVariantResource.php:30` | Same null crash for unit resource | Same conditional fix |
+| 7 | HIGH | `app/Http/Controllers/Reports/ProfitLossController.php:26,32` | Null pointer on `$product->category->name` and `$v->unit->abbreviation` | Use null-safe operator `?->` with fallback |
+| 8 | MED | `resources/js/pages/products/edit.tsx` | Missing `category_id` validation error display | Add `{formErrors.category_id && ...}` |
+| 9 | MED | `resources/js/pages/reports/profit-loss.tsx:63` | Product name used as React key (not unique) | Use `${product.product_name}-${idx}` |
+| 10 | LOW | `resources/js/pages/dashboard.tsx:44` | `DollarSign` icon inconsistent with Ks currency | Changed to `Banknote` icon |
+| 11 | MED | 5 pages (`products/edit`, `products/show`, `dashboard`, `inventory/create`, `reports/profit-loss`) | Prices display with `$` instead of `Ks` | Import `ks()` from shared util, wrap prices |
+| 12 | LOW | `resources/js/pages/sales/index.tsx` + 5 other pages | `ks()` defined locally, not shared | Extract to `@/lib/utils.ts` |
+
+### Sales Restructure (2026-07-10)
+| Change | Details |
+|--------|---------|
+| Renamed POS page | `sales/index.tsx` → `sales/checkout.tsx` (component: `SalesCheckout`) |
+| New sales history page | `sales/index.tsx` — daily sales table with summary cards, expandable rows, search |
+| Backend | `SaleController::index()` → sales history + summary; `SaleController::checkoutPage()` → POS products |
+| Routes | Added `GET /sales/checkout` (POS page); `GET /sales` (history); `POST /sales/checkout` (process) |
+| Sidebar | Added "Sales" (history) + kept "POS" (checkout) as separate nav items |
+| Translations | Added 16 new Myanmar keys for sales history UI |
 
 ---
 
@@ -93,8 +117,8 @@ All new tests pass (118 Feature + 4 skipped = 122 total). The only Feature failu
 2. [x] Fix products edit page not showing variant units (missing `variants.unit` eager load)
 3. [x] Clear all lint errors (unused imports across 7 files)
 4. [x] Reduce payment methods to Cash + KBZ Pay
-5. [ ] Extract `ks()` to shared utility (`@/lib/utils.ts` or `@/lib/i18n.ts`)
-6. [ ] Apply `ks()` to price displays in 5 pages: `dashboard.tsx`, `products/edit.tsx`, `products/show.tsx`, `reports/profit-loss.tsx`, `inventory/create.tsx`
+5. [x] Extract `ks()` to shared utility (`@/lib/utils.ts`)
+6. [x] Apply `ks()` to price displays in 5 pages: `dashboard.tsx`, `products/edit.tsx`, `products/show.tsx`, `reports/profit-loss.tsx`, `inventory/create.tsx`
 7. [ ] Translate remaining 19 pages with `t()` calls (dashboard, categories, products CRUD, inventory, units, reports, auth, settings)
 
 ### Medium Priority
