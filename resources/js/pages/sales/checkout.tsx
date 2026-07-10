@@ -410,7 +410,8 @@ export default function SalesCheckout({ products }: Props) {
                                                                     >
                                                                         <MinusIcon className="h-2.5 w-2.5" />
                                                                     </Button>
-                                                                </div>                                                            )}
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 );
