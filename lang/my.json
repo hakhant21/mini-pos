@@ -1,7 +1,7 @@
 {
     "Point of Sale": "အရောင်းစနစ်",
     "Search products...": "ကုန်ပစ္စည်းရှာရန်...",
-    "All Categories": "အမျိုးအစားအားလုံး",
+    "All Categories": "အမျိုးအစား",
     "No variants": "မျိုးကွဲမရှိပါ",
     "Default": "ပုံမှန်",
     "Out": "ကုန်",
@@ -69,7 +69,8 @@
     "total collected": "စုစုပေါင်းရရှိငွေ",
     "Items Sold": "ရောင်းပြီးပစ္စည်း",
     "total units": "စုစုပေါင်းအရေအတွက်",
-    "Avg Sale": "ပရမျှင်းရောင်းစျေး",
+    "Avg Sale": "ပျမ်းမျှရောင်းချမူ",
+    "Total Sales": "စုစုပေါင်းရောင်းချမှု",
     "per transaction": "တစ်ကြိမ်ရောင်းချမှု",
     "Today's Transactions": "ယနေ့ရောင်းချမှုများ",
     "Search invoice...": "ငွေတောင်းခံလွှာရှာရန်...",
