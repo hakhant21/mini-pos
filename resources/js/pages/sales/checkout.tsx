@@ -25,6 +25,7 @@ import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useTranslation } from '@/lib/i18n';
 import { num, ks } from '@/lib/utils';
 import type { Product, CartItem } from '@/types';
+import { ProductVariant } from '../../types/product';
 
 type Props = {
     products: Product[];
@@ -251,7 +252,7 @@ export default function SalesCheckout({ products }: Props) {
                     </div>
 
                     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                        {filteredProducts.map((product) => {
+                        {filteredProducts.map((product: Product) => {
                             const primaryVariant = product.variants[0];
                             const imgSrc =
                                 product.image_url ||
@@ -287,135 +288,145 @@ export default function SalesCheckout({ products }: Props) {
                                                 {t('No variants')}
                                             </p>
                                         ) : (
-                                            product.variants.map((variant) => {
-                                                const qtyInCart =
-                                                    getCartItemQuantity(
-                                                        variant.id,
-                                                    );
-                                                const isOutOfStock =
-                                                    variant.stock_quantity <= 0;
-                                                const isLowStock =
-                                                    variant.stock_quantity >
-                                                        0 &&
-                                                    variant.stock_quantity <=
-                                                        variant.min_stock_level;
-                                                const atMaxStock =
-                                                    qtyInCart >=
-                                                    variant.stock_quantity;
+                                            product.variants.map(
+                                                (variant: ProductVariant) => {
+                                                    const qtyInCart =
+                                                        getCartItemQuantity(
+                                                            variant.id,
+                                                        );
+                                                    const isOutOfStock =
+                                                        variant.stock_quantity <=
+                                                        0;
+                                                    const isLowStock =
+                                                        variant.stock_quantity >
+                                                            0 &&
+                                                        variant.stock_quantity <=
+                                                            variant.min_stock_level;
+                                                    const atMaxStock =
+                                                        qtyInCart >=
+                                                        variant.stock_quantity;
 
-                                                return (
-                                                    <div
-                                                        key={variant.id}
-                                                        className={`rounded-md border p-1.5 transition-colors ${
-                                                            isOutOfStock
-                                                                ? 'opacity-40'
-                                                                : 'hover:bg-accent/50'
-                                                        }`}
-                                                    >
-                                                        <div className="flex items-center justify-between gap-1">
-                                                            <div className="min-w-0 flex-1">
-                                                                <p className="truncate text-[11px] leading-tight font-medium">
-                                                                    {variant.name ||
-                                                                        t(
-                                                                            'Default',
-                                                                        )}
-                                                                    <span className="ml-0.5 text-muted-foreground">
-                                                                        (
-                                                                        {variant
-                                                                            .unit
-                                                                            ?.abbreviation ||
-                                                                            'pc'}
-                                                                        )
-                                                                    </span>
-                                                                </p>
-                                                                <p className="text-[11px] font-semibold text-primary">
-                                                                    Ks{' '}
-                                                                    {ks(
-                                                                        variant.selling_price,
-                                                                    )}
-                                                                </p>
-                                                                <p className="text-[9px] text-muted-foreground">
-                                                                    {t('Stock')}
-                                                                    :{' '}
-                                                                    {
-                                                                        variant.stock_quantity
-                                                                    }
-                                                                    {isLowStock && (
-                                                                        <span className="ml-0.5 text-orange-600 dark:text-orange-400">
-                                                                            (
-                                                                            {t(
-                                                                                'Low',
+                                                    return (
+                                                        <div
+                                                            key={variant.id}
+                                                            className={`rounded-md border p-1.5 transition-colors ${
+                                                                isOutOfStock
+                                                                    ? 'opacity-40'
+                                                                    : 'hover:bg-accent/50'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-center justify-between gap-1">
+                                                                <div className="min-w-0 flex-1">
+                                                                    <p className="truncate text-[11px] leading-tight font-medium">
+                                                                        {variant.name ||
+                                                                            t(
+                                                                                'Default',
                                                                             )}
+                                                                        <span className="ml-0.5 text-muted-foreground">
+                                                                            (
+                                                                            {variant
+                                                                                .unit
+                                                                                ?.abbreviation ||
+                                                                                'pc'}
                                                                             )
                                                                         </span>
-                                                                    )}
-                                                                </p>
-                                                            </div>
-
-                                                            {isOutOfStock ? (
-                                                                <Badge
-                                                                    variant="destructive"
-                                                                    className="h-5 px-1.5 text-[9px]"
-                                                                >
-                                                                    {t('Out')}
-                                                                </Badge>
-                                                            ) : (
-                                                                <div className="flex items-center gap-0.5">
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        className="h-5 w-5"
-                                                                        onClick={() =>
-                                                                            addToCart(
-                                                                                variant,
-                                                                            )
-                                                                        }
-                                                                        disabled={
-                                                                            atMaxStock
-                                                                        }
-                                                                    >
-                                                                        <PlusIcon className="h-2.5 w-2.5" />
-                                                                    </Button>
-                                                                    <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                    </p>
+                                                                    <p className="text-[11px] font-semibold text-primary">
+                                                                        Ks{' '}
+                                                                        {ks(
+                                                                            variant.selling_price,
+                                                                        )}
+                                                                    </p>
+                                                                    <p className="text-[9px] text-muted-foreground">
+                                                                        {t(
+                                                                            'Stock',
+                                                                        )}
+                                                                        :{' '}
                                                                         {
-                                                                            qtyInCart
+                                                                            variant.stock_quantity
                                                                         }
-                                                                    </span>
-                                                                    <Button
-                                                                        variant="outline"
-                                                                        size="icon"
-                                                                        className="h-5 w-5"
-                                                                        onClick={() => {
-                                                                            const item =
-                                                                                cart.find(
-                                                                                    (
-                                                                                        ci,
-                                                                                    ) =>
-                                                                                        ci.variant_id ===
-                                                                                        variant.id,
-                                                                                );
+                                                                        {isLowStock && (
+                                                                            <span className="ml-0.5 text-orange-600 dark:text-orange-400">
+                                                                                (
+                                                                                {t(
+                                                                                    'Low',
+                                                                                )}
 
-                                                                            if (item) {
-                                                                                updateQuantity(
-                                                                                    item.id,
-                                                                                    -1,
-                                                                                );
-                                                                            }
-                                                                        }}
-
-                                                                        disabled={
-                                                                            qtyInCart ===
-                                                                            0
-                                                                        }
-                                                                    >
-                                                                        <MinusIcon className="h-2.5 w-2.5" />
-                                                                    </Button>
+                                                                                )
+                                                                            </span>
+                                                                        )}
+                                                                    </p>
                                                                 </div>
-                                                            )}
+
+                                                                {isOutOfStock ? (
+                                                                    <Badge
+                                                                        variant="destructive"
+                                                                        className="h-5 px-1.5 text-[9px]"
+                                                                    >
+                                                                        {t(
+                                                                            'Out',
+                                                                        )}
+                                                                    </Badge>
+                                                                ) : (
+                                                                    <div className="flex items-center gap-0.5">
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className="h-5 w-5"
+                                                                            onClick={() =>
+                                                                                addToCart(
+                                                                                    variant,
+                                                                                )
+                                                                            }
+                                                                            disabled={
+                                                                                atMaxStock
+                                                                            }
+                                                                        >
+                                                                            <PlusIcon className="h-2.5 w-2.5" />
+                                                                        </Button>
+                                                                        <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                            {
+                                                                                qtyInCart
+                                                                            }
+                                                                        </span>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className="h-5 w-5"
+                                                                            onClick={() => {
+                                                                                const item =
+                                                                                    cart.find(
+                                                                                        (
+                                                                                            ci,
+                                                                                        ) =>
+                                                                                            ci.variant_id ===
+                                                                                            variant.id,
+                                                                                    );
+
+                                                                                if (
+                                                                                    item
+                                                                                ) {
+                                                                                    updateQuantity(
+                                                                                        item.id,
+                                                                                        -1,
+                                                                                    );
+                                                                                }
+                                                                            }}
+
+                                                                            disabled={
+                                                                                qtyInCart ===
+                                                                                0
+                                                                            }
+                                                                        >
+                                                                            <MinusIcon className="h-2.5 w-2.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })
+                                                    );
+                                                },
+                                            )
                                         )}
                                     </CardContent>
                                 </Card>
@@ -462,7 +473,7 @@ export default function SalesCheckout({ products }: Props) {
                                                             : ''}
                                                     </p>
                                                 </div>
-                                                <div className="flex items-center gap-0.5">
+                                                <div className="flex items-center gap-1">
                                                     <Button
                                                         variant="outline"
                                                         size="icon"
@@ -517,14 +528,14 @@ export default function SalesCheckout({ products }: Props) {
                                         ))}
                                     </div>
 
-                                    <div className="space-y-1.5 border-t p-2">
+                                    <div className="space-y-2 p-2">
                                         {errors.items && (
                                             <p className="text-[10px] text-destructive">
                                                 {errors.items}
                                             </p>
                                         )}
 
-                                        <div className="flex items-center gap-1.5">
+                                        <div className="flex items-center gap-2">
                                             <Input
                                                 placeholder={t('Discount')}
                                                 type="number"
@@ -534,7 +545,7 @@ export default function SalesCheckout({ products }: Props) {
                                                 onChange={(e) =>
                                                     setDiscount(e.target.value)
                                                 }
-                                                className="h-7 text-[11px]"
+                                                className="h-7 py-1 text-[11px]"
                                             />
                                             <Input
                                                 placeholder={t('Tax')}
@@ -545,7 +556,7 @@ export default function SalesCheckout({ products }: Props) {
                                                 onChange={(e) =>
                                                     setTax(e.target.value)
                                                 }
-                                                className="h-7 text-[11px]"
+                                                className="h-7 py-1 text-[11px]"
                                             />
                                         </div>
 

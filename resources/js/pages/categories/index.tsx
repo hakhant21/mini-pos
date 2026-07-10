@@ -33,6 +33,7 @@ import {
     categoriesToggleActive,
     dashboard,
 } from '@/feature-routes';
+import { useTranslation } from '@/lib/i18n';
 import type { Category, CategoryForm } from '@/types';
 
 type Props = {
@@ -40,6 +41,7 @@ type Props = {
 };
 
 export default function CategoriesIndex({ categories: categoriesData }: Props) {
+    const { t } = useTranslation();
     const [editingCategory, setEditingCategory] = useState<Category | null>(
         null,
     );
@@ -127,10 +129,10 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
 
     return (
         <>
-            <Head title="Categories" />
+            <Head title={t('Categories')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Categories</h1>
+                    <h1 className="text-2xl font-bold">{t('Categories')}</h1>
                     <Dialog
                         open={dialogOpen}
                         onOpenChange={(open) => {
@@ -144,25 +146,25 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                     >
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
-                                <Plus className="mr-2 h-4 w-4" /> Add Category
+                                <Plus className="mr-2 h-4 w-4" /> {t('Add Category')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
                                 <DialogTitle>
                                     {editingCategory
-                                        ? 'Edit Category'
-                                        : 'Create Category'}
+                                        ? t('Edit Category')
+                                        : t('Create Category')}
                                 </DialogTitle>
                                 <DialogDescription>
                                     {editingCategory
-                                        ? 'Update the category details.'
-                                        : 'Add a new product category.'}
+                                        ? t('Update the category details.')
+                                        : t('Add a new product category.')}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{t('Name')}</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
@@ -178,7 +180,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="description">
-                                        Description
+                                        {t('Description')}
                                     </Label>
                                     <Textarea
                                         id="description"
@@ -192,7 +194,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="image">Image</Label>
+                                    <Label htmlFor="image">{t('Image')}</Label>
                                     <Input
                                         id="image"
                                         type="file"
@@ -229,7 +231,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                         {processing && (
                                             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                         )}
-                                        {editingCategory ? 'Update' : 'Create'}
+                                        {editingCategory ? t('Update') : t('Create')}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -239,19 +241,19 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Categories</CardTitle>
+                        <CardTitle>{t('All Categories')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Image</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Description</TableHead>
-                                    <TableHead>Products</TableHead>
-                                    <TableHead>Status</TableHead>
+                                    <TableHead>{t('Image')}</TableHead>
+                                    <TableHead>{t('Name')}</TableHead>
+                                    <TableHead>{t('Description')}</TableHead>
+                                    <TableHead>{t('Products')}</TableHead>
+                                    <TableHead>{t('Status')}</TableHead>
                                     <TableHead className="text-right">
-                                        Actions
+                                        {t('Actions')}
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -287,8 +289,8 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                 }
                                             >
                                                 {category.is_active
-                                                    ? 'Active'
-                                                    : 'Inactive'}
+                                                    ? t('Active')
+                                                    : t('Inactive')}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
@@ -350,17 +352,13 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                     <DialogContent>
                                                         <DialogHeader>
                                                             <DialogTitle>
-                                                                Delete Category
+                                                                {t('Delete Category')}
                                                             </DialogTitle>
                                                             <DialogDescription>
-                                                                Are you sure you
-                                                                want to delete "
-                                                                {
-                                                                    deleteTarget?.name
-                                                                }
-                                                                "? This action
-                                                                cannot be
-                                                                undone.
+                                                                {t('Are you sure you want to delete')}
+                                                                "
+                                                                {deleteTarget?.name}
+                                                                "? {t('? This action cannot be undone.')}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>
@@ -372,7 +370,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                                     )
                                                                 }
                                                             >
-                                                                Cancel
+                                                                {t('Cancel')}
                                                             </Button>
                                                             <Button
                                                                 variant="destructive"
@@ -386,7 +384,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                                 {processing && (
                                                                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                                                 )}
-                                                                Delete
+                                                                {t('Delete')}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>

@@ -1,5 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { ShoppingCart, Search, ChevronDown, ChevronUp, Banknote, Smartphone } from 'lucide-react';
+import {
+    ShoppingCart,
+    Search,
+    ChevronDown,
+    ChevronUp,
+    Banknote,
+    Smartphone,
+} from 'lucide-react';
 import { Fragment, useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,11 +86,15 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">{t('Sales History')}</h1>
-                        <p className="text-sm text-muted-foreground">{today}</p>
+                        <h1 className="text-2xl font-bold">
+                            {t('Sales History')}
+                        </h1>
+                        <p className="mt-4 text-sm text-muted-foreground">
+                            {today}
+                        </p>
                     </div>
-                    <Link href={salesCheckout()}>
-                        <Button>
+                    <Link href={salesCheckout().url}>
+                        <Button className="cursor-pointer">
                             <ShoppingCart className="mr-2 h-4 w-4" /> {t('POS')}
                         </Button>
                     </Link>
@@ -92,42 +103,66 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                 <div className="grid grid-cols-4 gap-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Total Sales')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Total Sales')}
+                            </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{summary.total_sales}</div>
-                            <p className="text-xs text-muted-foreground">{t('transactions today')}</p>
+                            <div className="text-2xl font-bold">
+                                {summary.total_sales}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('transactions today')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Revenue')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Revenue')}
+                            </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Ks {ks(summary.total_revenue)}</div>
-                            <p className="text-xs text-muted-foreground">{t('total collected')}</p>
+                            <div className="text-2xl font-bold">
+                                Ks {ks(summary.total_revenue)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('total collected')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Items Sold')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Items Sold')}
+                            </CardTitle>
                             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{summary.total_items}</div>
-                            <p className="text-xs text-muted-foreground">{t('total units')}</p>
+                            <div className="text-2xl font-bold">
+                                {summary.total_items}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('total units')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Avg Sale')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Avg Sale')}
+                            </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Ks {ks(summary.avg_sale)}</div>
-                            <p className="text-xs text-muted-foreground">{t('per transaction')}</p>
+                            <div className="text-2xl font-bold">
+                                Ks {ks(summary.avg_sale)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('per transaction')}
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -135,7 +170,7 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle>{t('Today\'s Transactions')}</CardTitle>
+                            <CardTitle>{t("Today's Transactions")}</CardTitle>
                             <div className="flex items-center gap-2">
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -154,33 +189,58 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                     <TableHead className="w-8"></TableHead>
                                     <TableHead>{t('Invoice')}</TableHead>
                                     <TableHead>{t('Time')}</TableHead>
-                                    <TableHead className="text-center">{t('Items')}</TableHead>
-                                    <TableHead className="text-right">{t('Subtotal')}</TableHead>
-                                    <TableHead className="text-right">{t('Discount')}</TableHead>
-                                    <TableHead className="text-right">{t('Tax')}</TableHead>
-                                    <TableHead className="text-right">{t('Total')}</TableHead>
+                                    <TableHead className="text-center">
+                                        {t('Items')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Subtotal')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Discount')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Tax')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Total')}
+                                    </TableHead>
                                     <TableHead>{t('Payment')}</TableHead>
-                                    <TableHead className="text-right">{t('Paid')}</TableHead>
-                                    <TableHead className="text-right">{t('Change')}</TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Paid')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Change')}
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredSales.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={11} className="py-8 text-center text-muted-foreground">
+                                        <TableCell
+                                            colSpan={11}
+                                            className="py-8 text-center text-muted-foreground"
+                                        >
                                             {t('No sales recorded today.')}
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     filteredSales.map((sale) => {
-                                        const isExpanded = expandedId === sale.id;
-                                        const PaymentIcon = paymentMethodIcon[sale.payment_method] || Banknote;
+                                        const isExpanded =
+                                            expandedId === sale.id;
+                                        const PaymentIcon =
+                                            paymentMethodIcon[
+                                                sale.payment_method
+                                            ] || Banknote;
                                         const saleSubtotal = sale.items.reduce(
-                                            (sum, item) => sum + Number(item.unit_price) * Number(item.quantity),
+                                            (sum, item) =>
+                                                sum +
+                                                Number(item.unit_price) *
+                                                    Number(item.quantity),
                                             0,
                                         );
                                         const itemCount = sale.items.reduce(
-                                            (sum, item) => sum + Number(item.quantity),
+                                            (sum, item) =>
+                                                sum + Number(item.quantity),
                                             0,
                                         );
 
@@ -188,7 +248,9 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                             <Fragment key={sale.id}>
                                                 <TableRow
                                                     className="cursor-pointer hover:bg-muted/50"
-                                                    onClick={() => toggleExpand(sale.id)}
+                                                    onClick={() =>
+                                                        toggleExpand(sale.id)
+                                                    }
                                                 >
                                                     <TableCell className="w-8">
                                                         {isExpanded ? (
@@ -201,83 +263,184 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                                         {sale.invoice_number}
                                                     </TableCell>
                                                     <TableCell className="text-sm text-muted-foreground">
-                                                        {new Date(sale.created_at).toLocaleTimeString('en-US', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                        })}
+                                                        {new Date(
+                                                            sale.created_at,
+                                                        ).toLocaleTimeString(
+                                                            'en-US',
+                                                            {
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                            },
+                                                        )}
                                                     </TableCell>
-                                                    <TableCell className="text-center">{itemCount}</TableCell>
-                                                    <TableCell className="text-right">Ks {ks(saleSubtotal)}</TableCell>
+                                                    <TableCell className="text-center">
+                                                        {itemCount}
+                                                    </TableCell>
                                                     <TableCell className="text-right">
-                                                        {Number(sale.discount) > 0 ? (
-                                                            <span className="text-destructive">-Ks {ks(sale.discount)}</span>
+                                                        Ks {ks(saleSubtotal)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {Number(sale.discount) >
+                                                        0 ? (
+                                                            <span className="text-destructive">
+                                                                -Ks{' '}
+                                                                {ks(
+                                                                    sale.discount,
+                                                                )}
+                                                            </span>
                                                         ) : (
                                                             '—'
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right">
-                                                        {Number(sale.tax) > 0 ? (
-                                                            <span>+Ks {ks(sale.tax)}</span>
+                                                        {Number(sale.tax) >
+                                                        0 ? (
+                                                            <span>
+                                                                +Ks{' '}
+                                                                {ks(sale.tax)}
+                                                            </span>
                                                         ) : (
                                                             '—'
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right font-semibold">
-                                                        Ks {ks(sale.total_amount)}
+                                                        Ks{' '}
+                                                        {ks(sale.total_amount)}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant="outline" className="gap-1">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="gap-1"
+                                                        >
                                                             <PaymentIcon className="h-3 w-3" />
-                                                            {paymentMethodLabel[sale.payment_method] || sale.payment_method}
+                                                            {paymentMethodLabel[
+                                                                sale
+                                                                    .payment_method
+                                                            ] ||
+                                                                sale.payment_method}
                                                         </Badge>
                                                     </TableCell>
-                                                    <TableCell className="text-right">Ks {ks(sale.amount_paid)}</TableCell>
                                                     <TableCell className="text-right">
-                                                        {Number(sale.change) > 0 ? (
-                                                            <span className="text-green-600">Ks {ks(sale.change)}</span>
+                                                        Ks{' '}
+                                                        {ks(sale.amount_paid)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {Number(sale.change) >
+                                                        0 ? (
+                                                            <span className="text-green-600">
+                                                                Ks{' '}
+                                                                {ks(
+                                                                    sale.change,
+                                                                )}
+                                                            </span>
                                                         ) : (
                                                             '—'
                                                         )}
                                                     </TableCell>
                                                 </TableRow>
                                                 {isExpanded && (
-                                                    <TableRow key={`${sale.id}-detail`}>
-                                                        <TableCell colSpan={11} className="bg-muted/30 p-0">
+                                                    <TableRow
+                                                        key={`${sale.id}-detail`}
+                                                    >
+                                                        <TableCell
+                                                            colSpan={11}
+                                                            className="bg-muted/30 p-0"
+                                                        >
                                                             <div className="px-4 py-3">
                                                                 {sale.notes && (
                                                                     <p className="mb-2 text-sm text-muted-foreground">
-                                                                        <span className="font-medium">{t('Notes')}:</span> {sale.notes}
+                                                                        <span className="font-medium">
+                                                                            {t(
+                                                                                'Notes',
+                                                                            )}
+                                                                            :
+                                                                        </span>{' '}
+                                                                        {
+                                                                            sale.notes
+                                                                        }
                                                                     </p>
                                                                 )}
                                                                 <Table>
                                                                     <TableHeader>
                                                                         <TableRow>
-                                                                            <TableHead>{t('Product')}</TableHead>
-                                                                            <TableHead>{t('Unit')}</TableHead>
-                                                                            <TableHead className="text-right">{t('Qty')}</TableHead>
-                                                                            <TableHead className="text-right">{t('Price')}</TableHead>
-                                                                            <TableHead className="text-right">{t('Total')}</TableHead>
+                                                                            <TableHead>
+                                                                                {t(
+                                                                                    'Product',
+                                                                                )}
+                                                                            </TableHead>
+                                                                            <TableHead>
+                                                                                {t(
+                                                                                    'Unit',
+                                                                                )}
+                                                                            </TableHead>
+                                                                            <TableHead className="text-right">
+                                                                                {t(
+                                                                                    'Qty',
+                                                                                )}
+                                                                            </TableHead>
+                                                                            <TableHead className="text-right">
+                                                                                {t(
+                                                                                    'Price',
+                                                                                )}
+                                                                            </TableHead>
+                                                                            <TableHead className="text-right">
+                                                                                {t(
+                                                                                    'Total',
+                                                                                )}
+                                                                            </TableHead>
                                                                         </TableRow>
                                                                     </TableHeader>
                                                                     <TableBody>
-                                                                        {sale.items.map((item) => (
-                                                                            <TableRow key={item.id}>
-                                                                                <TableCell>
-                                                                                    <span className="font-medium">{item.product_name}</span>
-                                                                                    {item.variant_name && (
-                                                                                        <span className="ml-1 text-muted-foreground">
-                                                                                            ({item.variant_name})
+                                                                        {sale.items.map(
+                                                                            (
+                                                                                item,
+                                                                            ) => (
+                                                                                <TableRow
+                                                                                    key={
+                                                                                        item.id
+                                                                                    }
+                                                                                >
+                                                                                    <TableCell>
+                                                                                        <span className="font-medium">
+                                                                                            {
+                                                                                                item.product_name
+                                                                                            }
                                                                                         </span>
-                                                                                    )}
-                                                                                </TableCell>
-                                                                                <TableCell>{item.unit_name || '—'}</TableCell>
-                                                                                <TableCell className="text-right">{Number(item.quantity)}</TableCell>
-                                                                                <TableCell className="text-right">Ks {ks(item.unit_price)}</TableCell>
-                                                                                <TableCell className="text-right font-medium">
-                                                                                    Ks {ks(item.total_price)}
-                                                                                </TableCell>
-                                                                            </TableRow>
-                                                                        ))}
+                                                                                        {item.variant_name && (
+                                                                                            <span className="ml-1 text-muted-foreground">
+                                                                                                (
+                                                                                                {
+                                                                                                    item.variant_name
+                                                                                                }
+
+                                                                                                )
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                    <TableCell>
+                                                                                        {item.unit_name ||
+                                                                                            '—'}
+                                                                                    </TableCell>
+                                                                                    <TableCell className="text-right">
+                                                                                        {Number(
+                                                                                            item.quantity,
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                    <TableCell className="text-right">
+                                                                                        Ks{' '}
+                                                                                        {ks(
+                                                                                            item.unit_price,
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                    <TableCell className="text-right font-medium">
+                                                                                        Ks{' '}
+                                                                                        {ks(
+                                                                                            item.total_price,
+                                                                                        )}
+                                                                                    </TableCell>
+                                                                                </TableRow>
+                                                                            ),
+                                                                        )}
                                                                     </TableBody>
                                                                 </Table>
                                                             </div>

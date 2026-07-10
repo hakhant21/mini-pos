@@ -18,6 +18,7 @@ import {
     productsStore,
     dashboard,
 } from '@/feature-routes';
+import { useTranslation } from '@/lib/i18n';
 import type { Category, Unit } from '@/types';
 
 type Props = {
@@ -36,6 +37,7 @@ type VariantForm = {
 };
 
 export default function ProductsCreate({ categories, units }: Props) {
+    const { t } = useTranslation();
     const {
         data,
         setData,
@@ -95,23 +97,23 @@ export default function ProductsCreate({ categories, units }: Props) {
 
     return (
         <>
-            <Head title="Create Product" />
+            <Head title={t('Create Product')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Create Product</h1>
+                    <h1 className="text-2xl font-bold">{t('Create Product')}</h1>
                     <Link href={products()}>
-                        <Button variant="outline">Back to Products</Button>
+                        <Button variant="outline">{t('Back to Products')}</Button>
                     </Link>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Product Details</CardTitle>
+                            <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="image">Image</Label>
+                                <Label htmlFor="image">{t('Image')}</Label>
                                 <Input
                                     id="image"
                                     type="file"
@@ -133,7 +135,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">
-                                        Category
+                                        {t('Category')}
                                     </Label>
                                     <Select
                                         value={data.category_id}
@@ -142,7 +144,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Select category" />
+                                            <SelectValue placeholder={t('Select category')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categories.map((cat) => (

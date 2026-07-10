@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { dashboard, productsShow } from '@/feature-routes';
 import { ks } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { DashboardData } from '@/types';
 
 const stockStatusConfig = {
@@ -13,15 +14,16 @@ const stockStatusConfig = {
 };
 
 export default function Dashboard({ totalStock, totalProducts, totalVariants, inventoryValue, lowStockVariants }: DashboardData) {
+    const { t } = useTranslation();
 
     return (
         <>
-            <Head title="Dashboard" />
+            <Head title={t('Dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
                 <div className="grid auto-rows-min gap-4 md:grid-cols-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                            <CardTitle className="text-sm font-medium">{t('Total Products')}</CardTitle>
                             <Package className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>

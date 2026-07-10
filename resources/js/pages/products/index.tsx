@@ -1,5 +1,13 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Plus, Search, Eye, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import {
+    Plus,
+    Search,
+    Eye,
+    Pencil,
+    Trash2,
+    ToggleLeft,
+    ToggleRight,
+} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -13,7 +21,16 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { products, productsCreate, productsShow, productsEdit, productsDestroy, productsToggleActive, dashboard } from '@/feature-routes';
+import {
+    products,
+    productsCreate,
+    productsShow,
+    productsEdit,
+    productsDestroy,
+    productsToggleActive,
+    dashboard,
+} from '@/feature-routes';
+import { useTranslation } from '@/lib/i18n';
 import type { Product } from '@/types';
 
 type Props = {
@@ -21,6 +38,7 @@ type Props = {
 };
 
 export default function ProductsIndex({ products: productsData }: Props) {
+    const { t } = useTranslation();
     const [search, setSearch] = useState('');
 
     const filteredProducts = useMemo(() => {
@@ -40,24 +58,30 @@ export default function ProductsIndex({ products: productsData }: Props) {
     }, [productsData, search]);
 
     const handleDelete = (product: Product) => {
-        if (confirm(`Delete "${product.name}"?`)) {
-            router.delete(productsDestroy({ id: product.id }).url, { preserveScroll: true });
+        if (confirm(`${t('Delete')} "${product.name}"?`)) {
+            router.delete(productsDestroy({ id: product.id }).url, {
+                preserveScroll: true,
+            });
         }
     };
 
     const handleToggleActive = (product: Product) => {
-        router.patch(productsToggleActive({ id: product.id }).url, {}, { preserveScroll: true });
+        router.patch(
+            productsToggleActive({ id: product.id }).url,
+            {},
+            { preserveScroll: true },
+        );
     };
 
     return (
         <>
-            <Head title="Products" />
+            <Head title={t('Products')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Products</h1>
+                    <h1 className="text-2xl font-bold">{t('Products')}</h1>
                     <Link href={productsCreate()}>
                         <Button>
-                            <Plus className="mr-2 h-4 w-4" /> Add Product
+                            <Plus className="mr-2 h-4 w-4" /> {t('Add Product')}
                         </Button>
                     </Link>
                 </div>
@@ -65,7 +89,7 @@ export default function ProductsIndex({ products: productsData }: Props) {
                 <div className="flex items-center gap-2">
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder="Search by name, SKU, or category..."
+                        placeholder={t('Search by name, SKU, or category...')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="max-w-sm"
@@ -74,58 +98,122 @@ export default function ProductsIndex({ products: productsData }: Props) {
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Products</CardTitle>
+                        <CardTitle>{t('All Products')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Category</TableHead>
-                                    <TableHead>Image</TableHead>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>SKU</TableHead>
-                                    <TableHead>Brand</TableHead>
-                                    <TableHead>Variants</TableHead>
-                                    <TableHead>Status</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('Category')}</TableHead>
+                                    <TableHead>{t('Image')}</TableHead>
+                                    <TableHead>{t('Name')}</TableHead>
+                                    <TableHead>{t('SKU')}</TableHead>
+                                    <TableHead>{t('Brand')}</TableHead>
+                                    <TableHead>{t('Variants')}</TableHead>
+                                    <TableHead>{t('Status')}</TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Actions')}
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredProducts.map((product) => (
                                     <TableRow key={product.id}>
-                                        <TableCell>{product.category?.name || '—'}</TableCell>
+                                        <TableCell>
+                                            {product.category?.name || '—'}
+                                        </TableCell>
                                         <TableCell>
                                             {product.image_url ? (
-                                                <img src={product.image_url} alt={product.name} className="h-10 w-10 rounded object-cover" />
+                                                <img
+                                                    src={product.image_url}
+                                                    alt={product.name}
+                                                    className="h-10 w-10 rounded object-cover"
+                                                />
                                             ) : (
                                                 <div className="h-10 w-10 rounded bg-muted" />
                                             )}
                                         </TableCell>
-                                        <TableCell className="font-medium">{product.name}</TableCell>
-                                        <TableCell className="font-mono text-sm">{product.sku}</TableCell>
-                                        <TableCell>{product.brand || '—'}</TableCell>
-                                        <TableCell>{product.variants_count ?? 0}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {product.name}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-sm">
+                                            {product.sku}
+                                        </TableCell>
                                         <TableCell>
-                                            <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                                                {product.is_active ? 'Active' : 'Inactive'}
+                                            {product.brand || '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {product.variants_count ?? 0}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant={
+                                                    product.is_active
+                                                        ? 'default'
+                                                        : 'secondary'
+                                                }
+                                            >
+                                                {product.is_active
+                                                    ? t('Active')
+                                                    : t('Inactive')}
                                             </Badge>
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" onClick={() => handleToggleActive(product)} title={product.is_active ? 'Deactivate' : 'Activate'}>
-                                                    {product.is_active ? <ToggleRight className="h-4 w-4 text-green-600" /> : <ToggleLeft className="h-4 w-4 text-muted-foreground" />}
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        handleToggleActive(
+                                                            product,
+                                                        )
+                                                    }
+                                                    title={
+                                                        product.is_active
+                                                            ? t('Deactivate')
+                                                            : t('Activate')
+                                                    }
+                                                >
+                                                    {product.is_active ? (
+                                                        <ToggleRight className="h-4 w-4 text-green-600" />
+                                                    ) : (
+                                                        <ToggleLeft className="h-4 w-4 text-muted-foreground" />
+                                                    )}
                                                 </Button>
-                                                <Link href={productsShow({ id: product.id })}>
-                                                    <Button variant="ghost" size="icon">
+                                                <Link
+                                                    href={productsShow({
+                                                        id: product.id,
+                                                    })}
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title={t('View')}
+                                                    >
                                                         <Eye className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
-                                                <Link href={productsEdit({ id: product.id })}>
-                                                    <Button variant="ghost" size="icon">
+                                                <Link
+                                                    href={productsEdit({
+                                                        id: product.id,
+                                                    })}
+                                                >
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        title={t('Edit')}
+                                                    >
                                                         <Pencil className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
-                                                <Button variant="ghost" size="icon" onClick={() => handleDelete(product)}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        handleDelete(product)
+                                                    }
+                                                    title={t('Delete')}
+                                                >
                                                     <Trash2 className="h-4 w-4 text-destructive" />
                                                 </Button>
                                             </div>
@@ -134,8 +222,11 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                 ))}
                                 {filteredProducts.length === 0 && (
                                     <TableRow>
-                                        <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">
-                                            No products found.
+                                        <TableCell
+                                            colSpan={8}
+                                            className="py-8 text-center text-muted-foreground"
+                                        >
+                                            {t('No products found.')}
                                         </TableCell>
                                     </TableRow>
                                 )}

@@ -1,6 +1,6 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Plus, Trash2 } from 'lucide-react';
+import { LoaderCircle, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,13 +22,23 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import {
     products,
     productsUpdate,
     variantsStore,
+    variantsUpdate,
     variantsDestroy,
     dashboard,
 } from '@/feature-routes';
 import { ks } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { Category, Product, Unit } from '@/types';
 
 type Props = {
@@ -38,6 +48,7 @@ type Props = {
 };
 
 export default function ProductsEdit({ product, categories, units }: Props) {
+    const { t } = useTranslation();
     const {
         data,
         setData,
@@ -61,6 +72,10 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         min_stock_level: '0',
         max_stock_level: '',
     });
+
+    const [editingVariant, setEditingVariant] = useState<Product['variants'][number] | null>(null);
+    const [editVariantProcessing, setEditVariantProcessing] = useState(false);
+    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -87,7 +102,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     };
 
     const handleDeleteVariant = (variantId: number) => {
-        if (confirm('Delete this variant?')) {
+        if (confirm(`${t('Delete this variant?')}`)) {
             router.delete(
                 variantsDestroy({ product: product.id, variant: variantId })
                     .url,
@@ -96,25 +111,72 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         }
     };
 
+    const handleEditVariant = (variant: Product['variants'][number]) => {
+        setEditingVariant(variant);
+        setNewVariant({
+            unit_id: String(variant.unit_id),
+            name: variant.name || '',
+            units_per_package: String(variant.units_per_package),
+            cost_price: String(variant.cost_price),
+            selling_price: String(variant.selling_price),
+            min_stock_level: String(variant.min_stock_level),
+            max_stock_level: variant.max_stock_level ? String(variant.max_stock_level) : '',
+        });
+        setEditDialogOpen(true);
+    };
+
+    const handleUpdateVariant = () => {
+        if (!editingVariant) return;
+
+        setEditVariantProcessing(true);
+        router.patch(
+            variantsUpdate({ product: product.id, variant: editingVariant.id }).url,
+            {
+                ...newVariant,
+                units_per_package: parseFloat(newVariant.units_per_package),
+                cost_price: parseFloat(newVariant.cost_price),
+                selling_price: parseFloat(newVariant.selling_price),
+                min_stock_level: parseFloat(newVariant.min_stock_level),
+                max_stock_level: newVariant.max_stock_level
+                    ? parseFloat(newVariant.max_stock_level)
+                    : null,
+            },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setEditVariantProcessing(false);
+                    setEditDialogOpen(false);
+                    setEditingVariant(null);
+                },
+                onError: () => {
+                    setEditVariantProcessing(false);
+                },
+                onFinish: () => {
+                    setEditVariantProcessing(false);
+                },
+            },
+        );
+    };
+
     return (
         <>
-            <Head title={`Edit ${product.name}`} />
+            <Head title={`${t('Edit')}: ${product.name}`} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Edit: {product.name}</h1>
+                    <h1 className="text-2xl font-bold">{t('Edit')}: {product.name}</h1>
                     <Link href={products()}>
-                        <Button variant="outline">Back to Products</Button>
+                        <Button variant="outline">{t('Back to Products')}</Button>
                     </Link>
                 </div>
 
                 <form onSubmit={handleSubmit}>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Product Details</CardTitle>
+                            <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="image">Image</Label>
+                                <Label htmlFor="image">{t('Image')}</Label>
                                 <Input
                                     id="image"
                                     type="file"
@@ -243,17 +305,26 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             {variant.stock_quantity}
                                         </TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={() =>
-                                                    handleDeleteVariant(
-                                                        variant.id,
-                                                    )
-                                                }
-                                            >
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleEditVariant(variant)}
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        handleDeleteVariant(
+                                                            variant.id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Trash2 className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -390,6 +461,150 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Dialog
+                    open={editDialogOpen}
+                    onOpenChange={(open) => {
+                        setEditDialogOpen(open);
+                        if (!open) {
+                            setEditingVariant(null);
+                        }
+                    }}
+                >
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Edit Variant</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid grid-cols-4 gap-3 py-4">
+                            <div className="space-y-1">
+                                <Label className="text-xs">Unit</Label>
+                                <Select
+                                    value={newVariant.unit_id}
+                                    onValueChange={(v) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            unit_id: v,
+                                        })
+                                    }
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {units.map((u) => (
+                                            <SelectItem
+                                                key={u.id}
+                                                value={String(u.id)}
+                                            >
+                                                {u.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Name</Label>
+                                <Input
+                                    value={newVariant.name}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            name: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Units/Pkg</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.units_per_package}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            units_per_package: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Cost Price</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.cost_price}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            cost_price: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Selling Price</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.selling_price}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            selling_price: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Min Stock</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.min_stock_level}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            min_stock_level: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Max Stock</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.max_stock_level}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            max_stock_level: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => setEditDialogOpen(false)}
+                                disabled={editVariantProcessing}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleUpdateVariant}
+                                disabled={editVariantProcessing}
+                            >
+                                {editVariantProcessing && (
+                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                Update Variant
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
         </>
     );

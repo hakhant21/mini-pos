@@ -24,6 +24,7 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { units, unitsStore, unitsUpdate, unitsDestroy, dashboard } from '@/feature-routes';
+import { useTranslation } from '@/lib/i18n';
 import type { Unit, UnitForm } from '@/types';
 
 type Props = {
@@ -31,6 +32,7 @@ type Props = {
 };
 
 export default function UnitsIndex({ units: unitsData }: Props) {
+    const { t } = useTranslation();
     const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Unit | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -92,10 +94,10 @@ return;
 
     return (
         <>
-            <Head title="Units" />
+            <Head title={t('Units')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Units</h1>
+                    <h1 className="text-2xl font-bold">{t('Units')}</h1>
                     <Dialog open={dialogOpen} onOpenChange={(open) => {
                         setDialogOpen(open);
 
@@ -106,31 +108,31 @@ return;
                     }}>
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
-                                <Plus className="mr-2 h-4 w-4" /> Add Unit
+                                <Plus className="mr-2 h-4 w-4" /> {t('Add Unit')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>{editingUnit ? 'Edit Unit' : 'Create Unit'}</DialogTitle>
+                                <DialogTitle>{editingUnit ? t('Edit Unit') : t('Create Unit')}</DialogTitle>
                                 <DialogDescription>
-                                    {editingUnit ? 'Update the unit details.' : 'Add a new measurement unit.'}
+                                    {editingUnit ? t('Update the unit details.') : t('Add a new measurement unit.')}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{t('Name')}</Label>
                                     <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
                                     {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="abbreviation">Abbreviation</Label>
+                                    <Label htmlFor="abbreviation">{t('Abbreviation')}</Label>
                                     <Input id="abbreviation" value={data.abbreviation} onChange={(e) => setData('abbreviation', e.target.value)} />
                                     {errors.abbreviation && <p className="text-sm text-destructive">{errors.abbreviation}</p>}
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={processing}>
                                         {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                        {editingUnit ? 'Update' : 'Create'}
+                                        {editingUnit ? t('Update') : t('Create')}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -140,16 +142,16 @@ return;
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Units</CardTitle>
+                        <CardTitle>{t('All Units')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Abbreviation</TableHead>
-                                    <TableHead>Variants</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead>{t('Name')}</TableHead>
+                                    <TableHead>{t('Abbreviation')}</TableHead>
+                                    <TableHead>{t('Variants')}</TableHead>
+                                    <TableHead className="text-right">{t('Actions')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -179,16 +181,16 @@ setDeleteTarget(null);
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>Delete Unit</DialogTitle>
+                                                            <DialogTitle>{t('Delete Unit')}</DialogTitle>
                                                             <DialogDescription>
-                                                                Are you sure you want to delete "{deleteTarget?.name}"?
+                                                                {t('Are you sure you want to delete this')} "{deleteTarget?.name}"?
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>
-                                                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+                                                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>{t('Cancel')}</Button>
                                                             <Button variant="destructive" onClick={handleDelete} disabled={processing}>
                                                                 {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                                                Delete
+                                                                {t('Delete')}
                                                             </Button>
                                                         </DialogFooter>
                                                     </DialogContent>

@@ -27,42 +27,45 @@ import {
     sales,
     salesCheckoutPage,
 } from '@/feature-routes';
+import { useTranslation } from '@/lib/i18n';
 import type { NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Sale',
-        href: salesCheckoutPage(),
-        icon: ShoppingCart,
-    },
-    {
-        title: 'History',
-        href: sales(),
-        icon: Receipt,
-    },
-    {
-        title: 'Categories',
-        href: categories(),
-        icon: Tags,
-    },
-    {
-        title: 'Units',
-        href: units(),
-        icon: Ruler,
-    },
-    {
-        title: 'Products',
-        href: products(),
-        icon: Package,
-    },
-];
-
 export function AppSidebar() {
+    const { t } = useTranslation();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: t('Dashboard'),
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+        {
+            title: t('POS'),
+            href: salesCheckoutPage(),
+            icon: ShoppingCart,
+        },
+        {
+            title: t('Sales History'),
+            href: sales(),
+            icon: Receipt,
+        },
+        {
+            title: t('Categories'),
+            href: categories(),
+            icon: Tags,
+        },
+        {
+            title: t('Units'),
+            href: units(),
+            icon: Ruler,
+        },
+        {
+            title: t('Products'),
+            href: products(),
+            icon: Package,
+        },
+    ];
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -70,7 +73,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={dashboard()} prefetch>
-                                <AppLogo />
+                                {t('Shop')}
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
