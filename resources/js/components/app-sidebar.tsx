@@ -8,7 +8,6 @@ import {
     ShoppingCart,
     Receipt,
 } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
 import { LocaleSwitcher } from '@/components/locale-switcher';
 import { NavMain } from '@/components/nav-main';
 import {
