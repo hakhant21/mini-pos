@@ -121,6 +121,19 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Product status updated successfully.');
     }
 
+    public function stockPriceUpdate(): Response
+    {
+        $products = Product::query()
+            ->with(['variants.unit'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return inertia('products/stock-price-update', [
+            'products' => ProductResource::collection($products),
+        ]);
+    }
+
     private function generateSku(string $name): string
     {
         $prefix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $name), 0, 3));

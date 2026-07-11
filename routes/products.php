@@ -17,5 +17,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('products/{product}/variants', [ProductVariantController::class, 'store'])->name('variants.store');
     Route::patch('products/{product}/variants/{variant}', [ProductVariantController::class, 'update'])->name('variants.update');
+    Route::patch('products/{product}/variants/{variant}/stock-price', [ProductVariantController::class, 'updateStockPrice'])->name('variants.update-stock-price');
     Route::delete('products/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
+
+    Route::get('stock-price-update', [ProductController::class, 'stockPriceUpdate'])->name('products.stock-price-update');
 });

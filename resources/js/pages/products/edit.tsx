@@ -27,7 +27,6 @@ import {
     DialogHeader,
     DialogTitle,
     DialogFooter,
-    DialogTrigger,
 } from '@/components/ui/dialog';
 import {
     products,
@@ -69,6 +68,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         units_per_package: '1',
         cost_price: '0',
         selling_price: '0',
+        per_unit_price: '0',
         min_stock_level: '0',
         max_stock_level: '',
     });
@@ -92,6 +92,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                 units_per_package: parseFloat(newVariant.units_per_package),
                 cost_price: parseFloat(newVariant.cost_price),
                 selling_price: parseFloat(newVariant.selling_price),
+                per_unit_price: parseFloat(newVariant.per_unit_price),
                 min_stock_level: parseFloat(newVariant.min_stock_level),
                 max_stock_level: newVariant.max_stock_level
                     ? parseFloat(newVariant.max_stock_level)
@@ -119,6 +120,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
             units_per_package: String(variant.units_per_package),
             cost_price: String(variant.cost_price),
             selling_price: String(variant.selling_price),
+            per_unit_price: String(variant.per_unit_price),
             min_stock_level: String(variant.min_stock_level),
             max_stock_level: variant.max_stock_level ? String(variant.max_stock_level) : '',
         });
@@ -136,6 +138,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                 units_per_package: parseFloat(newVariant.units_per_package),
                 cost_price: parseFloat(newVariant.cost_price),
                 selling_price: parseFloat(newVariant.selling_price),
+                per_unit_price: parseFloat(newVariant.per_unit_price),
                 min_stock_level: parseFloat(newVariant.min_stock_level),
                 max_stock_level: newVariant.max_stock_level
                     ? parseFloat(newVariant.max_stock_level)
@@ -207,7 +210,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">
-                                        Category
+                                        {t('Category')}
                                     </Label>
                                     <Select
                                         value={data.category_id}
@@ -231,7 +234,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{t('Name')}</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
@@ -246,7 +249,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="brand">Brand</Label>
+                                    <Label htmlFor="brand">{t('Brand')}</Label>
                                     <Input
                                         id="brand"
                                         value={data.brand}
@@ -261,7 +264,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     {processing && (
                                         <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                     )}
-                                    Update Product
+                                    {t('Update Product')}
                                 </Button>
                             </div>
                         </CardContent>
@@ -270,19 +273,20 @@ export default function ProductsEdit({ product, categories, units }: Props) {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle>Variants</CardTitle>
+                        <CardTitle>{t('Variants')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>Name</TableHead>
-                                    <TableHead>Unit</TableHead>
-                                    <TableHead>Cost Price</TableHead>
-                                    <TableHead>Selling Price</TableHead>
-                                    <TableHead>Stock</TableHead>
+                                    <TableHead>{t('Name')}</TableHead>
+                                    <TableHead>{t('Unit')}</TableHead>
+                                    <TableHead>{t('Cost Price')}</TableHead>
+                                    <TableHead>{t('Selling Price')}</TableHead>
+                                    <TableHead>{t('Per Unit')}</TableHead>
+                                    <TableHead>{t('Stock')}</TableHead>
                                     <TableHead className="text-right">
-                                        Actions
+                                        {t('Actions')}
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -302,7 +306,10 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             Ks {ks(variant.selling_price)}
                                         </TableCell>
                                         <TableCell>
-                                            {variant.stock_quantity}
+                                            Ks {ks(variant.per_unit_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {Number(variant.stock_quantity)}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
@@ -333,11 +340,11 @@ export default function ProductsEdit({ product, categories, units }: Props) {
 
                         <div className="mt-4 rounded-lg border p-4">
                             <h3 className="mb-3 text-sm font-medium">
-                                Add New Variant
+                                {t('Add New Variant')}
                             </h3>
                             <div className="grid grid-cols-4 gap-3">
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Unit</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">{t('Unit')}</Label>
                                     <Select
                                         value={newVariant.unit_id}
                                         onValueChange={(v) =>
@@ -348,7 +355,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Unit" />
+                                            <SelectValue placeholder={t('Unit')} />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {units.map((u) => (
@@ -362,8 +369,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Name</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">{t('Name')}</Label>
                                     <Input
                                         value={newVariant.name}
                                         onChange={(e) =>
@@ -374,8 +381,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Units/Pkg</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">{t('Units/Pkg')}</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -389,9 +396,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     <Label className="text-xs">
-                                        Cost Price
+                                        {t('Cost Price')}
                                     </Label>
                                     <Input
                                         type="number"
@@ -405,9 +412,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-2">
                                     <Label className="text-xs">
-                                        Selling Price
+                                        {t('Selling Price')}
                                     </Label>
                                     <Input
                                         type="number"
@@ -421,8 +428,24 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Min Stock</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">
+                                        {t('Per Unit Price')}
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        value={newVariant.per_unit_price}
+                                        onChange={(e) =>
+                                            setNewVariant({
+                                                ...newVariant,
+                                                per_unit_price: e.target.value,
+                                            })
+                                        }
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">{t('Min Stock')}</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -435,8 +458,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-1">
-                                    <Label className="text-xs">Max Stock</Label>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">{t('Max Stock')}</Label>
                                     <Input
                                         type="number"
                                         step="0.01"
@@ -456,7 +479,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 className="mt-3"
                                 onClick={handleAddVariant}
                             >
-                                <Plus className="mr-2 h-4 w-4" /> Add Variant
+                                <Plus className="mr-2 h-4 w-4" /> {t('Add Variant')}
                             </Button>
                         </div>
                     </CardContent>
@@ -473,11 +496,11 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                 >
                     <DialogContent>
                         <DialogHeader>
-                            <DialogTitle>Edit Variant</DialogTitle>
+                            <DialogTitle>{t('Edit Variant')}</DialogTitle>
                         </DialogHeader>
                         <div className="grid grid-cols-4 gap-3 py-4">
-                            <div className="space-y-1">
-                                <Label className="text-xs">Unit</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Unit')}</Label>
                                 <Select
                                     value={newVariant.unit_id}
                                     onValueChange={(v) =>
@@ -502,8 +525,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Name</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Name')}</Label>
                                 <Input
                                     value={newVariant.name}
                                     onChange={(e) =>
@@ -514,8 +537,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Units/Pkg</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Units/Pkg')}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -528,8 +551,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Cost Price</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Cost Price')}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -542,8 +565,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Selling Price</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Selling Price')}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -556,8 +579,22 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Min Stock</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Per Unit Price')}</Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    value={newVariant.per_unit_price}
+                                    onChange={(e) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            per_unit_price: e.target.value,
+                                        })
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Min Stock')}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -570,8 +607,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     }
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label className="text-xs">Max Stock</Label>
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Max Stock')}</Label>
                                 <Input
                                     type="number"
                                     step="0.01"
@@ -591,7 +628,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 onClick={() => setEditDialogOpen(false)}
                                 disabled={editVariantProcessing}
                             >
-                                Cancel
+                                {t('Cancel')}
                             </Button>
                             <Button
                                 onClick={handleUpdateVariant}
@@ -600,7 +637,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 {editVariantProcessing && (
                                     <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                 )}
-                                Update Variant
+                                {t('Update Variant')}
                             </Button>
                         </DialogFooter>
                     </DialogContent>

@@ -10,18 +10,26 @@ class UnitSeeder extends Seeder
     public function run(): void
     {
         $units = [
-            ['name' => 'Piece', 'abbreviation' => 'pc'],
-            ['name' => 'Kilogram', 'abbreviation' => 'kg'],
-            ['name' => 'Gram', 'abbreviation' => 'g'],
-            ['name' => 'Liter', 'abbreviation' => 'L'],
-            ['name' => 'Milliliter', 'abbreviation' => 'mL'],
-            ['name' => 'Box', 'abbreviation' => 'box'],
-            ['name' => 'Pack', 'abbreviation' => 'pk'],
-            ['name' => 'Bottle', 'abbreviation' => 'btl'],
-            ['name' => 'Can', 'abbreviation' => 'can'],
-            ['name' => 'Bag', 'abbreviation' => 'bag'],
-            ['name' => 'Case', 'abbreviation' => 'case'],
-            ['name' => 'Carton', 'abbreviation' => 'ctn'],
+            [
+                'name' => 'Bottle',
+                'abbreviation' => 'btl',
+            ],
+            [
+                'name' => 'Can',
+                'abbreviation' => 'can',
+            ],
+            [
+                'name' => 'Pack',
+                'abbreviation' => 'pack',
+            ],
+            [
+                'name' => 'Piece',
+                'abbreviation' => 'pc',
+            ],
+            [
+                'name' => 'Roll',
+                'abbreviation' => 'rl',
+            ]
         ];
 
         foreach ($units as $unit) {

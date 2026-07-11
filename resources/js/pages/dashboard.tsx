@@ -82,7 +82,7 @@ export default function Dashboard({ totalStock, totalProducts, totalVariants, in
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <span className="text-sm">
-                                                {variant.stock_quantity} / {variant.min_stock_level}
+                                                {Number(variant.stock_quantity)} / {Number(variant.min_stock_level)}
                                             </span>
                                             <Badge variant={stockStatusConfig[variant.stock_status].variant}>
                                                 {stockStatusConfig[variant.stock_status].label}

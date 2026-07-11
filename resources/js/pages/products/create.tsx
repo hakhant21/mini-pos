@@ -32,6 +32,7 @@ type VariantForm = {
     units_per_package: string;
     cost_price: string;
     selling_price: string;
+    per_unit_price: string;
     min_stock_level: string;
     max_stock_level: string;
 };
@@ -71,6 +72,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                 units_per_package: '1',
                 cost_price: '0',
                 selling_price: '0',
+                per_unit_price: '0',
                 min_stock_level: '0',
                 max_stock_level: '',
             },
@@ -78,13 +80,23 @@ export default function ProductsCreate({ categories, units }: Props) {
     };
 
     const removeVariant = (index: number) => {
-        setData('variants', variants.filter((_, i) => i !== index));
+        setData(
+            'variants',
+            variants.filter((_, i) => i !== index),
+        );
     };
 
     const updateVariant = (index: number, field: string, value: string) => {
-        const updated = variants.map((v, i) =>
-            i === index ? { ...v, [field]: value } : v,
-        );
+        const updated = variants.map((v, i) => {
+            if (i !== index) return v;
+            const updatedVariant = { ...v, [field]: value };
+            if (field === 'cost_price' || field === 'units_per_package') {
+                const cost = parseFloat(updatedVariant.cost_price) || 0;
+                const units = parseFloat(updatedVariant.units_per_package) || 1;
+                updatedVariant.per_unit_price = String(cost / units);
+            }
+            return updatedVariant;
+        });
         setData('variants', updated);
     };
 
@@ -100,9 +112,13 @@ export default function ProductsCreate({ categories, units }: Props) {
             <Head title={t('Create Product')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">{t('Create Product')}</h1>
+                    <h1 className="text-2xl font-bold">
+                        {t('Create Product')}
+                    </h1>
                     <Link href={products()}>
-                        <Button variant="outline">{t('Back to Products')}</Button>
+                        <Button variant="outline">
+                            {t('Back to Products')}
+                        </Button>
                     </Link>
                 </div>
 
@@ -112,26 +128,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                             <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="image">{t('Image')}</Label>
-                                <Input
-                                    id="image"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-
-                                        if (file) {
-                                            setData('image', file);
-                                        }
-                                    }}
-                                />
-                                {formErrors.image && (
-                                    <p className="text-sm text-destructive">
-                                        {formErrors.image}
-                                    </p>
-                                )}
-                            </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">
@@ -144,7 +140,11 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={t('Select category')} />
+                                            <SelectValue
+                                                placeholder={t(
+                                                    'Select category',
+                                                )}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {categories.map((cat) => (
@@ -164,7 +164,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="name">Name</Label>
+                                    <Label htmlFor="name">{t('Name')}</Label>
                                     <Input
                                         id="name"
                                         value={data.name}
@@ -179,7 +179,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                     )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="brand">Brand</Label>
+                                    <Label htmlFor="brand">{t('Brand')}</Label>
                                     <Input
                                         id="brand"
                                         value={data.brand}
@@ -187,6 +187,33 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             setData('brand', e.target.value)
                                         }
                                     />
+                                    {formErrors.brand && (
+                                        <p className="text-sm text-destructive">
+                                            {formErrors.brand}
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="image">
+                                        {t('Upload Image')}
+                                    </Label>
+                                    <Input
+                                        id="image"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+
+                                            if (file) {
+                                                setData('image', file);
+                                            }
+                                        }}
+                                    />
+                                    {formErrors.image && (
+                                        <p className="text-sm text-destructive">
+                                            {formErrors.image}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         </CardContent>
@@ -194,14 +221,15 @@ export default function ProductsCreate({ categories, units }: Props) {
 
                     <Card className="mt-4">
                         <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle>Variants</CardTitle>
+                            <CardTitle>{t('Variants')}</CardTitle>
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
                                 onClick={addVariant}
                             >
-                                <Plus className="mr-2 h-4 w-4" /> Add Variant
+                                <Plus className="mr-2 h-4 w-4" />{' '}
+                                {t('Add Variant')}
                             </Button>
                         </CardHeader>
                         <CardContent className="space-y-4">
@@ -212,7 +240,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                 >
                                     <div className="mb-2 flex items-center justify-between">
                                         <span className="text-sm font-medium">
-                                            Variant {index + 1}
+                                            {t('Variant')} {index + 1}
                                         </span>
                                         <Button
                                             type="button"
@@ -226,7 +254,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                     <div className="grid grid-cols-4 gap-3">
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Unit
+                                                {t('Unit')}
                                             </Label>
                                             <Select
                                                 value={variant.unit_id}
@@ -239,7 +267,9 @@ export default function ProductsCreate({ categories, units }: Props) {
                                                 }
                                             >
                                                 <SelectTrigger>
-                                                    <SelectValue placeholder="Unit" />
+                                                    <SelectValue
+                                                        placeholder={t('Unit')}
+                                                    />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     {units.map((u) => (
@@ -255,7 +285,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Name
+                                                {t('Name')}
                                             </Label>
                                             <Input
                                                 value={variant.name}
@@ -271,7 +301,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Units/Pkg
+                                                {t('Units per Package')}
                                             </Label>
                                             <Input
                                                 type="number"
@@ -290,7 +320,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Cost Price
+                                                {t('Cost Price')}
                                             </Label>
                                             <Input
                                                 type="number"
@@ -307,7 +337,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Selling Price
+                                                {t('Selling Price')}
                                             </Label>
                                             <Input
                                                 type="number"
@@ -324,7 +354,24 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Min Stock
+                                                {t('Per Unit Price')}
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                value={variant.per_unit_price}
+                                                onChange={(e) =>
+                                                    updateVariant(
+                                                        index,
+                                                        'per_unit_price',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
+                                                {t('Min Stock')}
                                             </Label>
                                             <Input
                                                 type="number"
@@ -341,7 +388,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
-                                                Max Stock
+                                                {t('Max Stock')}
                                             </Label>
                                             <Input
                                                 type="number"

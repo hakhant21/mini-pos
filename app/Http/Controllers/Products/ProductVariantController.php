@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Products;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Products\StoreProductVariantRequest;
 use App\Http\Requests\Products\UpdateProductVariantRequest;
+use App\Http\Requests\Products\UpdateStockPriceRequest;
 use App\Http\Resources\ProductVariantResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -17,18 +18,24 @@ class ProductVariantController extends Controller
         $data = $request->validated();
         $data['sku'] = $this->generateVariantSku($product->sku, $data['name'] ?? '');
 
-        $variant = $product->variants()->create($data);
-        $variant->recalculatePerUnitPrice();
-        $variant->save();
+        if (empty($data['per_unit_price']) && $data['units_per_package'] > 0) {
+            $data['per_unit_price'] = $data['cost_price'] / $data['units_per_package'];
+        }
+
+        $product->variants()->create($data);
 
         return redirect()->back()->with('success', 'Variant added successfully.');
     }
 
     public function update(UpdateProductVariantRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
-        $variant->update($request->validated());
-        $variant->recalculatePerUnitPrice();
-        $variant->save();
+        $data = $request->validated();
+
+        if (empty($data['per_unit_price']) && $data['units_per_package'] > 0) {
+            $data['per_unit_price'] = $data['cost_price'] / $data['units_per_package'];
+        }
+
+        $variant->update($data);
 
         return redirect()->back()->with('success', 'Variant updated successfully.');
     }
@@ -38,6 +45,19 @@ class ProductVariantController extends Controller
         $variant->delete();
 
         return redirect()->back()->with('success', 'Variant deleted successfully.');
+    }
+
+    public function updateStockPrice(UpdateStockPriceRequest $request, Product $product, ProductVariant $variant): RedirectResponse
+    {
+        $data = $request->validated();
+
+        if (empty($data['per_unit_price']) && $variant->units_per_package > 0) {
+            $data['per_unit_price'] = $data['cost_price'] / $variant->units_per_package;
+        }
+
+        $variant->update($data);
+
+        return redirect()->back()->with('success', 'Stock & price updated successfully.');
     }
 
     private function generateVariantSku(string $productSku, string $variantName): string

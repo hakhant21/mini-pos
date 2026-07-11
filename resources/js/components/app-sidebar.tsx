@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import {
     LayoutGrid,
     Package,
+    PackageCheck,
     Ruler,
     Tags,
     ShoppingCart,
@@ -26,6 +27,7 @@ import {
     products,
     sales,
     salesCheckoutPage,
+    productsStockPriceUpdate,
 } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import type { NavItem } from '@/types';
@@ -63,6 +65,11 @@ export function AppSidebar() {
             title: t('Products'),
             href: products(),
             icon: Package,
+        },
+        {
+            title: t('Stock & Price Update'),
+            href: productsStockPriceUpdate(),
+            icon: PackageCheck,
         },
     ];
 

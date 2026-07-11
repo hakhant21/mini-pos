@@ -343,7 +343,7 @@ export default function SalesCheckout({ products }: Props) {
                                                                         )}
                                                                         :{' '}
                                                                         {
-                                                                            variant.stock_quantity
+                                                                            Number(variant.stock_quantity)
                                                                         }
                                                                         {isLowStock && (
                                                                             <span className="ml-0.5 text-orange-600 dark:text-orange-400">
