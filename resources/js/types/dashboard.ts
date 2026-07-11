@@ -1,4 +1,5 @@
 import type { ProductVariant } from './product';
+import type { Sale } from './sale';
 
 export type DashboardData = {
     totalStock: number;
@@ -6,4 +7,9 @@ export type DashboardData = {
     totalVariants: number;
     inventoryValue: number;
     lowStockVariants: ProductVariant[];
+    totalRevenue: number;
+    totalCost: number;
+    totalProfit: number;
+    totalSales: number;
+    recentSales: Sale[];
 };

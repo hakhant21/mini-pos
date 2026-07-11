@@ -79,7 +79,7 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={dashboard()} prefetch>
-                                {t('Shop')}
+                                <span className='text-xs rounded-lg bg-slate-900'>{t('Shop')}</span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

@@ -251,7 +251,7 @@ export default function SalesCheckout({ products }: Props) {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                         {filteredProducts.map((product: Product) => {
                             const primaryVariant = product.variants[0];
                             const imgSrc =
@@ -342,9 +342,9 @@ export default function SalesCheckout({ products }: Props) {
                                                                             'Stock',
                                                                         )}
                                                                         :{' '}
-                                                                        {
-                                                                            Number(variant.stock_quantity)
-                                                                        }
+                                                                        {Number(
+                                                                            variant.stock_quantity,
+                                                                        )}
                                                                         {isLowStock && (
                                                                             <span className="ml-0.5 text-orange-600 dark:text-orange-400">
                                                                                 (
@@ -440,7 +440,7 @@ export default function SalesCheckout({ products }: Props) {
                     </div>
                 </div>
 
-                <div className="flex w-80 shrink-0 flex-col gap-3 self-start">
+                <div className="flex w-70 shrink-0 flex-col gap-3 self-start">
                     <Card className="flex max-h-[calc(100dvh-8rem)] flex-col overflow-hidden">
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-sm">
