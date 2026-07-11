@@ -11,6 +11,7 @@ import {
     Languages,
     Warehouse,
     ChevronDown,
+    ChevronsUpDown,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,6 +38,8 @@ import {
     salesCheckoutPage,
     productsStockPriceUpdate,
 } from '@/feature-routes';
+import { UserInfo } from '@/components/user-info';
+import { UserMenuContent } from '@/components/user-menu-content';
 import AppLogo from '@/components/app-logo';
 
 const locales = {
@@ -88,6 +91,7 @@ export function AppNavbar() {
     const { t, locale } = useTranslation();
     const { isCurrentUrl } = useCurrentUrl();
     const { props } = usePage();
+    const { auth } = props;
     const userRole = props?.auth?.user?.role;
 
     const mainNavs = mainNavItems.map((item) => ({
@@ -172,39 +176,29 @@ export function AppNavbar() {
                                         )}
                                     </div>
                                     <div className="flex flex-col space-y-4">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="justify-start text-left"
+                                        {auth.user && (
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button
+                                                        variant="ghost"
+                                                        className="justify-start text-left"
+                                                    >
+                                                        <UserInfo
+                                                            user={auth.user}
+                                                        />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent
+                                                    side="top"
+                                                    className="min-w-56"
+                                                    align="start"
                                                 >
-                                                    <Languages className="mr-2 h-5 w-5" />
-                                                    <span>
-                                                        {locales[
-                                                            locale as keyof typeof locales
-                                                        ] ?? 'English'}
-                                                    </span>
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent
-                                                side="top"
-                                                className="min-w-32"
-                                                align="start"
-                                            >
-                                                {Object.entries(locales).map(
-                                                    ([code, label]) => (
-                                                        <DropdownMenuItem
-                                                            key={code}
-                                                            onClick={() =>
-                                                                setLocale(code)
-                                                            }
-                                                        >
-                                                            {label}
-                                                        </DropdownMenuItem>
-                                                    ),
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
+                                                    <UserMenuContent
+                                                        user={auth.user}
+                                                    />
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -270,30 +264,27 @@ export function AppNavbar() {
                         </DropdownMenu>
                     )}
                 </div>
-
-                {/* Language Switcher (Desktop) */}
+                {/* User Menu (Desktop) */}
                 <div className="hidden lg:block">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className="flex h-9 w-9 items-center justify-center p-0"
-                            >
-                                <Languages className="h-5 w-5" />
-                                <span className="sr-only">Change language</span>
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="min-w-32" align="end">
-                            {Object.entries(locales).map(([code, label]) => (
-                                <DropdownMenuItem
-                                    key={code}
-                                    onClick={() => setLocale(code)}
+                    {auth.user && (
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    className="flex h-9 items-center space-x-2 px-2"
                                 >
-                                    {label}
-                                </DropdownMenuItem>
-                            ))}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                    <UserInfo user={auth.user} />
+                                    <ChevronsUpDown className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent
+                                className="min-w-56"
+                                align="end"
+                            >
+                                <UserMenuContent user={auth.user} />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    )}
                 </div>
             </div>
         </header>
