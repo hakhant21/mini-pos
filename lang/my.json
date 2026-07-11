@@ -1,5 +1,5 @@
 {
-    "Shop": "POS",
+    "Shop": "ဘဲကြီး",
     "Point of Sale": "အရောင်းစနစ်",
     "Search products...": "ကုန်ပစ္စည်းရှာရန်...",
     "All Categories": "အမျိုးအစား",
@@ -7,6 +7,7 @@
     "Default": "ပုံမှန်",
     "Out": "ကုန်",
     "Low": "နည်း",
+    "Profit/Loss": "အမြတ်/အရှုံး",
     "No products found": "ကုန်ပစ္စည်းမတွေ့ပါ",
     "Cart": "ခြင်းတောင်း",
     "Select products to add": "ထည့်ရန် ကုန်ပစ္စည်းများကို ရွေးပါ",
@@ -23,7 +24,7 @@
     "Cash": "ငွေသား",
     "KBZ Pay": "KBZ Pay",
     "Dashboard": "ဒိုင်ခ်ဘုတ်",
-    "POS": "အရောင်း",
+    "POS": "ရောင်းရန်",
     "Categories": "အမျိုးအစားများ",
     "Units": "ယူနစ်များ",
     "Products": "ကုန်ပစ္စည်းများ",

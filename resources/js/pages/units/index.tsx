@@ -23,7 +23,13 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { units, unitsStore, unitsUpdate, unitsDestroy, dashboard } from '@/feature-routes';
+import {
+    units,
+    unitsStore,
+    unitsUpdate,
+    unitsDestroy,
+    dashboard,
+} from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import type { Unit, UnitForm } from '@/types';
 
@@ -38,7 +44,16 @@ export default function UnitsIndex({ units: unitsData }: Props) {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    const { data, setData, post, patch, delete: destroy, processing, reset, errors } = useForm<UnitForm>({
+    const {
+        data,
+        setData,
+        post,
+        patch,
+        delete: destroy,
+        processing,
+        reset,
+        errors,
+    } = useForm<UnitForm>({
         name: '',
         abbreviation: '',
     });
@@ -80,8 +95,8 @@ export default function UnitsIndex({ units: unitsData }: Props) {
 
     const handleDelete = () => {
         if (!deleteTarget) {
-return;
-}
+            return;
+        }
 
         destroy(unitsDestroy({ id: deleteTarget.id }).url, {
             preserveScroll: true,
@@ -98,41 +113,80 @@ return;
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">{t('Units')}</h1>
-                    <Dialog open={dialogOpen} onOpenChange={(open) => {
-                        setDialogOpen(open);
+                    <Dialog
+                        open={dialogOpen}
+                        onOpenChange={(open) => {
+                            setDialogOpen(open);
 
-                        if (!open) {
-                            setEditingUnit(null);
-                            reset();
-                        }
-                    }}>
+                            if (!open) {
+                                setEditingUnit(null);
+                                reset();
+                            }
+                        }}
+                    >
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
-                                <Plus className="mr-2 h-4 w-4" /> {t('Add Unit')}
+                                <Plus className="mr-2 h-4 w-4" />{' '}
+                                {t('Add Unit')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
                             <DialogHeader>
-                                <DialogTitle>{editingUnit ? t('Edit Unit') : t('Create Unit')}</DialogTitle>
+                                <DialogTitle>
+                                    {editingUnit
+                                        ? t('Edit Unit')
+                                        : t('Create Unit')}
+                                </DialogTitle>
                                 <DialogDescription>
-                                    {editingUnit ? t('Update the unit details.') : t('Add a new measurement unit.')}
+                                    {editingUnit
+                                        ? t('Update the unit details.')
+                                        : t('Add a new measurement unit.')}
                                 </DialogDescription>
                             </DialogHeader>
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="name">{t('Name')}</Label>
-                                    <Input id="name" value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                                    {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
+                                    <Input
+                                        id="name"
+                                        value={data.name}
+                                        onChange={(e) =>
+                                            setData('name', e.target.value)
+                                        }
+                                    />
+                                    {errors.name && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.name}
+                                        </p>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="abbreviation">{t('Abbreviation')}</Label>
-                                    <Input id="abbreviation" value={data.abbreviation} onChange={(e) => setData('abbreviation', e.target.value)} />
-                                    {errors.abbreviation && <p className="text-sm text-destructive">{errors.abbreviation}</p>}
+                                    <Label htmlFor="abbreviation">
+                                        {t('Abbreviation')}
+                                    </Label>
+                                    <Input
+                                        id="abbreviation"
+                                        value={data.abbreviation}
+                                        onChange={(e) =>
+                                            setData(
+                                                'abbreviation',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                    {errors.abbreviation && (
+                                        <p className="text-sm text-destructive">
+                                            {errors.abbreviation}
+                                        </p>
+                                    )}
                                 </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={processing}>
-                                        {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
-                                        {editingUnit ? t('Update') : t('Create')}
+                                        {processing && (
+                                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {editingUnit
+                                            ? t('Update')
+                                            : t('Create')}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -151,45 +205,105 @@ return;
                                     <TableHead>{t('Name')}</TableHead>
                                     <TableHead>{t('Abbreviation')}</TableHead>
                                     <TableHead>{t('Variants')}</TableHead>
-                                    <TableHead className="text-right">{t('Actions')}</TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Actions')}
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {unitsData.map((unit) => (
                                     <TableRow key={unit.id}>
-                                        <TableCell className="font-medium">{unit.name}</TableCell>
-                                        <TableCell>{unit.abbreviation}</TableCell>
-                                        <TableCell>{unit.product_variants_count ?? 0}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {unit.name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {unit.abbreviation}
+                                        </TableCell>
+                                        <TableCell>
+                                            {unit.product_variants_count ?? 0}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex justify-end gap-1">
-                                                <Button variant="ghost" size="icon" onClick={() => openEdit(unit)}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() =>
+                                                        openEdit(unit)
+                                                    }
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
-                                                <Dialog open={deleteDialogOpen} onOpenChange={(open) => {
-                                                    setDeleteDialogOpen(open);
+                                                <Dialog
+                                                    open={deleteDialogOpen}
+                                                    onOpenChange={(open) => {
+                                                        setDeleteDialogOpen(
+                                                            open,
+                                                        );
 
-                                                    if (!open) {
-setDeleteTarget(null);
-}
-                                                }}>
+                                                        if (!open) {
+                                                            setDeleteTarget(
+                                                                null,
+                                                            );
+                                                        }
+                                                    }}
+                                                >
                                                     <DialogTrigger asChild>
-                                                        <Button variant="ghost" size="icon" onClick={() => {
- setDeleteTarget(unit); setDeleteDialogOpen(true); 
-}}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => {
+                                                                setDeleteTarget(
+                                                                    unit,
+                                                                );
+                                                                setDeleteDialogOpen(
+                                                                    true,
+                                                                );
+                                                            }}
+                                                        >
                                                             <Trash2 className="h-4 w-4 text-destructive" />
                                                         </Button>
                                                     </DialogTrigger>
                                                     <DialogContent>
                                                         <DialogHeader>
-                                                            <DialogTitle>{t('Delete Unit')}</DialogTitle>
+                                                            <DialogTitle>
+                                                                {t(
+                                                                    'Delete Unit',
+                                                                )}
+                                                            </DialogTitle>
                                                             <DialogDescription>
-                                                                {t('Are you sure you want to delete this')} "{deleteTarget?.name}"?
+                                                                {t(
+                                                                    'Are you sure you want to delete this',
+                                                                )}{' '}
+                                                                "
+                                                                {
+                                                                    deleteTarget?.name
+                                                                }
+                                                                "?
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>
-                                                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>{t('Cancel')}</Button>
-                                                            <Button variant="destructive" onClick={handleDelete} disabled={processing}>
-                                                                {processing && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
+                                                            <Button
+                                                                variant="outline"
+                                                                onClick={() =>
+                                                                    setDeleteDialogOpen(
+                                                                        false,
+                                                                    )
+                                                                }
+                                                            >
+                                                                {t('Cancel')}
+                                                            </Button>
+                                                            <Button
+                                                                variant="destructive"
+                                                                onClick={
+                                                                    handleDelete
+                                                                }
+                                                                disabled={
+                                                                    processing
+                                                                }
+                                                            >
+                                                                {processing && (
+                                                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                                                )}
                                                                 {t('Delete')}
                                                             </Button>
                                                         </DialogFooter>
