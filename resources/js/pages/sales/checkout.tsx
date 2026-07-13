@@ -80,7 +80,10 @@ export default function SalesCheckout({ products }: Props) {
         return item?.quantity ?? 0;
     };
 
-    const addToCart = (variant: Product['variants'][number]) => {
+    const addToCart = (
+        variant: Product['variants'][number],
+        productName: string,
+    ) => {
         if (num(variant.stock_quantity) <= 0) {
             return;
         }
@@ -109,7 +112,7 @@ export default function SalesCheckout({ products }: Props) {
                 {
                     id: `cart-${cartIdCounter}`,
                     variant_id: variant.id,
-                    product_name: variant.product?.name ?? '',
+                    product_name: productName,
                     variant_name: variant.name,
                     unit_name: variant.unit?.abbreviation ?? null,
                     unit_price: num(variant.selling_price),
@@ -214,9 +217,9 @@ export default function SalesCheckout({ products }: Props) {
     return (
         <>
             <Head title={t('Point of Sale')} />
-            <div className="flex h-full flex-1 gap-4 p-4">
-                <div className="flex flex-1 flex-col gap-3 overflow-auto">
-                    <div className="flex items-center gap-3">
+            <div className="flex h-full flex-1 flex-col gap-4 p-4 pb-24 lg:flex-row lg:pb-4">
+                <div className="flex flex-1 flex-col gap-3 lg:overflow-auto">
+                    <div className="flex flex-wrap items-center gap-3">
                         <Select
                             value={selectedCategory}
                             onValueChange={setSelectedCategory}
@@ -240,13 +243,13 @@ export default function SalesCheckout({ products }: Props) {
                                 ))}
                             </SelectContent>
                         </Select>
-                        <div className="relative flex-1">
-                            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <div className="flex flex-1 items-center gap-2 rounded-md px-2 py-2 text-sm shadow-xs">
+                            <Search className="size-4 opacity-50" />
                             <Input
                                 placeholder={t('Search products...')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="pl-9"
+                                className="w-40"
                             />
                         </div>
                     </div>
@@ -376,6 +379,7 @@ export default function SalesCheckout({ products }: Props) {
                                                                             onClick={() =>
                                                                                 addToCart(
                                                                                     variant,
+                                                                                    product.name,
                                                                                 )
                                                                             }
                                                                             disabled={
@@ -440,8 +444,11 @@ export default function SalesCheckout({ products }: Props) {
                     </div>
                 </div>
 
-                <div className="flex w-70 shrink-0 flex-col gap-3 self-start">
-                    <Card className="flex max-h-[calc(100dvh-8rem)] flex-col overflow-hidden">
+                <div
+                    id="cart-section"
+                    className="flex flex-col gap-3 lg:w-70 lg:shrink-0 lg:self-start"
+                >
+                    <Card className="flex max-h-none flex-col overflow-hidden lg:max-h-[calc(100dvh-8rem)]">
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-sm">
                                 <ShoppingCart className="h-4 w-4" />
@@ -654,6 +661,45 @@ export default function SalesCheckout({ products }: Props) {
                     </Card>
                 </div>
             </div>
+
+            {cart.length > 0 && (
+                <div className="fixed inset-x-0 bottom-0 z-50 border-t bg-background p-3 shadow-lg lg:hidden">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2">
+                            <Badge
+                                variant="secondary"
+                                className="px-1.5 py-0.5 text-xs"
+                            >
+                                {cart.length}
+                            </Badge>
+                            <span className="text-sm font-semibold">
+                                {ks(total)}
+                            </span>
+                        </div>
+                        <Button
+                            size="sm"
+                            disabled={processing}
+                            onClick={() => {
+                                document
+                                    .getElementById('cart-section')
+                                    ?.scrollIntoView({ behavior: 'smooth' });
+                            }}
+                        >
+                            {t('View Cart')}
+                        </Button>
+                    </div>
+                    <div className="mt-2 flex gap-1.5 overflow-x-auto">
+                        {cart.map((item) => (
+                            <span
+                                key={item.id}
+                                className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                            >
+                                {item.product_name} x{item.quantity}
+                            </span>
+                        ))}
+                    </div>
+                </div>
+            )}
         </>
     );
 }
