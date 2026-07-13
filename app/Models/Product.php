@@ -28,7 +28,7 @@ class Product extends Model
     public function imageUrl(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->image ? Storage::url($this->image) : null,
+            get: fn() => $this->image ? Storage::url($this->image) : null,
         );
     }
 
@@ -45,5 +45,15 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    public function getImageAttribute(): ?string
+    {
+        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
     }
 }

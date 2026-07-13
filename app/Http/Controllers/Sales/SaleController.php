@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\CheckoutRequest;
+use App\Http\Resources\ProductResource;
 use App\Http\Resources\SaleResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -25,7 +26,7 @@ class SaleController extends Controller
         $summary = [
             'total_sales' => $todaySales->count(),
             'total_revenue' => round($todaySales->sum('total_amount'), 2),
-            'total_items' => round($todaySales->sum(fn ($s) => $s->items->sum('quantity')), 2),
+            'total_items' => round($todaySales->sum(fn($s) => $s->items->sum('quantity')), 2),
             'avg_sale' => $todaySales->count() > 0
                 ? round($todaySales->avg('total_amount'), 2)
                 : 0,
@@ -47,7 +48,7 @@ class SaleController extends Controller
             ->get();
 
         return inertia('sales/checkout', [
-            'products' => $products,
+            'products' => ProductResource::collection($products),
         ]);
     }
 

@@ -23,6 +23,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Johnnie Walker Black Label',
                 'brand' => 'Johnnie Walker',
                 'category' => 'Alcohol',
+                'image' => 'images/products/johnnie-walker.jpg',
                 'variants' => [
                     ['name' => '750ml', 'unit' => $bottle, 'sku_suffix' => '750ML', 'units_per_package' => 1, 'cost_price' => 45000.00, 'selling_price' => 55000.00, 'stock_quantity' => 24],
                 ],
@@ -31,6 +32,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Bacardi White Rum',
                 'brand' => 'Bacardi',
                 'category' => 'Alcohol',
+                'image' => 'images/products/bacardi.jpg',
                 'variants' => [
                     ['name' => '750ml', 'unit' => $bottle, 'sku_suffix' => '750ML', 'units_per_package' => 1, 'cost_price' => 28000.00, 'selling_price' => 35000.00, 'stock_quantity' => 30],
                 ],
@@ -39,6 +41,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Corona Extra Beer',
                 'brand' => 'Corona',
                 'category' => 'Alcohol',
+                'image' => 'images/products/corona.jpg',
                 'variants' => [
                     ['name' => '330ml', 'unit' => $can, 'sku_suffix' => '330ML', 'units_per_package' => 1, 'cost_price' => 3500.00, 'selling_price' => 5000.00, 'stock_quantity' => 48],
                     ['name' => '330ml 6-Pack', 'unit' => $pack, 'sku_suffix' => '330ML6PK', 'units_per_package' => 6, 'cost_price' => 18000.00, 'selling_price' => 27000.00, 'stock_quantity' => 20],
@@ -48,6 +51,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Barefoot Moscato',
                 'brand' => 'Barefoot',
                 'category' => 'Alcohol',
+                'image' => 'images/products/barefoot.jpg',
                 'variants' => [
                     ['name' => '750ml', 'unit' => $bottle, 'sku_suffix' => '750ML', 'units_per_package' => 1, 'cost_price' => 12000.00, 'selling_price' => 18000.00, 'stock_quantity' => 36],
                 ],
@@ -58,6 +62,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Lays Classic Salted',
                 'brand' => 'Lays',
                 'category' => 'Chips & Crisps',
+                'image' => 'images/products/lays.jpg',
                 'variants' => [
                     ['name' => 'Small', 'unit' => $piece, 'sku_suffix' => 'SM', 'units_per_package' => 1, 'cost_price' => 500.00, 'selling_price' => 1000.00, 'stock_quantity' => 100],
                     ['name' => 'Family Size', 'unit' => $piece, 'sku_suffix' => 'LG', 'units_per_package' => 1, 'cost_price' => 2500.00, 'selling_price' => 4000.00, 'stock_quantity' => 50],
@@ -67,6 +72,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Doritos Nacho Cheese',
                 'brand' => 'Doritos',
                 'category' => 'Chips & Crisps',
+                'image' => 'images/products/doritos.jpg',
                 'variants' => [
                     ['name' => '150g', 'unit' => $piece, 'sku_suffix' => '150G', 'units_per_package' => 1, 'cost_price' => 1500.00, 'selling_price' => 2500.00, 'stock_quantity' => 80],
                 ],
@@ -75,6 +81,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Pringles Original',
                 'brand' => 'Pringles',
                 'category' => 'Chips & Crisps',
+                'image' => 'images/products/pringles.jpg',
                 'variants' => [
                     ['name' => '110g', 'unit' => $piece, 'sku_suffix' => '110G', 'units_per_package' => 1, 'cost_price' => 2000.00, 'selling_price' => 3500.00, 'stock_quantity' => 60],
                     ['name' => '165g', 'unit' => $piece, 'sku_suffix' => '165G', 'units_per_package' => 1, 'cost_price' => 3000.00, 'selling_price' => 4500.00, 'stock_quantity' => 40],
@@ -86,6 +93,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Marlboro Red',
                 'brand' => 'Marlboro',
                 'category' => 'Cigarettes',
+                'image' => 'images/products/marlboro-red.jpg',
                 'variants' => [
                     ['name' => 'Single Pack', 'unit' => $pack, 'sku_suffix' => '1PK', 'units_per_package' => 1, 'cost_price' => 15000.00, 'selling_price' => 20000.00, 'stock_quantity' => 100],
                     ['name' => 'Carton', 'unit' => $pack, 'sku_suffix' => 'CTN', 'units_per_package' => 10, 'cost_price' => 140000.00, 'selling_price' => 200000.00, 'stock_quantity' => 30],
@@ -95,6 +103,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Marlboro Gold',
                 'brand' => 'Marlboro',
                 'category' => 'Cigarettes',
+                'image' => 'images/products/marlboro-gold.jpg',
                 'variants' => [
                     ['name' => 'Single Pack', 'unit' => $pack, 'sku_suffix' => '1PK', 'units_per_package' => 1, 'cost_price' => 16000.00, 'selling_price' => 22000.00, 'stock_quantity' => 80],
                 ],
@@ -103,6 +112,7 @@ class ProductSeeder extends Seeder
                 'name' => 'Winston Red',
                 'brand' => 'Winston',
                 'category' => 'Cigarettes',
+                'image' => 'images/products/winston.jpg',
                 'variants' => [
                     ['name' => 'Single Pack', 'unit' => $pack, 'sku_suffix' => '1PK', 'units_per_package' => 1, 'cost_price' => 10000.00, 'selling_price' => 15000.00, 'stock_quantity' => 90],
                 ],
@@ -113,6 +123,7 @@ class ProductSeeder extends Seeder
                 'name' => 'San Miguel Pale Pilsen',
                 'brand' => 'San Miguel',
                 'category' => 'Alcohol',
+                'image' => 'images/products/san-miguel.jpg',
                 'variants' => [
                     ['name' => '330ml', 'unit' => $can, 'sku_suffix' => '330ML', 'units_per_package' => 1, 'cost_price' => 2500.00, 'selling_price' => 4000.00, 'stock_quantity' => 60],
                     ['name' => '500ml', 'unit' => $bottle, 'sku_suffix' => '500ML', 'units_per_package' => 1, 'cost_price' => 4500.00, 'selling_price' => 7000.00, 'stock_quantity' => 48],
@@ -128,6 +139,7 @@ class ProductSeeder extends Seeder
                 'name' => $productData['name'],
                 'sku' => strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $productData['name']), 0, 3)) . '-' . fake()->unique()->randomNumber(5),
                 'brand' => $productData['brand'],
+                'image' => $productData['image'] ?? null,
                 'is_active' => true,
             ]);
 
