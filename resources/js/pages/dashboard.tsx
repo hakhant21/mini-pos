@@ -1,7 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import { Package, PackageOpen, Banknote, Receipt } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from '@/components/ui/card';
 import {
     Table,
     TableBody,
@@ -32,7 +38,7 @@ export default function Dashboard({
     totalCost,
     totalProfit,
     totalSales,
-    recentSales
+    recentSales,
 }: DashboardData) {
     const { t } = useTranslation();
 
@@ -43,54 +49,81 @@ export default function Dashboard({
                 <div className="grid auto-rows-min gap-4 md:grid-cols-5">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Total Products')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Total Products')}
+                            </CardTitle>
                             <Package className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{totalProducts}</div>
-                            <p className="text-xs text-muted-foreground">{totalVariants} {t('Variants')}</p>
+                            <div className="text-2xl font-bold">
+                                {totalProducts}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {totalVariants} {t('Variants')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Total Stock')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Total Stock')}
+                            </CardTitle>
                             <PackageOpen className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{totalStock}</div>
-                            <p className="text-xs text-muted-foreground">{t('Variants')}</p>
+                            <div className="text-2xl font-bold">
+                                {totalStock}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('Variants')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Inventory Value')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Inventory Value')}
+                            </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">Ks {ks(inventoryValue)}</div>
-                            <p className="text-xs text-muted-foreground">{t('total cost value')}</p>
+                            <div className="text-2xl font-bold">
+                                Ks {ks(inventoryValue)}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('total cost value')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Total Sales')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Total Sales')}
+                            </CardTitle>
                             <Receipt className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold">{totalSales}</div>
-                            <p className="text-xs text-muted-foreground">{t('transactions today')}</p>
+                            <div className="text-2xl font-bold">
+                                {totalSales}
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                {t('transactions today')}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">{t('Profit/Loss')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Profit/Loss')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className={`text-2xl font-bold`}>
                                 Ks {ks(totalProfit)}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                                {t('Revenue')}: Ks {ks(totalRevenue)} | {t('Cost Price')}: Ks {ks(totalCost)}
+                                {t('Revenue')}: Ks {ks(totalRevenue)} |{' '}
+                                {t('Cost Price')}: Ks {ks(totalCost)}
                             </p>
                         </CardContent>
                     </Card>
@@ -100,40 +133,75 @@ export default function Dashboard({
                     {lowStockVariants.length > 0 && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">{t('Low Stock Variants')}</CardTitle>
+                                <CardTitle className="text-lg">
+                                    {t('Low Stock Variants')}
+                                </CardTitle>
                                 <CardDescription>
-                                    {lowStockVariants.length} {t('variants need attention')}
+                                    {lowStockVariants.length}{' '}
+                                    {t('variants need attention')}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{t('Product')}</TableHead>
-                                            <TableHead>{t('Variant')}</TableHead>
+                                            <TableHead>
+                                                {t('Product')}
+                                            </TableHead>
+                                            <TableHead>
+                                                {t('Variant')}
+                                            </TableHead>
                                             <TableHead>{t('Stock')}</TableHead>
-                                            <TableHead className="text-right">{t('Status')}</TableHead>
+                                            <TableHead className="text-right">
+                                                {t('Status')}
+                                            </TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
                                         {lowStockVariants.map((variant) => (
                                             <TableRow key={variant.id}>
                                                 <TableCell>
-                                                    <Link href={productsShow({ id: variant.product_id })} className="font-medium hover:underline">
+                                                    <Link
+                                                        href={productsShow({
+                                                            id: variant.product_id,
+                                                        })}
+                                                        className="font-medium hover:underline"
+                                                    >
                                                         {variant.product?.name}
                                                     </Link>
                                                 </TableCell>
                                                 <TableCell>
-                                                    {variant.name} {variant.unit?.abbreviation && `(${variant.unit.abbreviation})`}
+                                                    {variant.name}{' '}
+                                                    {variant.unit
+                                                        ?.abbreviation &&
+                                                        `(${variant.unit.abbreviation})`}
                                                 </TableCell>
                                                 <TableCell>
                                                     <span className="text-sm">
-                                                        {Number(variant.stock_quantity)} / {Number(variant.min_stock_level)}
+                                                        {Number(
+                                                            variant.stock_quantity,
+                                                        )}{' '}
+                                                        /{' '}
+                                                        {Number(
+                                                            variant.min_stock_level,
+                                                        )}
                                                     </span>
                                                 </TableCell>
                                                 <TableCell className="text-right">
-                                                    <Badge variant={stockStatusConfig[variant.stock_status].variant}>
-                                                        {t(stockStatusConfig[variant.stock_status].label)}
+                                                    <Badge
+                                                        variant={
+                                                            stockStatusConfig[
+                                                                variant
+                                                                    .stock_status
+                                                            ].variant
+                                                        }
+                                                    >
+                                                        {t(
+                                                            stockStatusConfig[
+                                                                variant
+                                                                    .stock_status
+                                                            ].label,
+                                                        )}
                                                     </Badge>
                                                 </TableCell>
                                             </TableRow>
@@ -147,19 +215,25 @@ export default function Dashboard({
                     {recentSales.length > 0 && (
                         <Card>
                             <CardHeader>
-                                <CardTitle className="text-lg">{t('Recent Sales')}</CardTitle>
+                                <CardTitle className="text-lg">
+                                    {t('Recent Sales')}
+                                </CardTitle>
                                 <CardDescription>
-                                    {t('Today\'s Transactions')}
+                                    {t("Today's Transactions")}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead>{t('Invoice')}</TableHead>
-                                            <TableHead>{t('Amount')}</TableHead>
+                                            <TableHead>
+                                                {t('Invoice')}
+                                            </TableHead>
                                             <TableHead>{t('Items')}</TableHead>
-                                            <TableHead className="text-right">{t('Payment')}</TableHead>
+                                            <TableHead className="text-right">
+                                                {t('Payment')}
+                                            </TableHead>
+                                            <TableHead>{t('Amount')}</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -169,9 +243,6 @@ export default function Dashboard({
                                                     {sale.invoice_number}
                                                 </TableCell>
                                                 <TableCell>
-                                                    Ks {ks(sale.total_amount)}
-                                                </TableCell>
-                                                <TableCell>
                                                     {sale.items?.length || 0}
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -179,8 +250,23 @@ export default function Dashboard({
                                                         {sale.payment_method}
                                                     </Badge>
                                                 </TableCell>
+                                                <TableCell>
+                                                    Ks {ks(sale.total_amount)}
+                                                </TableCell>
                                             </TableRow>
                                         ))}
+
+                                        <TableRow>
+                                            <TableCell
+                                                colSpan={3}
+                                                className="text-right font-medium"
+                                            >
+                                                {t('Total Sales')}
+                                            </TableCell>
+                                            <TableCell className="font-medium">
+                                                Ks {ks(totalRevenue)}
+                                            </TableCell>
+                                        </TableRow>
                                     </TableBody>
                                 </Table>
                             </CardContent>
