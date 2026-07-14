@@ -120,13 +120,14 @@ export default function ProductsIndex({ products: productsData }: Props) {
                             </option>
                         ))}
                     </select>
-                    <Search className="h-4 w-4 text-muted-foreground" />
+
                     <Input
                         placeholder={t('Search by name, SKU, or brand...')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="max-w-sm"
                     />
+                    <Search className="h-4 w-4 text-muted-foreground" />
                 </div>
 
                 <Card>

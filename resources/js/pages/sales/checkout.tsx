@@ -244,13 +244,13 @@ export default function SalesCheckout({ products }: Props) {
                             </SelectContent>
                         </Select>
                         <div className="flex flex-1 items-center gap-2 rounded-md px-2 py-2 text-sm shadow-xs">
-                            <Search className="size-4 opacity-50" />
                             <Input
                                 placeholder={t('Search products...')}
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="w-40"
                             />
+                            <Search className="size-4 opacity-50" />
                         </div>
                     </div>
 

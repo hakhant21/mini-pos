@@ -211,23 +211,23 @@ export default function SalesIndex({
 
                 <Card>
                     <CardHeader>
-                        <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <CardTitle>
                                 {isDateFiltered
                                     ? t('Filtered Transactions')
                                     : t("Today's Transactions")}
                             </CardTitle>
                             <div className="flex items-center gap-2">
-                                <Search className="h-4 w-4 text-muted-foreground" />
                                 <Input
                                     placeholder={t('Search invoice...')}
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
-                                    className="w-64"
+                                    className="w-full sm:w-64"
                                 />
+                                <Search className="h-4 w-4 text-muted-foreground" />
                             </div>
                         </div>
-                        <div className="mt-2 flex items-end gap-2">
+                        <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-end">
                             <div className="flex flex-col gap-1">
                                 <label className="text-xs font-medium text-muted-foreground">
                                     {t('Start Date')}
@@ -238,7 +238,7 @@ export default function SalesIndex({
                                     onChange={(e) =>
                                         setStartDate(e.target.value)
                                     }
-                                    className="w-40"
+                                    className="w-full sm:w-40"
                                 />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -249,26 +249,30 @@ export default function SalesIndex({
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => setEndDate(e.target.value)}
-                                    className="w-40"
+                                    className="w-full sm:w-40"
                                 />
                             </div>
-                            <Button
-                                variant="default"
-                                size="sm"
-                                onClick={handleFilter}
-                                disabled={!startDate || !endDate}
-                            >
-                                {t('Filter')}
-                            </Button>
-                            {isDateFiltered && (
+                            <div className="flex gap-2">
                                 <Button
-                                    variant="outline"
+                                    variant="default"
                                     size="sm"
-                                    onClick={handleClearFilter}
+                                    onClick={handleFilter}
+                                    disabled={!startDate || !endDate}
+                                    className="flex-1 sm:flex-none"
                                 >
-                                    {t('Clear')}
+                                    {t('Filter')}
                                 </Button>
-                            )}
+                                {isDateFiltered && (
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={handleClearFilter}
+                                        className="flex-1 sm:flex-none"
+                                    >
+                                        {t('Clear')}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent>

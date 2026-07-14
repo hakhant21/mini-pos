@@ -115,9 +115,7 @@ export default function StockPriceUpdate({ products }: Props) {
         }
 
         if (unitFilter) {
-            result = result.filter(
-                (r) => r.unit_abbreviation === unitFilter,
-            );
+            result = result.filter((r) => r.unit_abbreviation === unitFilter);
         }
 
         if (search.trim()) {
@@ -236,7 +234,6 @@ export default function StockPriceUpdate({ products }: Props) {
                             </option>
                         ))}
                     </select>
-                    <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder={t(
                             'Search by product, variant, or unit...',
@@ -248,6 +245,7 @@ export default function StockPriceUpdate({ products }: Props) {
                         }}
                         className="max-w-sm"
                     />
+                    <Search className="h-4 w-4 text-muted-foreground" />
                 </div>
 
                 <Card>
