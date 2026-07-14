@@ -1,6 +1,13 @@
 {
     "Shop": "ဘဲကြီး",
+    "Filtered Total Sales": "ရှာထားသော ရက်အတွင်းရောင်းချမှုစုစုပေါင်း",
+    "Filtered Total Change": "ရှာထားသော ရက်အတွင်းပြန်ငွေစုစုပေါင်း",
     "Point of Sale": "အရောင်းစနစ်",
+    "Start Date": "စတင်ရက်စွဲ",
+    "End Date": "ပြီးဆုံးရက်စွဲ",
+    "Filter": "ရှာဖွေမည်",
+    "Clear": "ရှင်းလင်းမည်",
+    "Filtered Transactions": "ရှာထားသော ရက်အတွင်းရောင်းချမှုများ",
     "Search products...": "ကုန်ပစ္စည်းရှာရန်...",
     "Today Total Sales": "ယနေ့ရောင်းချမှုစုစုပေါင်း",
     "Search by product, variant, or unit...": "ကုန်ပစ္စည်း၊ မျိုးကွဲ သို့မဟုတ် ယူနစ်ဖြင့် ရှာပါ...",

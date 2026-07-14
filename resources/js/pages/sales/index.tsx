@@ -1,4 +1,4 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     ShoppingCart,
     Search,
@@ -6,6 +6,8 @@ import {
     ChevronUp,
     Banknote,
     Smartphone,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { Fragment, useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -20,7 +22,11 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { salesCheckout, dashboard } from '@/feature-routes';
+import {
+    sales as salesRoute,
+    salesCheckout,
+    dashboard,
+} from '@/feature-routes';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useTranslation } from '@/lib/i18n';
 import { ks } from '@/lib/utils';
@@ -31,6 +37,16 @@ type Props = {
     summary: {
         total_sales: number;
         total_change: number;
+    };
+    pagination: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
+    filters: {
+        start_date: string | null;
+        end_date: string | null;
     };
 };
 
@@ -44,11 +60,20 @@ const paymentMethodIcon: Record<string, typeof Banknote> = {
     kbzpay: Smartphone,
 };
 
-export default function SalesIndex({ sales: salesData, summary }: Props) {
+export default function SalesIndex({
+    sales: salesData,
+    summary,
+    pagination,
+    filters,
+}: Props) {
     useFlashToast();
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [expandedId, setExpandedId] = useState<number | null>(null);
+    const [startDate, setStartDate] = useState(filters.start_date ?? '');
+    const [endDate, setEndDate] = useState(filters.end_date ?? '');
+
+    const isDateFiltered = Boolean(startDate && endDate);
 
     const sales = useMemo(() => salesData ?? [], [salesData]);
 
@@ -78,6 +103,59 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
         setExpandedId(expandedId === id ? null : id);
     };
 
+    const handleFilter = () => {
+        const params: Record<string, string> = {};
+
+        if (startDate && endDate) {
+            params.start_date = startDate;
+            params.end_date = endDate;
+        }
+
+        router.get(
+            salesRoute({ query: params }).url,
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
+    const handleClearFilter = () => {
+        setStartDate('');
+        setEndDate('');
+        router.get(
+            salesRoute().url,
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
+    const goToPage = (page: number) => {
+        const params: Record<string, string | number> = { page };
+
+        if (startDate && endDate) {
+            params.start_date = startDate;
+            params.end_date = endDate;
+        }
+
+        router.get(
+            salesRoute({ query: params }).url,
+            {},
+            {
+                preserveState: true,
+                replace: true,
+            },
+        );
+    };
+
+    const dateDisplayText = isDateFiltered
+        ? `${new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
+        : today;
+
     return (
         <>
             <Head title={t('Sales History')} />
@@ -88,7 +166,7 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                             {t('Sales History')}
                         </h1>
                         <p className="mt-4 text-sm text-muted-foreground">
-                            {today}
+                            {dateDisplayText}
                         </p>
                     </div>
                     <Link href={salesCheckout().url}>
@@ -102,7 +180,9 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">
-                                {t('Today Total Sales')}
+                                {isDateFiltered
+                                    ? t('Filtered Total Sales')
+                                    : t('Today Total Sales')}
                             </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
@@ -115,7 +195,9 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">
-                                {t('Total Change')}
+                                {isDateFiltered
+                                    ? t('Filtered Total Change')
+                                    : t('Total Change')}
                             </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
@@ -130,7 +212,11 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                 <Card>
                     <CardHeader>
                         <div className="flex items-center justify-between">
-                            <CardTitle>{t("Today's Transactions")}</CardTitle>
+                            <CardTitle>
+                                {isDateFiltered
+                                    ? t('Filtered Transactions')
+                                    : t("Today's Transactions")}
+                            </CardTitle>
                             <div className="flex items-center gap-2">
                                 <Search className="h-4 w-4 text-muted-foreground" />
                                 <Input
@@ -140,6 +226,49 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                     className="w-64"
                                 />
                             </div>
+                        </div>
+                        <div className="mt-2 flex items-end gap-2">
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-medium text-muted-foreground">
+                                    {t('Start Date')}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) =>
+                                        setStartDate(e.target.value)
+                                    }
+                                    className="w-40"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                                <label className="text-xs font-medium text-muted-foreground">
+                                    {t('End Date')}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="w-40"
+                                />
+                            </div>
+                            <Button
+                                variant="default"
+                                size="sm"
+                                onClick={handleFilter}
+                                disabled={!startDate || !endDate}
+                            >
+                                {t('Filter')}
+                            </Button>
+                            {isDateFiltered && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleClearFilter}
+                                >
+                                    {t('Clear')}
+                                </Button>
+                            )}
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -402,6 +531,100 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                 )}
                             </TableBody>
                         </Table>
+                        {pagination.last_page > 1 && (
+                            <div className="mt-4 flex items-center justify-between">
+                                <p className="text-sm text-muted-foreground">
+                                    {t('Page')} {pagination.current_page}{' '}
+                                    {t('of')} {pagination.last_page} (
+                                    {pagination.total} {t('total')})
+                                </p>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            goToPage(
+                                                pagination.current_page - 1,
+                                            )
+                                        }
+                                        disabled={pagination.current_page <= 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    {Array.from(
+                                        { length: pagination.last_page },
+                                        (_, i) => i + 1,
+                                    )
+                                        .filter((page) => {
+                                            const current =
+                                                pagination.current_page;
+
+                                            return (
+                                                page === 1 ||
+                                                page === pagination.last_page ||
+                                                Math.abs(page - current) <= 1
+                                            );
+                                        })
+                                        .reduce<(number | string)[]>(
+                                            (acc, page, idx, arr) => {
+                                                if (
+                                                    idx > 0 &&
+                                                    (arr[idx - 1] as number) <
+                                                        page - 1
+                                                ) {
+                                                    acc.push('...');
+                                                }
+
+                                                acc.push(page);
+
+                                                return acc;
+                                            },
+                                            [],
+                                        )
+                                        .map((item, idx) =>
+                                            typeof item === 'string' ? (
+                                                <span
+                                                    key={`ellipsis-${idx}`}
+                                                    className="px-2 text-muted-foreground"
+                                                >
+                                                    ...
+                                                </span>
+                                            ) : (
+                                                <Button
+                                                    key={item}
+                                                    variant={
+                                                        item ===
+                                                        pagination.current_page
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        goToPage(item)
+                                                    }
+                                                >
+                                                    {item}
+                                                </Button>
+                                            ),
+                                        )}
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() =>
+                                            goToPage(
+                                                pagination.current_page + 1,
+                                            )
+                                        }
+                                        disabled={
+                                            pagination.current_page >=
+                                            pagination.last_page
+                                        }
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
             </div>

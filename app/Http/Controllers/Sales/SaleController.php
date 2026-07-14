@@ -10,27 +10,43 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Inertia\Response;
 
 class SaleController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $todaySales = Sale::with('items')
-            ->whereDate('created_at', today())
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+        $perPage = 15;
+
+        $applyDateFilter = fn ($query) => $startDate && $endDate
+            ? $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+            : $query->whereDate('created_at', today());
+
+        $paginatedSales = $applyDateFilter(Sale::with('items')->orderBy('created_at', 'desc'))->paginate($perPage);
 
         $summary = [
-            'total_sales' => $todaySales->sum('total_amount'),
-            'total_change' => round($todaySales->sum('change'), 2),
+            'total_sales' => $applyDateFilter(Sale::query())->sum('total_amount'),
+            'total_change' => round($applyDateFilter(Sale::query())->sum('change'), 2),
         ];
 
         return inertia('sales/index', [
-            'sales' => SaleResource::collection($todaySales),
+            'sales' => SaleResource::collection($paginatedSales->items()),
             'summary' => $summary,
+            'pagination' => [
+                'current_page' => $paginatedSales->currentPage(),
+                'last_page' => $paginatedSales->lastPage(),
+                'per_page' => $paginatedSales->perPage(),
+                'total' => $paginatedSales->total(),
+            ],
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 
