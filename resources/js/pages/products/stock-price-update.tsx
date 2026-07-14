@@ -11,6 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Table,
     TableBody,
     TableCell,
@@ -105,7 +112,7 @@ export default function StockPriceUpdate({ products }: Props) {
     const filtered = useMemo(() => {
         let result = data;
 
-        if (categoryFilter) {
+        if (categoryFilter && categoryFilter !== 'all') {
             const catId = Number(categoryFilter);
             result = result.filter(
                 (r) =>
@@ -114,7 +121,7 @@ export default function StockPriceUpdate({ products }: Props) {
             );
         }
 
-        if (unitFilter) {
+        if (unitFilter && unitFilter !== 'all') {
             result = result.filter((r) => r.unit_abbreviation === unitFilter);
         }
 
@@ -203,37 +210,52 @@ export default function StockPriceUpdate({ products }: Props) {
                     </h1>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <select
+                <div className="flex flex-wrap items-center gap-4">
+                    <Select
                         value={categoryFilter}
-                        onChange={(e) => {
-                            setCategoryFilter(e.target.value);
+                        onValueChange={(v) => {
+                            setCategoryFilter(v);
                             setPage(1);
                         }}
-                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
                     >
-                        <option value="">{t('All Categories')}</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </option>
-                        ))}
-                    </select>
-                    <select
+                        <SelectTrigger className="w-100 lg:w-45">
+                            <SelectValue placeholder={t('All Categories')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">
+                                {t('All Categories')}
+                            </SelectItem>
+                            {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                    {cat.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Select
                         value={unitFilter}
-                        onChange={(e) => {
-                            setUnitFilter(e.target.value);
+                        onValueChange={(v) => {
+                            setUnitFilter(v);
                             setPage(1);
                         }}
-                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
                     >
-                        <option value="">{t('All Units')}</option>
-                        {units.map((u) => (
-                            <option key={u.abbreviation} value={u.abbreviation}>
-                                {u.name}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="w-100 lg:w-45">
+                            <SelectValue placeholder={t('All Units')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">
+                                {t('All Units')}
+                            </SelectItem>
+                            {units.map((u) => (
+                                <SelectItem
+                                    key={u.abbreviation}
+                                    value={u.abbreviation}
+                                >
+                                    {u.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                     <Input
                         placeholder={t(
                             'Search by product, variant, or unit...',

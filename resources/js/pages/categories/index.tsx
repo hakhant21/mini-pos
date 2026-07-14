@@ -1,6 +1,14 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle, Search } from 'lucide-react';
+import {
+    Plus,
+    Pencil,
+    Trash2,
+    EyeOff,
+    Eye,
+    LoaderCircle,
+    Search,
+} from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -15,6 +23,13 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import {
     Table,
@@ -54,7 +69,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
     const filteredCategories = useMemo(() => {
         let result = categoriesData;
 
-        if (statusFilter) {
+        if (statusFilter && statusFilter !== 'all') {
             const isActive = statusFilter === 'active';
             result = result.filter((c) => c.is_active === isActive);
         }
@@ -154,7 +169,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
             <Head title={t('Categories')} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">{t('Categories')}</h1>
+                    <h1 className="text-xl font-bold">{t('Categories')}</h1>
                     <Dialog
                         open={dialogOpen}
                         onOpenChange={(open) => {
@@ -168,7 +183,8 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                     >
                         <DialogTrigger asChild>
                             <Button onClick={openCreate}>
-                                <Plus className="mr-2 h-4 w-4" /> {t('Add Category')}
+                                <Plus className="mr-2 h-4 w-4" />{' '}
+                                {t('Add Category')}
                             </Button>
                         </DialogTrigger>
                         <DialogContent>
@@ -253,7 +269,9 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                         {processing && (
                                             <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
                                         )}
-                                        {editingCategory ? t('Update') : t('Create')}
+                                        {editingCategory
+                                            ? t('Update')
+                                            : t('Create')}
                                     </Button>
                                 </DialogFooter>
                             </form>
@@ -261,22 +279,31 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                     </Dialog>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <select
+                <div className="flex flex-wrap items-center gap-4">
+                    <Select
                         value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                        onValueChange={setStatusFilter}
                     >
-                        <option value="">{t('All Status')}</option>
-                        <option value="active">{t('Active')}</option>
-                        <option value="inactive">{t('Inactive')}</option>
-                    </select>
-                    <Search className="h-4 w-4 text-muted-foreground" />
+                        <SelectTrigger className="w-full lg:w-35">
+                            <SelectValue placeholder={t('All Status')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">
+                                {t('All Status')}
+                            </SelectItem>
+                            <SelectItem value="active">
+                                {t('Active')}
+                            </SelectItem>
+                            <SelectItem value="inactive">
+                                {t('Inactive')}
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+
                     <Input
                         placeholder={t('Search by name or description...')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="max-w-sm"
                     />
                 </div>
 
@@ -393,13 +420,22 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                                     <DialogContent>
                                                         <DialogHeader>
                                                             <DialogTitle>
-                                                                {t('Delete Category')}
+                                                                {t(
+                                                                    'Delete Category',
+                                                                )}
                                                             </DialogTitle>
                                                             <DialogDescription>
-                                                                {t('Are you sure you want to delete')}
+                                                                {t(
+                                                                    'Are you sure you want to delete',
+                                                                )}
                                                                 "
-                                                                {deleteTarget?.name}
-                                                                "? {t('? This action cannot be undone.')}
+                                                                {
+                                                                    deleteTarget?.name
+                                                                }
+                                                                "?{' '}
+                                                                {t(
+                                                                    '? This action cannot be undone.',
+                                                                )}
                                                             </DialogDescription>
                                                         </DialogHeader>
                                                         <DialogFooter>

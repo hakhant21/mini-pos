@@ -14,6 +14,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
+import {
     Table,
     TableBody,
     TableCell,
@@ -57,7 +64,7 @@ export default function ProductsIndex({ products: productsData }: Props) {
     const filteredProducts = useMemo(() => {
         let result = productsData;
 
-        if (categoryFilter) {
+        if (categoryFilter && categoryFilter !== 'all') {
             result = result.filter(
                 (p) => p.category?.id === Number(categoryFilter),
             );
@@ -107,19 +114,25 @@ export default function ProductsIndex({ products: productsData }: Props) {
                     </Link>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <select
+                <div className="flex flex-wrap items-center gap-4">
+                    <Select
                         value={categoryFilter}
-                        onChange={(e) => setCategoryFilter(e.target.value)}
-                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                        onValueChange={setCategoryFilter}
                     >
-                        <option value="">{t('All Categories')}</option>
-                        {categories.map((cat) => (
-                            <option key={cat.id} value={cat.id}>
-                                {cat.name}
-                            </option>
-                        ))}
-                    </select>
+                        <SelectTrigger className="w-100 lg:w-45">
+                            <SelectValue placeholder={t('All Categories')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">
+                                {t('All Categories')}
+                            </SelectItem>
+                            {categories.map((cat) => (
+                                <SelectItem key={cat.id} value={String(cat.id)}>
+                                    {cat.name}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
 
                     <Input
                         placeholder={t('Search by name, SKU, or brand...')}
