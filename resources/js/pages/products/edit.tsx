@@ -73,7 +73,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         max_stock_level: '',
     });
 
-    const [editingVariant, setEditingVariant] = useState<Product['variants'][number] | null>(null);
+    const [editingVariant, setEditingVariant] = useState<
+        Product['variants'][number] | null
+    >(null);
     const [editVariantProcessing, setEditVariantProcessing] = useState(false);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -122,7 +124,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
             selling_price: String(variant.selling_price),
             per_unit_price: String(variant.per_unit_price),
             min_stock_level: String(variant.min_stock_level),
-            max_stock_level: variant.max_stock_level ? String(variant.max_stock_level) : '',
+            max_stock_level: variant.max_stock_level
+                ? String(variant.max_stock_level)
+                : '',
         });
         setEditDialogOpen(true);
     };
@@ -132,7 +136,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
 
         setEditVariantProcessing(true);
         router.patch(
-            variantsUpdate({ product: product.id, variant: editingVariant.id }).url,
+            variantsUpdate({ product: product.id, variant: editingVariant.id })
+                .url,
             {
                 ...newVariant,
                 units_per_package: parseFloat(newVariant.units_per_package),
@@ -166,9 +171,13 @@ export default function ProductsEdit({ product, categories, units }: Props) {
             <Head title={`${t('Edit')}: ${product.name}`} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">{t('Edit')}: {product.name}</h1>
+                    <h1 className="text-2xl font-bold">
+                        {t('Edit')}: {product.name}
+                    </h1>
                     <Link href={products()}>
-                        <Button variant="outline">{t('Back to Products')}</Button>
+                        <Button variant="outline">
+                            {t('Back to Products')}
+                        </Button>
                     </Link>
                 </div>
 
@@ -178,36 +187,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                             <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="image">{t('Image')}</Label>
-                                <Input
-                                    id="image"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-
-                                        if (file) {
-                                            setData('image', file);
-                                        }
-                                    }}
-                                />
-                                {data.image &&
-                                    typeof data.image === 'string' &&
-                                    product.image_url && (
-                                        <img
-                                            src={product.image_url}
-                                            alt={product.name}
-                                            className="mt-1 h-20 w-20 rounded object-cover"
-                                        />
-                                    )}
-                                {formErrors.image && (
-                                    <p className="text-sm text-destructive">
-                                        {formErrors.image}
-                                    </p>
-                                )}
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">
                                         {t('Category')}
@@ -218,7 +198,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             setData('category_id', v)
                                         }
                                     >
-                                        <SelectTrigger>
+                                        <SelectTrigger className="w-full">
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -258,6 +238,35 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="image">{t('Image')}</Label>
+                                    <Input
+                                        id="image"
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+
+                                            if (file) {
+                                                setData('image', file);
+                                            }
+                                        }}
+                                    />
+                                    {data.image &&
+                                        typeof data.image === 'string' &&
+                                        product.image_url && (
+                                            <img
+                                                src={product.image_url}
+                                                alt={product.name}
+                                                className="mt-1 h-20 w-20 rounded object-cover"
+                                            />
+                                        )}
+                                    {formErrors.image && (
+                                        <p className="text-sm text-destructive">
+                                            {formErrors.image}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={processing}>
@@ -276,75 +285,86 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                         <CardTitle>{t('Variants')}</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>{t('Name')}</TableHead>
-                                    <TableHead>{t('Unit')}</TableHead>
-                                    <TableHead>{t('Cost Price')}</TableHead>
-                                    <TableHead>{t('Selling Price')}</TableHead>
-                                    <TableHead>{t('Per Unit')}</TableHead>
-                                    <TableHead>{t('Stock')}</TableHead>
-                                    <TableHead className="text-right">
-                                        {t('Actions')}
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {product?.variants?.map((variant) => (
-                                    <TableRow key={variant.id}>
-                                        <TableCell>
-                                            {variant.name || '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {variant.unit?.abbreviation || '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            Ks {ks(variant.cost_price)}
-                                        </TableCell>
-                                        <TableCell>
-                                            Ks {ks(variant.selling_price)}
-                                        </TableCell>
-                                        <TableCell>
-                                            Ks {ks(variant.per_unit_price)}
-                                        </TableCell>
-                                        <TableCell>
-                                            {Number(variant.stock_quantity)}
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() => handleEditVariant(variant)}
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    onClick={() =>
-                                                        handleDeleteVariant(
-                                                            variant.id,
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
+                        <div className="overflow-x-auto">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>{t('Name')}</TableHead>
+                                        <TableHead>{t('Unit')}</TableHead>
+                                        <TableHead>{t('Cost Price')}</TableHead>
+                                        <TableHead>
+                                            {t('Selling Price')}
+                                        </TableHead>
+                                        <TableHead>{t('Per Unit')}</TableHead>
+                                        <TableHead>{t('Stock')}</TableHead>
+                                        <TableHead className="text-right">
+                                            {t('Actions')}
+                                        </TableHead>
                                     </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                </TableHeader>
+                                <TableBody>
+                                    {product?.variants?.map((variant) => (
+                                        <TableRow key={variant.id}>
+                                            <TableCell>
+                                                {variant.name || '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {variant.unit?.abbreviation ||
+                                                    '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                Ks {ks(variant.cost_price)}
+                                            </TableCell>
+                                            <TableCell>
+                                                Ks {ks(variant.selling_price)}
+                                            </TableCell>
+                                            <TableCell>
+                                                Ks {ks(variant.per_unit_price)}
+                                            </TableCell>
+                                            <TableCell>
+                                                {Number(variant.stock_quantity)}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <div className="flex justify-end gap-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            handleEditVariant(
+                                                                variant,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        onClick={() =>
+                                                            handleDeleteVariant(
+                                                                variant.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
 
                         <div className="mt-4 rounded-lg border p-4">
                             <h3 className="mb-3 text-sm font-medium">
                                 {t('Add New Variant')}
                             </h3>
-                            <div className="grid grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                                 <div className="space-y-2">
-                                    <Label className="text-xs">{t('Unit')}</Label>
+                                    <Label className="text-xs">
+                                        {t('Unit')}
+                                    </Label>
                                     <Select
                                         value={newVariant.unit_id}
                                         onValueChange={(v) =>
@@ -355,7 +375,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     >
                                         <SelectTrigger>
-                                            <SelectValue placeholder={t('Unit')} />
+                                            <SelectValue
+                                                placeholder={t('Unit')}
+                                            />
                                         </SelectTrigger>
                                         <SelectContent>
                                             {units.map((u) => (
@@ -370,7 +392,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs">{t('Name')}</Label>
+                                    <Label className="text-xs">
+                                        {t('Name')}
+                                    </Label>
                                     <Input
                                         value={newVariant.name}
                                         onChange={(e) =>
@@ -382,10 +406,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs">{t('Units/Pkg')}</Label>
+                                    <Label className="text-xs">
+                                        {t('Units/Pkg')}
+                                    </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.units_per_package}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -402,7 +428,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.cost_price}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -418,7 +444,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.selling_price}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -434,7 +460,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.per_unit_price}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -445,10 +471,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs">{t('Min Stock')}</Label>
+                                    <Label className="text-xs">
+                                        {t('Min Stock')}
+                                    </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.min_stock_level}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -459,10 +487,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs">{t('Max Stock')}</Label>
+                                    <Label className="text-xs">
+                                        {t('Max Stock')}
+                                    </Label>
                                     <Input
                                         type="number"
-                                        step="0.01"
+
                                         value={newVariant.max_stock_level}
                                         onChange={(e) =>
                                             setNewVariant({
@@ -473,14 +503,16 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     />
                                 </div>
                             </div>
-                            <Button
-                                type="button"
-                                size="sm"
-                                className="mt-3"
-                                onClick={handleAddVariant}
-                            >
-                                <Plus className="mr-2 h-4 w-4" /> {t('Add Variant')}
-                            </Button>
+                            <div className="mt-3 flex justify-end">
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    onClick={handleAddVariant}
+                                >
+                                    <Plus className="mr-2 h-4 w-4" />{' '}
+                                    {t('Add Variant')}
+                                </Button>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -494,11 +526,11 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                         }
                     }}
                 >
-                    <DialogContent>
+                    <DialogContent className="max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>{t('Edit Variant')}</DialogTitle>
                         </DialogHeader>
-                        <div className="grid grid-cols-4 gap-3 py-4">
+                        <div className="grid grid-cols-1 gap-3 py-4 sm:grid-cols-2 lg:grid-cols-2">
                             <div className="space-y-2">
                                 <Label className="text-xs">{t('Unit')}</Label>
                                 <Select
@@ -510,7 +542,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         })
                                     }
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -538,10 +570,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Units/Pkg')}</Label>
+                                <Label className="text-xs">
+                                    {t('Units/Pkg')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.units_per_package}
                                     onChange={(e) =>
                                         setNewVariant({
@@ -552,10 +586,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Cost Price')}</Label>
+                                <Label className="text-xs">
+                                    {t('Cost Price')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.cost_price}
                                     onChange={(e) =>
                                         setNewVariant({
@@ -566,10 +602,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Selling Price')}</Label>
+                                <Label className="text-xs">
+                                    {t('Selling Price')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.selling_price}
                                     onChange={(e) =>
                                         setNewVariant({
@@ -580,10 +618,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Per Unit Price')}</Label>
+                                <Label className="text-xs">
+                                    {t('Per Unit Price')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.per_unit_price}
                                     onChange={(e) =>
                                         setNewVariant({
@@ -594,10 +634,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Min Stock')}</Label>
+                                <Label className="text-xs">
+                                    {t('Min Stock')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.min_stock_level}
                                     onChange={(e) =>
                                         setNewVariant({
@@ -608,10 +650,12 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="text-xs">{t('Max Stock')}</Label>
+                                <Label className="text-xs">
+                                    {t('Max Stock')}
+                                </Label>
                                 <Input
                                     type="number"
-                                    step="0.01"
+
                                     value={newVariant.max_stock_level}
                                     onChange={(e) =>
                                         setNewVariant({

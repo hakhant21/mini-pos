@@ -40,22 +40,43 @@ type Props = {
 export default function ProductsIndex({ products: productsData }: Props) {
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
+
+    const categories = useMemo(() => {
+        const map = new Map<number, string>();
+        for (const p of productsData) {
+            if (p.category) {
+                map.set(p.category.id, p.category.name);
+            }
+        }
+        return Array.from(map.entries())
+            .map(([id, name]) => ({ id, name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [productsData]);
 
     const filteredProducts = useMemo(() => {
-        if (!search.trim()) {
-            return productsData;
+        let result = productsData;
+
+        if (categoryFilter) {
+            result = result.filter(
+                (p) => p.category?.id === Number(categoryFilter),
+            );
         }
 
-        const q = search.toLowerCase();
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            result = result.filter(
+                (p) =>
+                    p.name.toLowerCase().includes(q) ||
+                    p.sku.toLowerCase().includes(q) ||
+                    (p.brand && p.brand.toLowerCase().includes(q)) ||
+                    (p.category?.name &&
+                        p.category.name.toLowerCase().includes(q)),
+            );
+        }
 
-        return productsData.filter(
-            (p) =>
-                p.name.toLowerCase().includes(q) ||
-                p.sku.toLowerCase().includes(q) ||
-                (p.brand && p.brand.toLowerCase().includes(q)) ||
-                (p.category?.name && p.category.name.toLowerCase().includes(q)),
-        );
-    }, [productsData, search]);
+        return result;
+    }, [productsData, search, categoryFilter]);
 
     const handleDelete = (product: Product) => {
         if (confirm(`${t('Delete')} "${product.name}"?`)) {
@@ -86,10 +107,22 @@ export default function ProductsIndex({ products: productsData }: Props) {
                     </Link>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                    >
+                        <option value="">{t('All Categories')}</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
-                        placeholder={t('Search by name, SKU, or category...')}
+                        placeholder={t('Search by name, SKU, or brand...')}
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         className="max-w-sm"

@@ -41,7 +41,11 @@ export default function ProductsShow({ product }: Props) {
                             </Button>
                         </Link>
                         <h1 className="text-2xl font-bold">{product.name}</h1>
-                        <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                        <Badge
+                            variant={
+                                product.is_active ? 'default' : 'secondary'
+                            }
+                        >
                             {product.is_active ? t('Active') : t('Inactive')}
                         </Badge>
                     </div>
@@ -52,10 +56,12 @@ export default function ProductsShow({ product }: Props) {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">{t('SKU')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('SKU')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="font-mono text-lg">{product.sku}</p>
@@ -63,7 +69,9 @@ export default function ProductsShow({ product }: Props) {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">{t('Brand')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Brand')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <p className="text-lg">{product.brand || '—'}</p>
@@ -71,17 +79,23 @@ export default function ProductsShow({ product }: Props) {
                     </Card>
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-sm font-medium">{t('Category')}</CardTitle>
+                            <CardTitle className="text-sm font-medium">
+                                {t('Category')}
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-lg">{product.category?.name || '—'}</p>
+                            <p className="text-lg">
+                                {product.category?.name || '—'}
+                            </p>
                         </CardContent>
                     </Card>
                 </div>
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>{t('Variants')} ({product.variants.length})</CardTitle>
+                        <CardTitle>
+                            {t('Variants')} ({product.variants.length})
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <Table>
@@ -101,17 +115,43 @@ export default function ProductsShow({ product }: Props) {
                             <TableBody>
                                 {product.variants.map((variant) => (
                                     <TableRow key={variant.id}>
-                                        <TableCell>{variant.name || '—'}</TableCell>
-                                        <TableCell className="font-mono text-sm">{variant.sku}</TableCell>
-                                        <TableCell>{variant.unit?.abbreviation || '—'}</TableCell>
-                                        <TableCell>{Number(variant.units_per_package)}</TableCell>
-                                        <TableCell>Ks {ks(variant.cost_price)}</TableCell>
-                                        <TableCell>Ks {ks(variant.selling_price)}</TableCell>
-                                        <TableCell>Ks {ks(variant.per_unit_price)}</TableCell>
-                                        <TableCell>{Number(variant.stock_quantity)}</TableCell>
                                         <TableCell>
-                                            <Badge variant={stockStatusBadge[variant.stock_status].variant}>
-                                                {t(stockStatusBadge[variant.stock_status].label)}
+                                            {variant.name || '—'}
+                                        </TableCell>
+                                        <TableCell className="font-mono text-sm">
+                                            {variant.sku}
+                                        </TableCell>
+                                        <TableCell>
+                                            {variant.unit?.abbreviation || '—'}
+                                        </TableCell>
+                                        <TableCell>
+                                            {Number(variant.units_per_package)}
+                                        </TableCell>
+                                        <TableCell>
+                                            Ks {ks(variant.cost_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            Ks {ks(variant.selling_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            Ks {ks(variant.per_unit_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {Number(variant.stock_quantity)}
+                                        </TableCell>
+                                        <TableCell>
+                                            <Badge
+                                                variant={
+                                                    stockStatusBadge[
+                                                        variant.stock_status
+                                                    ].variant
+                                                }
+                                            >
+                                                {t(
+                                                    stockStatusBadge[
+                                                        variant.stock_status
+                                                    ].label,
+                                                )}
                                             </Badge>
                                         </TableCell>
                                     </TableRow>

@@ -24,12 +24,8 @@ class SaleController extends Controller
             ->get();
 
         $summary = [
-            'total_sales' => $todaySales->count(),
-            'total_revenue' => round($todaySales->sum('total_amount'), 2),
-            'total_items' => round($todaySales->sum(fn($s) => $s->items->sum('quantity')), 2),
-            'avg_sale' => $todaySales->count() > 0
-                ? round($todaySales->avg('total_amount'), 2)
-                : 0,
+            'total_sales' => $todaySales->sum('total_amount'),
+            'total_change' => round($todaySales->sum('change'), 2),
         ];
 
         return inertia('sales/index', [

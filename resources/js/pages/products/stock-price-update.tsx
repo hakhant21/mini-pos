@@ -33,6 +33,7 @@ type Props = {
 type VariantRow = {
     product_id: number;
     product_name: string;
+    category_name: string;
     variant_id: number;
     variant_name: string;
     unit_abbreviation: string;
@@ -49,7 +50,35 @@ export default function StockPriceUpdate({ products }: Props) {
     const { t } = useTranslation();
     const [savingId, setSavingId] = useState<number | null>(null);
     const [search, setSearch] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState('');
+    const [unitFilter, setUnitFilter] = useState('');
     const [page, setPage] = useState(1);
+
+    const categories = useMemo(() => {
+        const map = new Map<number, string>();
+        for (const p of products) {
+            if (p.category) {
+                map.set(p.category.id, p.category.name);
+            }
+        }
+        return Array.from(map.entries())
+            .map(([id, name]) => ({ id, name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [products]);
+
+    const units = useMemo(() => {
+        const map = new Map<string, string>();
+        for (const p of products) {
+            for (const v of p.variants ?? []) {
+                if (v.unit) {
+                    map.set(v.unit.abbreviation, v.unit.name);
+                }
+            }
+        }
+        return Array.from(map.entries())
+            .map(([abbreviation, name]) => ({ abbreviation, name }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+    }, [products]);
 
     const rows: VariantRow[] = [];
 
@@ -58,6 +87,7 @@ export default function StockPriceUpdate({ products }: Props) {
             rows.push({
                 product_id: product.id,
                 product_name: product.name,
+                category_name: product.category?.name || '',
                 variant_id: variant.id,
                 variant_name: variant.name || '—',
                 unit_abbreviation: variant.unit?.abbreviation || '—',
@@ -73,15 +103,35 @@ export default function StockPriceUpdate({ products }: Props) {
     const [data, setData] = useState<VariantRow[]>(rows);
 
     const filtered = useMemo(() => {
-        if (!search.trim()) return data;
-        const q = search.toLowerCase();
-        return data.filter(
-            (r) =>
-                r.product_name.toLowerCase().includes(q) ||
-                r.variant_name.toLowerCase().includes(q) ||
-                r.unit_abbreviation.toLowerCase().includes(q),
-        );
-    }, [data, search]);
+        let result = data;
+
+        if (categoryFilter) {
+            const catId = Number(categoryFilter);
+            result = result.filter(
+                (r) =>
+                    products.find((p) => p.id === r.product_id)?.category
+                        ?.id === catId,
+            );
+        }
+
+        if (unitFilter) {
+            result = result.filter(
+                (r) => r.unit_abbreviation === unitFilter,
+            );
+        }
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            result = result.filter(
+                (r) =>
+                    r.product_name.toLowerCase().includes(q) ||
+                    r.variant_name.toLowerCase().includes(q) ||
+                    r.unit_abbreviation.toLowerCase().includes(q),
+            );
+        }
+
+        return result;
+    }, [data, search, categoryFilter, unitFilter, products]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const currentPage = Math.min(page, totalPages);
@@ -155,7 +205,37 @@ export default function StockPriceUpdate({ products }: Props) {
                     </h1>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-4">
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => {
+                            setCategoryFilter(e.target.value);
+                            setPage(1);
+                        }}
+                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                    >
+                        <option value="">{t('All Categories')}</option>
+                        {categories.map((cat) => (
+                            <option key={cat.id} value={cat.id}>
+                                {cat.name}
+                            </option>
+                        ))}
+                    </select>
+                    <select
+                        value={unitFilter}
+                        onChange={(e) => {
+                            setUnitFilter(e.target.value);
+                            setPage(1);
+                        }}
+                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                    >
+                        <option value="">{t('All Units')}</option>
+                        {units.map((u) => (
+                            <option key={u.abbreviation} value={u.abbreviation}>
+                                {u.name}
+                            </option>
+                        ))}
+                    </select>
                     <Search className="h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder={t(
@@ -179,6 +259,7 @@ export default function StockPriceUpdate({ products }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>{t('Product')}</TableHead>
+                                    <TableHead>{t('Category')}</TableHead>
                                     <TableHead>{t('Variant')}</TableHead>
                                     <TableHead>{t('Unit')}</TableHead>
                                     <TableHead>{t('Pkg')}</TableHead>
@@ -196,6 +277,9 @@ export default function StockPriceUpdate({ products }: Props) {
                                     <TableRow key={row.variant_id}>
                                         <TableCell className="font-medium">
                                             {row.product_name}
+                                        </TableCell>
+                                        <TableCell>
+                                            {row.category_name || '—'}
                                         </TableCell>
                                         <TableCell>
                                             {row.variant_name}
@@ -291,7 +375,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                 {paginated.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={9}
+                                            colSpan={10}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             {t('No variants found.')}

@@ -128,7 +128,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                             <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-2">
                                     <Label htmlFor="category_id">
                                         {t('Category')}
@@ -251,7 +251,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-3">
+                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                                         <div className="space-y-1">
                                             <Label className="text-xs">
                                                 {t('Unit')}
@@ -266,7 +266,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                                     )
                                                 }
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="w-full">
                                                     <SelectValue
                                                         placeholder={t('Unit')}
                                                     />
@@ -305,7 +305,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={
                                                     variant.units_per_package
                                                 }
@@ -324,7 +324,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={variant.cost_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -341,7 +341,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={variant.selling_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -358,7 +358,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={variant.per_unit_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -375,7 +375,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={variant.min_stock_level}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -392,7 +392,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-                                                step="0.01"
+
                                                 value={variant.max_stock_level}
                                                 onChange={(e) =>
                                                     updateVariant(

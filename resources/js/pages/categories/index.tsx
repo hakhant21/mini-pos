@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,12 +42,34 @@ type Props = {
 
 export default function CategoriesIndex({ categories: categoriesData }: Props) {
     const { t } = useTranslation();
+    const [search, setSearch] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
     const [editingCategory, setEditingCategory] = useState<Category | null>(
         null,
     );
     const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const filteredCategories = useMemo(() => {
+        let result = categoriesData;
+
+        if (statusFilter) {
+            const isActive = statusFilter === 'active';
+            result = result.filter((c) => c.is_active === isActive);
+        }
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            result = result.filter(
+                (c) =>
+                    c.name.toLowerCase().includes(q) ||
+                    (c.description && c.description.toLowerCase().includes(q)),
+            );
+        }
+
+        return result;
+    }, [categoriesData, search, statusFilter]);
 
     const {
         data,
@@ -239,6 +261,25 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                     </Dialog>
                 </div>
 
+                <div className="flex items-center gap-4">
+                    <select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                        className="h-9 rounded-md border border-input bg-background px-2 py-2 text-sm"
+                    >
+                        <option value="">{t('All Status')}</option>
+                        <option value="active">{t('Active')}</option>
+                        <option value="inactive">{t('Inactive')}</option>
+                    </select>
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder={t('Search by name or description...')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="max-w-sm"
+                    />
+                </div>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>{t('All Categories')}</CardTitle>
@@ -258,7 +299,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {categoriesData.map((category) => (
+                                {filteredCategories.map((category) => (
                                     <TableRow key={category.id}>
                                         <TableCell>
                                             {category.image_url ? (
@@ -393,6 +434,16 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {filteredCategories.length === 0 && (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={6}
+                                            className="py-8 text-center text-muted-foreground"
+                                        >
+                                            {t('No categories found.')}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>

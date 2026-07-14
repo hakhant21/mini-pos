@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, LoaderCircle } from 'lucide-react';
-import { useState } from 'react';
+import { Plus, Pencil, Trash2, LoaderCircle, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -39,10 +39,21 @@ type Props = {
 
 export default function UnitsIndex({ units: unitsData }: Props) {
     const { t } = useTranslation();
+    const [search, setSearch] = useState('');
     const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Unit | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
+    const filteredUnits = useMemo(() => {
+        if (!search.trim()) return unitsData;
+        const q = search.toLowerCase();
+        return unitsData.filter(
+            (u) =>
+                u.name.toLowerCase().includes(q) ||
+                u.abbreviation.toLowerCase().includes(q),
+        );
+    }, [unitsData, search]);
 
     const {
         data,
@@ -194,6 +205,16 @@ export default function UnitsIndex({ units: unitsData }: Props) {
                     </Dialog>
                 </div>
 
+                <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder={t('Search by name or abbreviation...')}
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        className="max-w-sm"
+                    />
+                </div>
+
                 <Card>
                     <CardHeader>
                         <CardTitle>{t('All Units')}</CardTitle>
@@ -211,7 +232,7 @@ export default function UnitsIndex({ units: unitsData }: Props) {
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                {unitsData.map((unit) => (
+                                {filteredUnits.map((unit) => (
                                     <TableRow key={unit.id}>
                                         <TableCell className="font-medium">
                                             {unit.name}
@@ -313,6 +334,16 @@ export default function UnitsIndex({ units: unitsData }: Props) {
                                         </TableCell>
                                     </TableRow>
                                 ))}
+                                {filteredUnits.length === 0 && (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={4}
+                                            className="py-8 text-center text-muted-foreground"
+                                        >
+                                            {t('No units found.')}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
                             </TableBody>
                         </Table>
                     </CardContent>

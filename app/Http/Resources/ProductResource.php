@@ -20,6 +20,7 @@ class ProductResource extends JsonResource
             'category' => $this->whenLoaded('category') ? new CategoryResource($this->category) : null,
             'variants' => $this->whenLoaded('variants') ? ProductVariantResource::collection($this->variants) : null,
             'variants_count' => $this->whenCounted('variants'),
+            'total_sold' => $this->when(isset($this->total_sold), $this->total_sold),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'deleted_at' => $this->deleted_at,

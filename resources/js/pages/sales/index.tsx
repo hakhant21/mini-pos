@@ -30,9 +30,7 @@ type Props = {
     sales: Sale[];
     summary: {
         total_sales: number;
-        total_revenue: number;
-        total_items: number;
-        avg_sale: number;
+        total_change: number;
     };
 };
 
@@ -100,69 +98,31 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">
-                                {t('Total Sales')}
+                                {t('Today Total Sales')}
                             </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                {summary.total_sales}
+                                Ks {ks(summary.total_sales)}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {t('transactions today')}
-                            </p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">
-                                {t('Revenue')}
+                                {t('Total Change')}
                             </CardTitle>
                             <Banknote className="h-4 w-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
                             <div className="text-2xl font-bold">
-                                Ks {ks(summary.total_revenue)}
+                                Ks {ks(summary.total_change)}
                             </div>
-                            <p className="text-xs text-muted-foreground">
-                                {t('total collected')}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {t('Items Sold')}
-                            </CardTitle>
-                            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                {summary.total_items}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                {t('total units')}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {t('Avg Sale')}
-                            </CardTitle>
-                            <Banknote className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">
-                                Ks {ks(summary.avg_sale)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                                {t('per transaction')}
-                            </p>
                         </CardContent>
                     </Card>
                 </div>
@@ -187,29 +147,30 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-8"></TableHead>
-                                    <TableHead>{t('Invoice')}</TableHead>
-                                    <TableHead>{t('Time')}</TableHead>
-                                    <TableHead className="text-center">
+                                    <TableHead className="text-right">
+                                        {t('Time')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
                                         {t('Items')}
                                     </TableHead>
                                     <TableHead className="text-right">
-                                        {t('Subtotal')}
+                                        {t('Paid Amount')}
                                     </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Receive Amount')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Change')}
+                                    </TableHead>
+                                    <TableHead className="text-right">
+                                        {t('Payment')}
+                                    </TableHead>
+
                                     <TableHead className="text-right">
                                         {t('Discount')}
                                     </TableHead>
                                     <TableHead className="text-right">
                                         {t('Tax')}
-                                    </TableHead>
-                                    <TableHead className="text-right">
-                                        {t('Total')}
-                                    </TableHead>
-                                    <TableHead>{t('Payment')}</TableHead>
-                                    <TableHead className="text-right">
-                                        {t('Paid')}
-                                    </TableHead>
-                                    <TableHead className="text-right">
-                                        {t('Change')}
                                     </TableHead>
                                 </TableRow>
                             </TableHeader>
@@ -231,13 +192,6 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                             paymentMethodIcon[
                                                 sale.payment_method
                                             ] || Banknote;
-                                        const saleSubtotal = sale.items.reduce(
-                                            (sum, item) =>
-                                                sum +
-                                                Number(item.unit_price) *
-                                                    Number(item.quantity),
-                                            0,
-                                        );
                                         const itemCount = sale.items.reduce(
                                             (sum, item) =>
                                                 sum + Number(item.quantity),
@@ -259,10 +213,7 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                                             <ChevronDown className="h-4 w-4" />
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="font-mono text-sm font-medium">
-                                                        {sale.invoice_number}
-                                                    </TableCell>
-                                                    <TableCell className="text-sm text-muted-foreground">
+                                                    <TableCell className="text-right text-sm text-muted-foreground">
                                                         {new Date(
                                                             sale.created_at,
                                                         ).toLocaleTimeString(
@@ -273,12 +224,44 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                                             },
                                                         )}
                                                     </TableCell>
-                                                    <TableCell className="text-center">
+                                                    <TableCell className="text-right">
                                                         {itemCount}
                                                     </TableCell>
-                                                    <TableCell className="text-right">
-                                                        Ks {ks(saleSubtotal)}
+                                                    <TableCell className="text-right font-semibold">
+                                                        Ks{' '}
+                                                        {ks(sale.total_amount)}
                                                     </TableCell>
+                                                    <TableCell className="text-right">
+                                                        Ks{' '}
+                                                        {ks(sale.amount_paid)}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        {Number(sale.change) >
+                                                        0 ? (
+                                                            <span className="text-green-600">
+                                                                Ks{' '}
+                                                                {ks(
+                                                                    sale.change,
+                                                                )}
+                                                            </span>
+                                                        ) : (
+                                                            '—'
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <Badge
+                                                            variant="outline"
+                                                            className="gap-1"
+                                                        >
+                                                            <PaymentIcon className="h-3 w-3" />
+                                                            {paymentMethodLabel[
+                                                                sale
+                                                                    .payment_method
+                                                            ] ||
+                                                                sale.payment_method}
+                                                        </Badge>
+                                                    </TableCell>
+
                                                     <TableCell className="text-right">
                                                         {Number(sale.discount) >
                                                         0 ? (
@@ -298,40 +281,6 @@ export default function SalesIndex({ sales: salesData, summary }: Props) {
                                                             <span>
                                                                 +Ks{' '}
                                                                 {ks(sale.tax)}
-                                                            </span>
-                                                        ) : (
-                                                            '—'
-                                                        )}
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-semibold">
-                                                        Ks{' '}
-                                                        {ks(sale.total_amount)}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className="gap-1"
-                                                        >
-                                                            <PaymentIcon className="h-3 w-3" />
-                                                            {paymentMethodLabel[
-                                                                sale
-                                                                    .payment_method
-                                                            ] ||
-                                                                sale.payment_method}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        Ks{' '}
-                                                        {ks(sale.amount_paid)}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {Number(sale.change) >
-                                                        0 ? (
-                                                            <span className="text-green-600">
-                                                                Ks{' '}
-                                                                {ks(
-                                                                    sale.change,
-                                                                )}
                                                             </span>
                                                         ) : (
                                                             '—'

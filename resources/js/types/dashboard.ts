@@ -1,4 +1,4 @@
-import type { ProductVariant } from './product';
+import type { Product, ProductVariant } from './product';
 import type { Sale } from './sale';
 
 export type DashboardData = {
@@ -12,4 +12,5 @@ export type DashboardData = {
     totalProfit: number;
     totalSales: number;
     recentSales: Sale[];
+    mostSoldProducts: (Product & { total_sold: number })[];
 };
