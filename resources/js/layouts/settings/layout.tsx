@@ -1,4 +1,4 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import type { PropsWithChildren } from 'react';
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
@@ -8,9 +8,9 @@ import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
-import type { NavItem } from '@/types';
+import type { Auth, NavItem } from '@/types';
 
-const sidebarNavItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
     {
         title: 'Profile',
         href: edit(),
@@ -28,8 +28,22 @@ const sidebarNavItems: NavItem[] = [
     },
 ];
 
+const adminNavItems: NavItem[] = [
+    {
+        title: 'Users',
+        href: '/settings/users',
+        icon: null,
+    },
+];
+
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
+    const { auth } = usePage<{ auth: Auth }>().props;
+    const isAdmin = auth?.user?.role === 'admin';
+
+    const sidebarNavItems = isAdmin
+        ? [...baseNavItems, ...adminNavItems]
+        : baseNavItems;
 
     return (
         <div className="px-4 py-6">

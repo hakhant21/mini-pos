@@ -3,7 +3,7 @@
 use App\Http\Controllers\Categories\CategoryController;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::get('categories', [CategoryController::class, 'index'])->name('categories.index');
     Route::post('categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::patch('categories/{category}', [CategoryController::class, 'update'])->name('categories.update');
