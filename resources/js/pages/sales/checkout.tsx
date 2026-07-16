@@ -20,20 +20,34 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { salesCheckout, sales, dashboard } from '@/feature-routes';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
+import {
+    salesCheckout,
+    salesAddItems,
+    sales,
+    dashboard,
+} from '@/feature-routes';
 import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useTranslation } from '@/lib/i18n';
 import { num, ks } from '@/lib/utils';
-import type { Product, CartItem } from '@/types';
+import type { Product, CartItem, Sale } from '@/types';
 import { ProductVariant } from '../../types/product';
 
 type Props = {
     products: Product[];
+    sale?: Sale | null;
 };
 
 let cartIdCounter = 0;
 
-export default function SalesCheckout({ products }: Props) {
+export default function SalesCheckout({ products, sale = null }: Props) {
     useFlashToast();
     const { t } = useTranslation();
 
@@ -44,8 +58,8 @@ export default function SalesCheckout({ products }: Props) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [amountPaid, setAmountPaid] = useState('');
-    const [discount, setDiscount] = useState('');
-    const [tax, setTax] = useState('');
+    const [discount, setDiscount] = useState(sale ? '' : '');
+    const [tax, setTax] = useState(sale ? '' : '');
     const [notes, setNotes] = useState('');
     const [processing, setProcessing] = useState(false);
 
@@ -162,9 +176,19 @@ export default function SalesCheckout({ products }: Props) {
         [cart],
     );
 
+    const saleDiscount = sale ? Number(sale.discount) || 0 : 0;
+    const saleTax = sale ? Number(sale.tax) || 0 : 0;
+    const existingTotal = sale
+        ? sale.items.reduce(
+              (sum, item) => sum + Number(item.total_price),
+              0,
+          )
+        : 0;
     const discountNum = parseFloat(discount) || 0;
     const taxNum = parseFloat(tax) || 0;
-    const total = subtotal - discountNum + taxNum;
+    const total = sale
+        ? existingTotal + subtotal - saleDiscount + saleTax
+        : subtotal - discountNum + taxNum;
     const change = Math.max(0, (parseFloat(amountPaid) || 0) - total);
 
     const handleCheckout = () => {
@@ -172,7 +196,7 @@ export default function SalesCheckout({ products }: Props) {
             return;
         }
 
-        if ((parseFloat(amountPaid) || 0) < total) {
+        if ((parseFloat(amountPaid) || 0) < (sale ? subtotal : total)) {
             alert(t('Amount paid must be at least the total amount.'));
 
             return;
@@ -180,38 +204,65 @@ export default function SalesCheckout({ products }: Props) {
 
         setProcessing(true);
 
-        router.post(
-            salesCheckout().url,
-            {
-                items: cart.map((item) => ({
-                    variant_id: item.variant_id,
-                    quantity: item.quantity,
-                })),
-                payment_method: paymentMethod,
-                amount_paid: parseFloat(amountPaid) || total,
-                discount: discountNum,
-                tax: taxNum,
-                notes: notes || null,
-            },
-            {
-                preserveScroll: true,
-                onSuccess: () => {
-                    setCart([]);
-                    setAmountPaid('');
-                    setDiscount('');
-                    setTax('');
-                    setNotes('');
-                    setPaymentMethod('cash');
-                    setProcessing(false);
+        if (sale) {
+            router.post(
+                salesAddItems(sale.id).url,
+                {
+                    items: cart.map((item) => ({
+                        variant_id: item.variant_id,
+                        quantity: item.quantity,
+                    })),
+                    amount_paid: parseFloat(amountPaid) || 0,
                 },
-                onError: () => {
-                    setProcessing(false);
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setCart([]);
+                        setAmountPaid('');
+                        setProcessing(false);
+                    },
+                    onError: () => {
+                        setProcessing(false);
+                    },
+                    onFinish: () => {
+                        setProcessing(false);
+                    },
                 },
-                onFinish: () => {
-                    setProcessing(false);
+            );
+        } else {
+            router.post(
+                salesCheckout().url,
+                {
+                    items: cart.map((item) => ({
+                        variant_id: item.variant_id,
+                        quantity: item.quantity,
+                    })),
+                    payment_method: paymentMethod,
+                    amount_paid: parseFloat(amountPaid) || total,
+                    discount: discountNum,
+                    tax: taxNum,
+                    notes: notes || null,
                 },
-            },
-        );
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setCart([]);
+                        setAmountPaid('');
+                        setDiscount('');
+                        setTax('');
+                        setNotes('');
+                        setPaymentMethod('cash');
+                        setProcessing(false);
+                    },
+                    onError: () => {
+                        setProcessing(false);
+                    },
+                    onFinish: () => {
+                        setProcessing(false);
+                    },
+                },
+            );
+        }
     };
 
     return (
@@ -315,8 +366,16 @@ export default function SalesCheckout({ products }: Props) {
                                                             className={`rounded-md border p-1.5 transition-colors ${
                                                                 isOutOfStock
                                                                     ? 'opacity-40'
-                                                                    : 'hover:bg-accent/50'
+                                                                    : 'cursor-pointer hover:bg-accent/50'
                                                             }`}
+                                                            onClick={() => {
+                                                                if (!isOutOfStock) {
+                                                                    addToCart(
+                                                                        variant,
+                                                                        product.name,
+                                                                    );
+                                                                }
+                                                            }}
                                                         >
                                                             <div className="flex items-center justify-between gap-1">
                                                                 <div className="min-w-0 flex-1">
@@ -376,28 +435,8 @@ export default function SalesCheckout({ products }: Props) {
                                                                             variant="outline"
                                                                             size="icon"
                                                                             className="h-5 w-5"
-                                                                            onClick={() =>
-                                                                                addToCart(
-                                                                                    variant,
-                                                                                    product.name,
-                                                                                )
-                                                                            }
-                                                                            disabled={
-                                                                                atMaxStock
-                                                                            }
-                                                                        >
-                                                                            <PlusIcon className="h-2.5 w-2.5" />
-                                                                        </Button>
-                                                                        <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
-                                                                            {
-                                                                                qtyInCart
-                                                                            }
-                                                                        </span>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="icon"
-                                                                            className="h-5 w-5"
-                                                                            onClick={() => {
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
                                                                                 const item =
                                                                                     cart.find(
                                                                                         (
@@ -423,6 +462,28 @@ export default function SalesCheckout({ products }: Props) {
                                                                             }
                                                                         >
                                                                             <MinusIcon className="h-2.5 w-2.5" />
+                                                                        </Button>
+                                                                        <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                            {
+                                                                                qtyInCart
+                                                                            }
+                                                                        </span>
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="icon"
+                                                                            className="h-5 w-5"
+                                                                            onClick={(e) => {
+                                                                                e.stopPropagation();
+                                                                                addToCart(
+                                                                                    variant,
+                                                                                    product.name,
+                                                                                );
+                                                                            }}
+                                                                            disabled={
+                                                                                atMaxStock
+                                                                            }
+                                                                        >
+                                                                            <PlusIcon className="h-2.5 w-2.5" />
                                                                         </Button>
                                                                     </div>
                                                                 )}
@@ -452,14 +513,80 @@ export default function SalesCheckout({ products }: Props) {
                         <CardHeader className="pb-2">
                             <CardTitle className="flex items-center gap-2 text-sm">
                                 <ShoppingCart className="h-4 w-4" />
-                                {t('Cart')} ({cart.length})
+                                {sale ? (
+                                    <>
+                                        {sale.invoice_number}
+                                        <Badge variant="secondary" className="ml-auto text-[10px]">
+                                            {t('Edit')}
+                                        </Badge>
+                                    </>
+                                ) : (
+                                    <>
+                                        {t('Cart')} ({cart.length})
+                                    </>
+                                )}
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="flex flex-1 flex-col gap-0 overflow-auto p-0">
-                            {cart.length === 0 ? (
+                            <div className="flex flex-1 flex-col">
+                                {sale && sale.items.length > 0 && (
+                                    <div className="border-b p-2">
+                                        <p className="mb-1.5 text-[10px] font-medium uppercase text-muted-foreground">
+                                            {t('Existing Items')}
+                                        </p>
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead className="text-[10px]">
+                                                        {t('Product')}
+                                                    </TableHead>
+                                                    <TableHead className="text-right text-[10px]">
+                                                        {t('Qty')}
+                                                    </TableHead>
+                                                    <TableHead className="text-right text-[10px]">
+                                                        {t('Total')}
+                                                    </TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {sale.items.map((item) => (
+                                                    <TableRow key={item.id}>
+                                                        <TableCell className="py-1 text-[10px]">
+                                                            <span className="font-medium">
+                                                                {item.product_name}
+                                                            </span>
+                                                            {item.variant_name && (
+                                                                <span className="ml-0.5 text-muted-foreground">
+                                                                    ({item.variant_name})
+                                                                </span>
+                                                            )}
+                                                        </TableCell>
+                                                        <TableCell className="py-1 text-right text-[10px]">
+                                                            {Number(item.quantity)}
+                                                        </TableCell>
+                                                        <TableCell className="py-1 text-right text-[10px] font-medium">
+                                                            Ks {ks(item.total_price)}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <div className="mt-1 flex justify-between text-[10px]">
+                                            <span className="text-muted-foreground">
+                                                {t('Existing Total')}
+                                            </span>
+                                            <span className="font-semibold">
+                                                Ks {ks(existingTotal)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {cart.length === 0 ? (
                                 <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
                                     {t('Select products to add')}
                                 </div>
+                            
                             ) : (
                                 <div className="flex flex-1 flex-col">
                                     <div className="flex-1 space-y-1 overflow-auto px-2">
@@ -542,49 +669,78 @@ export default function SalesCheckout({ products }: Props) {
                                             </p>
                                         )}
 
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                placeholder={t('Discount')}
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={discount}
-                                                onChange={(e) =>
-                                                    setDiscount(e.target.value)
-                                                }
-                                                className="h-7 py-1 text-[11px]"
-                                            />
-                                            <Input
-                                                placeholder={t('Tax')}
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={tax}
-                                                onChange={(e) =>
-                                                    setTax(e.target.value)
-                                                }
-                                                className="h-7 py-1 text-[11px]"
-                                            />
-                                        </div>
+                                        {!sale && (
+                                            <div className="flex items-center gap-2">
+                                                <Input
+                                                    placeholder={t('Discount')}
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={discount}
+                                                    onChange={(e) =>
+                                                        setDiscount(e.target.value)
+                                                    }
+                                                    className="h-7 py-1 text-[11px]"
+                                                />
+                                                <Input
+                                                    placeholder={t('Tax')}
+                                                    type="number"
+                                                    min="0"
+                                                    step="0.01"
+                                                    value={tax}
+                                                    onChange={(e) =>
+                                                        setTax(e.target.value)
+                                                    }
+                                                    className="h-7 py-1 text-[11px]"
+                                                />
+                                            </div>
+                                        )}
 
                                         <div className="space-y-0.5 text-[11px]">
+                                            {sale && (
+                                                <div className="flex justify-between text-muted-foreground">
+                                                    <span>{t('Existing')}</span>
+                                                    <span>{ks(existingTotal)}</span>
+                                                </div>
+                                            )}
                                             <div className="flex justify-between text-muted-foreground">
                                                 <span>{t('Subtotal')}</span>
                                                 <span>{ks(subtotal)}</span>
                                             </div>
-                                            {discountNum > 0 && (
-                                                <div className="flex justify-between text-muted-foreground">
-                                                    <span>{t('Discount')}</span>
-                                                    <span className="text-destructive">
-                                                        -{ks(discountNum)}
-                                                    </span>
-                                                </div>
-                                            )}
-                                            {taxNum > 0 && (
-                                                <div className="flex justify-between text-muted-foreground">
-                                                    <span>{t('Tax')}</span>
-                                                    <span>+{ks(taxNum)}</span>
-                                                </div>
+                                            {sale ? (
+                                                <>
+                                                    {saleDiscount > 0 && (
+                                                        <div className="flex justify-between text-muted-foreground">
+                                                            <span>{t('Discount')}</span>
+                                                            <span className="text-destructive">
+                                                                -{ks(saleDiscount)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {saleTax > 0 && (
+                                                        <div className="flex justify-between text-muted-foreground">
+                                                            <span>{t('Tax')}</span>
+                                                            <span>+{ks(saleTax)}</span>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    {discountNum > 0 && (
+                                                        <div className="flex justify-between text-muted-foreground">
+                                                            <span>{t('Discount')}</span>
+                                                            <span className="text-destructive">
+                                                                -{ks(discountNum)}
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {taxNum > 0 && (
+                                                        <div className="flex justify-between text-muted-foreground">
+                                                            <span>{t('Tax')}</span>
+                                                            <span>+{ks(taxNum)}</span>
+                                                        </div>
+                                                    )}
+                                                </>
                                             )}
                                             <Separator className="my-1" />
                                             <div className="flex justify-between text-sm font-bold">
@@ -593,22 +749,24 @@ export default function SalesCheckout({ products }: Props) {
                                             </div>
                                         </div>
 
-                                        <Select
-                                            value={paymentMethod}
-                                            onValueChange={setPaymentMethod}
-                                        >
-                                            <SelectTrigger className="h-7 text-[11px]">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="cash">
-                                                    {t('Cash')}
-                                                </SelectItem>
-                                                <SelectItem value="kbzpay">
-                                                    KBZ Pay
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        {!sale && (
+                                            <Select
+                                                value={paymentMethod}
+                                                onValueChange={setPaymentMethod}
+                                            >
+                                                <SelectTrigger className="h-7 text-[11px]">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="cash">
+                                                        {t('Cash')}
+                                                    </SelectItem>
+                                                    <SelectItem value="kbzpay">
+                                                        KBZ Pay
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        )}
 
                                         <Input
                                             placeholder={t('Amount paid')}
@@ -633,14 +791,16 @@ export default function SalesCheckout({ products }: Props) {
                                             </div>
                                         )}
 
-                                        <Input
-                                            placeholder={t('Notes (optional)')}
-                                            value={notes}
-                                            onChange={(e) =>
-                                                setNotes(e.target.value)
-                                            }
-                                            className="h-7 text-[11px]"
-                                        />
+                                        {!sale && (
+                                            <Input
+                                                placeholder={t('Notes (optional)')}
+                                                value={notes}
+                                                onChange={(e) =>
+                                                    setNotes(e.target.value)
+                                                }
+                                                className="h-7 text-[11px]"
+                                            />
+                                        )}
 
                                         <Button
                                             className="w-full"
@@ -652,11 +812,14 @@ export default function SalesCheckout({ products }: Props) {
                                         >
                                             {processing
                                                 ? t('Processing...')
-                                                : `${t('Charge')} ${ks(total)}`}
+                                                : sale
+                                                    ? `${t('Add Items')} (${cart.length})`
+                                                    : `${t('Charge')} ${ks(total)}`}
                                         </Button>
                                     </div>
                                 </div>
                             )}
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

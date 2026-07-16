@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sales\AddItemsRequest;
 use App\Http\Requests\Sales\CheckoutRequest;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\SaleResource;
@@ -23,7 +24,7 @@ class SaleController extends Controller
         $endDate = $request->input('end_date');
         $perPage = 15;
 
-        $applyDateFilter = fn ($query) => $startDate && $endDate
+        $applyDateFilter = fn($query) => $startDate && $endDate
             ? $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             : $query->whereDate('created_at', today());
 
@@ -50,7 +51,7 @@ class SaleController extends Controller
         ]);
     }
 
-    public function checkoutPage(): Response
+    public function checkoutPage(Request $request): Response
     {
         $products = Product::with(['category', 'variants' => function ($q) {
             $q->where('is_active', true)->with('unit');
@@ -59,8 +60,16 @@ class SaleController extends Controller
             ->orderBy('name')
             ->get();
 
+        $sale = null;
+
+        if ($request->has('sale')) {
+            $sale = Sale::with('items')->findOrFail($request->input('sale'));
+            $sale = new SaleResource($sale);
+        }
+
         return inertia('sales/checkout', [
             'products' => ProductResource::collection($products),
+            'sale' => $sale,
         ]);
     }
 
@@ -122,5 +131,52 @@ class SaleController extends Controller
 
         return redirect()->route('sales.index')
             ->with('success', "Sale {$sale->invoice_number} completed successfully.");
+    }
+
+    public function addItems(Sale $sale, AddItemsRequest $request): RedirectResponse
+    {
+        $data = $request->validated();
+
+        $sale = DB::transaction(function () use ($data, $sale) {
+            foreach ($data['items'] as $item) {
+                $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
+
+                if ($variant->stock_quantity < $item['quantity']) {
+                    throw ValidationException::withMessages([
+                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity}",
+                    ]);
+                }
+
+                $lineTotal = round($item['quantity'] * $variant->selling_price, 2);
+
+                $sale->items()->create([
+                    'product_variant_id' => $variant->id,
+                    'product_name' => $variant->product->name,
+                    'variant_name' => $variant->name,
+                    'unit_name' => $variant->unit?->abbreviation,
+                    'quantity' => $item['quantity'],
+                    'unit_price' => $variant->selling_price,
+                    'cost_price' => $variant->cost_price,
+                    'total_price' => $lineTotal,
+                ]);
+
+                $variant->decrement('stock_quantity', $item['quantity']);
+            }
+
+            $newTotal = $sale->items()->sum('total_price');
+            $totalAmount = round($newTotal - $sale->discount + $sale->tax, 2);
+            $amountPaid = $data['amount_paid'] ?? 0;
+
+            $sale->update([
+                'total_amount' => $totalAmount,
+                'amount_paid' => round($sale->amount_paid + $amountPaid, 2),
+                'change' => round(max(0, ($sale->amount_paid + $amountPaid) - $totalAmount), 2),
+            ]);
+
+            return $sale;
+        });
+
+        return redirect()->route('sales.index')
+            ->with('success', "Items added to {$sale->invoice_number} successfully.");
     }
 }

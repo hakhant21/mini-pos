@@ -8,6 +8,7 @@ import {
     Smartphone,
     ChevronLeft,
     ChevronRight,
+    Pencil,
 } from 'lucide-react';
 import { Fragment, useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +25,7 @@ import {
 } from '@/components/ui/table';
 import {
     sales as salesRoute,
-    salesCheckout,
+    salesCheckoutPage,
     dashboard,
 } from '@/feature-routes';
 import { useFlashToast } from '@/hooks/use-flash-toast';
@@ -169,7 +170,7 @@ export default function SalesIndex({
                             {dateDisplayText}
                         </p>
                     </div>
-                    <Link href={salesCheckout().url}>
+                    <Link href={salesCheckoutPage().url}>
                         <Button className="cursor-pointer">
                             <ShoppingCart className="mr-2 h-4 w-4" /> {t('POS')}
                         </Button>
@@ -281,10 +282,10 @@ export default function SalesIndex({
                                 <TableRow>
                                     <TableHead className="w-8"></TableHead>
                                     <TableHead className="text-right">
-                                        {t('Time')}
+                                        {t('Invoice')}
                                     </TableHead>
                                     <TableHead className="text-right">
-                                        {t('Items')}
+                                        {t('Time')}
                                     </TableHead>
                                     <TableHead className="text-right">
                                         {t('Paid Amount')}
@@ -325,12 +326,6 @@ export default function SalesIndex({
                                             paymentMethodIcon[
                                                 sale.payment_method
                                             ] || Banknote;
-                                        const itemCount = sale.items.reduce(
-                                            (sum, item) =>
-                                                sum + Number(item.quantity),
-                                            0,
-                                        );
-
                                         return (
                                             <Fragment key={sale.id}>
                                                 <TableRow
@@ -347,6 +342,9 @@ export default function SalesIndex({
                                                         )}
                                                     </TableCell>
                                                     <TableCell className="text-right text-sm text-muted-foreground">
+                                                        {sale.invoice_number}
+                                                    </TableCell>
+                                                    <TableCell className="text-right text-sm text-muted-foreground">
                                                         {new Date(
                                                             sale.created_at,
                                                         ).toLocaleTimeString(
@@ -356,9 +354,6 @@ export default function SalesIndex({
                                                                 minute: '2-digit',
                                                             },
                                                         )}
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        {itemCount}
                                                     </TableCell>
                                                     <TableCell className="text-right font-semibold">
                                                         Ks{' '}
@@ -525,6 +520,31 @@ export default function SalesIndex({
                                                                         )}
                                                                     </TableBody>
                                                                 </Table>
+                                                                <div className="mt-2 flex justify-end">
+                                                                    <Link
+                                                                        href={
+                                                                            salesCheckoutPage(
+                                                                                {
+                                                                                    query: {
+                                                                                        sale: sale.id,
+                                                                                    },
+                                                                                },
+                                                                            )
+                                                                                .url
+                                                                        }
+                                                                    >
+                                                                        <Button
+                                                                            variant="outline"
+                                                                            size="sm"
+                                                                            className="gap-1.5"
+                                                                        >
+                                                                            <Pencil className="h-3 w-3" />
+                                                                            {t(
+                                                                                'Edit',
+                                                                            )}
+                                                                        </Button>
+                                                                    </Link>
+                                                                </div>
                                                             </div>
                                                         </TableCell>
                                                     </TableRow>
