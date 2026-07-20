@@ -63,11 +63,13 @@ export default function StockPriceUpdate({ products }: Props) {
 
     const categories = useMemo(() => {
         const map = new Map<number, string>();
+
         for (const p of products) {
             if (p.category) {
                 map.set(p.category.id, p.category.name);
             }
         }
+
         return Array.from(map.entries())
             .map(([id, name]) => ({ id, name }))
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -75,6 +77,7 @@ export default function StockPriceUpdate({ products }: Props) {
 
     const units = useMemo(() => {
         const map = new Map<string, string>();
+
         for (const p of products) {
             for (const v of p.variants ?? []) {
                 if (v.unit) {
@@ -82,6 +85,7 @@ export default function StockPriceUpdate({ products }: Props) {
                 }
             }
         }
+
         return Array.from(map.entries())
             .map(([abbreviation, name]) => ({ abbreviation, name }))
             .sort((a, b) => a.name.localeCompare(b.name));
@@ -152,22 +156,32 @@ export default function StockPriceUpdate({ products }: Props) {
     ) => {
         setData((prev) => {
             const updated = prev.map((r) => {
-                if (r.variant_id !== variantId) return r;
+                if (r.variant_id !== variantId) {
+return r;
+}
+
                 const next = { ...r, [field]: value };
+
                 if (field === 'cost_price' || field === 'units_per_package') {
                     const cost = parseFloat(next.cost_price) || 0;
                     const units = next.units_per_package || 1;
                     next.per_unit_price = String(cost / units);
                 }
+
                 return next;
             });
+
             return updated;
         });
     };
 
     const handleSave = (variantId: number) => {
         const row = data.find((r) => r.variant_id === variantId);
-        if (!row) return;
+
+        if (!row) {
+return;
+}
+
         setSavingId(variantId);
 
         router.patch(
@@ -191,7 +205,11 @@ export default function StockPriceUpdate({ products }: Props) {
     const hasChanges = (variantId: number) => {
         const original = rows.find((r) => r.variant_id === variantId);
         const current = data.find((r) => r.variant_id === variantId);
-        if (!original || !current) return false;
+
+        if (!original || !current) {
+return false;
+}
+
         return (
             original.stock_quantity !== current.stock_quantity ||
             original.cost_price !== current.cost_price ||

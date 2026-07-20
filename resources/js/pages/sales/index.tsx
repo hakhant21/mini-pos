@@ -28,7 +28,6 @@ import {
     salesCheckoutPage,
     dashboard,
 } from '@/feature-routes';
-import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useTranslation } from '@/lib/i18n';
 import { ks } from '@/lib/utils';
 import type { Sale } from '@/types';
@@ -67,7 +66,6 @@ export default function SalesIndex({
     pagination,
     filters,
 }: Props) {
-    useFlashToast();
     const { t } = useTranslation();
     const [search, setSearch] = useState('');
     const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -326,6 +324,7 @@ export default function SalesIndex({
                                             paymentMethodIcon[
                                                 sale.payment_method
                                             ] || Banknote;
+
                                         return (
                                             <Fragment key={sale.id}>
                                                 <TableRow

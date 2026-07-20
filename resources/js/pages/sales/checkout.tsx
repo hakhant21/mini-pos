@@ -34,11 +34,10 @@ import {
     sales,
     dashboard,
 } from '@/feature-routes';
-import { useFlashToast } from '@/hooks/use-flash-toast';
 import { useTranslation } from '@/lib/i18n';
 import { num, ks } from '@/lib/utils';
 import type { Product, CartItem, Sale } from '@/types';
-import { ProductVariant } from '../../types/product';
+import type { ProductVariant } from '../../types/product';
 
 type Props = {
     products: Product[];
@@ -48,7 +47,6 @@ type Props = {
 let cartIdCounter = 0;
 
 export default function SalesCheckout({ products, sale = null }: Props) {
-    useFlashToast();
     const { t } = useTranslation();
 
     const { errors } = usePage().props;

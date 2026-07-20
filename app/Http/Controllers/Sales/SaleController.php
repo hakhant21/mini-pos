@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class SaleController extends Controller
@@ -129,8 +130,9 @@ class SaleController extends Controller
             return $sale;
         });
 
-        return redirect()->route('sales.index')
-            ->with('success', "Sale {$sale->invoice_number} completed successfully.");
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Sale {$sale->invoice_number} completed successfully."]);
+
+        return redirect()->route('sales.index');
     }
 
     public function addItems(Sale $sale, AddItemsRequest $request): RedirectResponse
@@ -176,7 +178,8 @@ class SaleController extends Controller
             return $sale;
         });
 
-        return redirect()->route('sales.index')
-            ->with('success', "Items added to {$sale->invoice_number} successfully.");
+        Inertia::flash('toast', ['type' => 'success', 'message' => "Items added to {$sale->invoice_number} successfully."]);
+
+        return redirect()->route('sales.index');
     }
 }

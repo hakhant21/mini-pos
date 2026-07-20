@@ -12,6 +12,7 @@ use App\Models\ProductVariant;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class ProductController extends Controller
@@ -32,7 +33,7 @@ class ProductController extends Controller
     public function create(): Response
     {
         return inertia('products/create', [
-            'categories' => Category::active()->orderBy('name')->get(['id', 'name']),
+            'categories' => Category::active()->orderBy('created_at', 'asc')->get(['id', 'name']),
             'units' => Unit::orderBy('name')->get(['id', 'name', 'abbreviation']),
         ]);
     }
@@ -57,8 +58,9 @@ class ProductController extends Controller
             $product->variants()->create($variant);
         }
 
-        return redirect()->route('products.show', $product)
-            ->with('success', 'Product created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product created successfully.']);
+
+        return redirect()->route('products.show', $product);
     }
 
     public function show(Product $product): Response
@@ -96,14 +98,18 @@ class ProductController extends Controller
 
         $product->update($data);
 
-        return redirect()->back()->with('success', 'Product updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function destroy(Product $product): RedirectResponse
     {
         $product->delete();
 
-        return redirect()->back()->with('success', 'Product deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product deleted successfully.']);
+
+        return redirect()->back();
     }
 
     public function restore(int $id): RedirectResponse
@@ -111,14 +117,18 @@ class ProductController extends Controller
         $product = Product::withTrashed()->findOrFail($id);
         $product->restore();
 
-        return redirect()->back()->with('success', 'Product restored successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product restored successfully.']);
+
+        return redirect()->back();
     }
 
     public function toggleActive(Product $product): RedirectResponse
     {
         $product->update(['is_active' => !$product->is_active]);
 
-        return redirect()->back()->with('success', 'Product status updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Product status updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function stockPriceUpdate(): Response

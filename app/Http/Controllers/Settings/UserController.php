@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Hash;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class UserController extends Controller
@@ -37,7 +38,9 @@ class UserController extends Controller
             'password' => Hash::make($request->validated('password')),
         ]);
 
-        return redirect()->route('settings.users.index')->with('success', 'User created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'User created successfully.']);
+
+        return redirect()->route('settings.users.index');
     }
 
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
@@ -52,17 +55,23 @@ class UserController extends Controller
 
         $user->update($data);
 
-        return redirect()->back()->with('success', 'User updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'User updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function destroy(User $user): RedirectResponse
     {
         if ($user->id === auth()->id()) {
-            return redirect()->back()->with('error', 'You cannot delete your own account.');
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'You cannot delete your own account.']);
+
+            return redirect()->back();
         }
 
         $user->delete();
 
-        return redirect()->back()->with('success', 'User deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'User deleted successfully.']);
+
+        return redirect()->back();
     }
 }

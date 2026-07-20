@@ -10,6 +10,7 @@ use App\Http\Resources\ProductVariantResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 
 class ProductVariantController extends Controller
 {
@@ -24,7 +25,9 @@ class ProductVariantController extends Controller
 
         $product->variants()->create($data);
 
-        return redirect()->back()->with('success', 'Variant added successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Variant added successfully.']);
+
+        return redirect()->back();
     }
 
     public function update(UpdateProductVariantRequest $request, Product $product, ProductVariant $variant): RedirectResponse
@@ -37,14 +40,18 @@ class ProductVariantController extends Controller
 
         $variant->update($data);
 
-        return redirect()->back()->with('success', 'Variant updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Variant updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function destroy(Product $product, ProductVariant $variant): RedirectResponse
     {
         $variant->delete();
 
-        return redirect()->back()->with('success', 'Variant deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Variant deleted successfully.']);
+
+        return redirect()->back();
     }
 
     public function updateStockPrice(UpdateStockPriceRequest $request, Product $product, ProductVariant $variant): RedirectResponse
@@ -57,7 +64,9 @@ class ProductVariantController extends Controller
 
         $variant->update($data);
 
-        return redirect()->back()->with('success', 'Stock & price updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Stock & price updated successfully.']);
+
+        return redirect()->back();
     }
 
     private function generateVariantSku(string $productSku, string $variantName): string

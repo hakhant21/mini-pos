@@ -13,6 +13,7 @@ import {
     ChevronDown,
     ChevronsUpDown,
 } from 'lucide-react';
+import AppLogo from '@/components/app-logo';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -27,8 +28,8 @@ import {
     SheetTitle,
     SheetTrigger,
 } from '@/components/ui/sheet';
-import { useTranslation, setLocale } from '@/lib/i18n';
-import { useCurrentUrl } from '@/hooks/use-current-url';
+import { UserInfo } from '@/components/user-info';
+import { UserMenuContent } from '@/components/user-menu-content';
 import {
     dashboard,
     categories,
@@ -38,9 +39,8 @@ import {
     salesCheckoutPage,
     productsStockPriceUpdate,
 } from '@/feature-routes';
-import { UserInfo } from '@/components/user-info';
-import { UserMenuContent } from '@/components/user-menu-content';
-import AppLogo from '@/components/app-logo';
+import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation, setLocale } from '@/lib/i18n';
 
 const locales = {
     my: 'မြန်မာ',

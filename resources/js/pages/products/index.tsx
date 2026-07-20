@@ -51,11 +51,13 @@ export default function ProductsIndex({ products: productsData }: Props) {
 
     const categories = useMemo(() => {
         const map = new Map<number, string>();
+
         for (const p of productsData) {
             if (p.category) {
                 map.set(p.category.id, p.category.name);
             }
         }
+
         return Array.from(map.entries())
             .map(([id, name]) => ({ id, name }))
             .sort((a, b) => a.name.localeCompare(b.name));

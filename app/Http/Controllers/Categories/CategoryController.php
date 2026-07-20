@@ -9,6 +9,7 @@ use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class CategoryController extends Controller
@@ -35,7 +36,9 @@ class CategoryController extends Controller
 
         Category::create($data);
 
-        return redirect()->back()->with('success', 'Category created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category created successfully.']);
+
+        return redirect()->back();
     }
 
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
@@ -53,18 +56,24 @@ class CategoryController extends Controller
 
         $category->update($data);
 
-        return redirect()->back()->with('success', 'Category updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function destroy(Category $category): RedirectResponse
     {
         if ($category->products()->exists()) {
-            return redirect()->back()->with('error', 'Cannot delete category with associated products.');
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Cannot delete category with associated products.']);
+
+            return redirect()->back();
         }
 
         $category->delete();
 
-        return redirect()->back()->with('success', 'Category deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category deleted successfully.']);
+
+        return redirect()->back();
     }
 
     public function restore(int $id): RedirectResponse
@@ -72,13 +81,17 @@ class CategoryController extends Controller
         $category = Category::withTrashed()->findOrFail($id);
         $category->restore();
 
-        return redirect()->back()->with('success', 'Category restored successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category restored successfully.']);
+
+        return redirect()->back();
     }
 
     public function toggleActive(Category $category): RedirectResponse
     {
         $category->update(['is_active' => !$category->is_active]);
 
-        return redirect()->back()->with('success', 'Category status updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Category status updated successfully.']);
+
+        return redirect()->back();
     }
 }

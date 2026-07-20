@@ -4,6 +4,13 @@ import { LoaderCircle, Plus, Pencil, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -22,13 +29,6 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog';
-import {
     products,
     productsUpdate,
     variantsStore,
@@ -36,8 +36,8 @@ import {
     variantsDestroy,
     dashboard,
 } from '@/feature-routes';
-import { ks } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { ks } from '@/lib/utils';
 import type { Category, Product, Unit } from '@/types';
 
 type Props = {
@@ -132,7 +132,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     };
 
     const handleUpdateVariant = () => {
-        if (!editingVariant) return;
+        if (!editingVariant) {
+return;
+}
 
         setEditVariantProcessing(true);
         router.patch(
@@ -521,6 +523,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                     open={editDialogOpen}
                     onOpenChange={(open) => {
                         setEditDialogOpen(open);
+
                         if (!open) {
                             setEditingVariant(null);
                         }

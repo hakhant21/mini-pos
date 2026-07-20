@@ -8,6 +8,7 @@ use App\Http\Requests\Units\UpdateUnitRequest;
 use App\Http\Resources\UnitResource;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
 use Inertia\Response;
 
 class UnitController extends Controller
@@ -28,24 +29,32 @@ class UnitController extends Controller
     {
         Unit::create($request->validated());
 
-        return redirect()->back()->with('success', 'Unit created successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unit created successfully.']);
+
+        return redirect()->back();
     }
 
     public function update(UpdateUnitRequest $request, Unit $unit): RedirectResponse
     {
         $unit->update($request->validated());
 
-        return redirect()->back()->with('success', 'Unit updated successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unit updated successfully.']);
+
+        return redirect()->back();
     }
 
     public function destroy(Unit $unit): RedirectResponse
     {
         if ($unit->productVariants()->exists()) {
-            return redirect()->back()->with('error', 'Cannot delete unit that is in use by a variant.');
+            Inertia::flash('toast', ['type' => 'error', 'message' => 'Cannot delete unit that is in use by a variant.']);
+
+            return redirect()->back();
         }
 
         $unit->delete();
 
-        return redirect()->back()->with('success', 'Unit deleted successfully.');
+        Inertia::flash('toast', ['type' => 'success', 'message' => 'Unit deleted successfully.']);
+
+        return redirect()->back();
     }
 }

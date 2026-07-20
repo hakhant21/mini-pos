@@ -11,24 +11,32 @@ class UnitSeeder extends Seeder
     {
         $units = [
             [
-                'name' => 'Bottle',
-                'abbreviation' => 'btl',
+                "id" => 1,
+                "name" => "အထုပ်",
+                "abbreviation" => "pack",
+                "created_at" => "2026-07-20 16:47:12",
+                "updated_at" => "2026-07-20 16:49:07"
             ],
             [
-                'name' => 'Can',
-                'abbreviation' => 'can',
+                "id" => 2,
+                "name" => "ဘူး",
+                "abbreviation" => "can",
+                "created_at" => "2026-07-20 16:47:18",
+                "updated_at" => "2026-07-20 16:49:48"
             ],
             [
-                'name' => 'Pack',
-                'abbreviation' => 'pack',
+                "id" => 4,
+                "name" => "လီတာ",
+                "abbreviation" => "li",
+                "created_at" => "2026-07-20 16:47:37",
+                "updated_at" => "2026-07-20 16:48:57"
             ],
             [
-                'name' => 'Piece',
-                'abbreviation' => 'pc',
-            ],
-            [
-                'name' => 'Roll',
-                'abbreviation' => 'rl',
+                "id" => 5,
+                "name" => "မီလီ လီတာ",
+                "abbreviation" => "ml",
+                "created_at" => "2026-07-20 16:47:50",
+                "updated_at" => "2026-07-20 16:48:48"
             ]
         ];
 

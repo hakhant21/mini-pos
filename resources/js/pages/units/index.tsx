@@ -46,8 +46,12 @@ export default function UnitsIndex({ units: unitsData }: Props) {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
     const filteredUnits = useMemo(() => {
-        if (!search.trim()) return unitsData;
+        if (!search.trim()) {
+return unitsData;
+}
+
         const q = search.toLowerCase();
+
         return unitsData.filter(
             (u) =>
                 u.name.toLowerCase().includes(q) ||

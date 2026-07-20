@@ -12,8 +12,8 @@ import {
     TableRow,
 } from '@/components/ui/table';
 import { products, productsEdit, dashboard } from '@/feature-routes';
-import { ks } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { ks } from '@/lib/utils';
 import type { Product } from '@/types';
 
 type Props = {
