@@ -196,6 +196,17 @@ class CategorySeeder extends Seeder
                 "deleted_at" => null,
                 "created_at" => "2026-07-20 16:07:25",
                 "updated_at" => "2026-07-20 16:07:25"
+            ],
+            [
+                "id" => 18,
+                "name" => "အခြား",
+                "slug" => "acharr",
+                "description" => "အခြား",
+                "image" => null,
+                "is_active" => true,
+                "deleted_at" => null,
+                "created_at" => "2026-07-20 16:07:25",
+                "updated_at" => "2026-07-20 16:07:25"
             ]
         ];
 
