@@ -199,6 +199,17 @@ class CategorySeeder extends Seeder
             ],
             [
                 "id" => 18,
+                "name" => "မုန့်မျိုးစုံ",
+                "slug" => "montmyosone",
+                "description" => "မုန့်မျိုးစုံ",
+                "image" => null,
+                "is_active" => true,
+                "deleted_at" => null,
+                "created_at" => "2026-07-20 16:07:25",
+                "updated_at" => "2026-07-20 16:07:25"
+            ],
+            [
+                "id" => 19,
                 "name" => "အခြား",
                 "slug" => "acharr",
                 "description" => "အခြား",

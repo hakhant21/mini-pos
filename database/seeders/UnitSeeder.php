@@ -37,6 +37,20 @@ class UnitSeeder extends Seeder
                 "abbreviation" => "ml",
                 "created_at" => "2026-07-20 16:47:50",
                 "updated_at" => "2026-07-20 16:48:48"
+            ],
+            [
+                'id' => 6,
+                "name" => "ပက်",
+                "abbreviation" => "shot",
+                "created_at" => "2026-07-20 16:47:50",
+                "updated_at" => "2026-07-20 16:48:48"
+            ],
+            [
+                'id' => 7,
+                "name" => "လိပ်",
+                "abbreviation" => "lt",
+                "created_at" => "2026-07-20 16:47:50",
+                "updated_at" => "2026-07-20 16:48:48"
             ]
         ];
 
