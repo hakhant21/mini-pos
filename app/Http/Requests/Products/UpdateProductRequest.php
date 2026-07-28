@@ -16,7 +16,7 @@ class UpdateProductRequest extends FormRequest
     {
         return [
             'category_id' => ['required', 'exists:categories,id'],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['nullable', 'string', 'max:255'],
             'sku' => ['required', 'string', 'max:100', Rule::unique('products')->ignore($this->route('product'))],
             'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'brand' => ['nullable', 'string', 'max:255'],
