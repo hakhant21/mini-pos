@@ -3,19 +3,18 @@ import { wayfinder } from '@laravel/vite-plugin-wayfinder';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
-import { bunny } from 'laravel-vite-plugin/fonts';
 import { defineConfig } from 'vite';
+import {
+    nativephpMobile,
+    nativephpHotFile,
+} from './vendor/nativephp/mobile/resources/js/vite-plugin.js';
 
 export default defineConfig({
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-            ],
+            hotFile: nativephpHotFile(),
         }),
         inertia(),
         react({
@@ -24,6 +23,7 @@ export default defineConfig({
             },
         }),
         tailwindcss(),
+        nativephpMobile(),
         wayfinder({
             formVariants: true,
         }),
