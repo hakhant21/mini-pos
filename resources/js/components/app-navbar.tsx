@@ -107,7 +107,7 @@ export function AppNavbar() {
     const isCashier = userRole === 'cashier';
 
     return (
-        <header className="sticky top-0 z-50 border-b border-sidebar-border/80 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <header className="border-b border-sidebar-border/80 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4">
                 {/* Mobile Menu */}
                 <div className="lg:hidden">

@@ -73,26 +73,30 @@ export function AppSidebar() {
     ];
 
     return (
-        <Sidebar collapsible="icon" variant="inset">
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
-                                <span className='text-xs rounded-lg bg-slate-900'>{t('Shop')}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
+        <div className="nativephp-safe-area relative z-50 hidden h-screen w-64 shrink-0 border-r border-sidebar-border/70 bg-background lg:flex">
+            <Sidebar collapsible="icon" variant="inset">
+                <SidebarHeader>
+                    <SidebarMenu>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton size="lg" asChild>
+                                <Link href={dashboard()} prefetch>
+                                    <span className="rounded-lg bg-slate-900 text-xs">
+                                        {t('Shop')}
+                                    </span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    </SidebarMenu>
+                </SidebarHeader>
 
-            <SidebarContent>
-                <NavMain items={mainNavItems} />
-            </SidebarContent>
+                <SidebarContent>
+                    <NavMain items={mainNavItems} />
+                </SidebarContent>
 
-            <SidebarFooter>
-                <LocaleSwitcher />
-            </SidebarFooter>
-        </Sidebar>
+                <SidebarFooter>
+                    <LocaleSwitcher />
+                </SidebarFooter>
+            </Sidebar>
+        </div>
     );
 }
