@@ -14,7 +14,6 @@ import { useTranslation, setLocale } from '@/lib/i18n';
 
 const locales = {
     my: 'မြန်မာ',
-    en: 'English',
 } as const;
 
 export function LocaleSwitcher() {
@@ -27,7 +26,10 @@ export function LocaleSwitcher() {
                     <DropdownMenuTrigger asChild>
                         <SidebarMenuButton className="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100">
                             <Languages className="h-5 w-5" />
-                            <span>{locales[locale as keyof typeof locales] ?? 'English'}</span>
+                            <span>
+                                {locales[locale as keyof typeof locales] ??
+                                    'English'}
+                            </span>
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent

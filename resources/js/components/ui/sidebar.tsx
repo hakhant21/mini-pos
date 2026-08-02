@@ -195,7 +195,9 @@ function Sidebar({
           }
           side={side}
         >
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col pt-[max(0px,var(--inset-top,0px))] pr-[max(0px,var(--inset-right,0px))] pb-[max(0px,var(--inset-bottom,0px))] pl-[max(0px,var(--inset-left,0px))]">
+            {children}
+          </div>
         </SheetContent>
       </Sheet>
     )
@@ -237,7 +239,7 @@ function Sidebar({
       >
         <div
           data-sidebar="sidebar"
-          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
+          className="bg-sidebar group-data-[variant=floating]:border-sidebar-border flex h-full w-full flex-col pt-[max(0px,var(--inset-top,0px))] pr-[max(0px,var(--inset-right,0px))] pb-[max(0px,var(--inset-bottom,0px))] pl-[max(0px,var(--inset-left,0px))] group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:shadow-sm"
         >
           {children}
         </div>
