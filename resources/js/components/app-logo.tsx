@@ -9,10 +9,10 @@ export default function AppLogo() {
 
     return (
         <>
-            <div className="ml-1 grid flex-1 text-sm">
-                <span className="mb-0.5 leading-tight font-semibold">
-                    {name}
-                </span>
+            <div className="flex w-full items-center justify-center gap-2">
+                <h1 className="text-2xl font-bold whitespace-nowrap">
+                    {t(name)}
+                </h1>
             </div>
         </>
     );

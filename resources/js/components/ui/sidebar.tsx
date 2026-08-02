@@ -1,4 +1,5 @@
 import { Slot } from "@radix-ui/react-slot"
+import { router } from "@inertiajs/react"
 import type { VariantProps} from "class-variance-authority";
 import { cva } from "class-variance-authority"
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react"
@@ -90,6 +91,15 @@ function SidebarProvider({
   const toggleSidebar = React.useCallback(() => {
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
   }, [isMobile, setOpen, setOpenMobile])
+
+  // Close the mobile sidebar whenever a page navigation starts.
+  React.useEffect(() => {
+    const unsubscribe = router.on("start", () => {
+      setOpenMobile(false)
+    })
+
+    return unsubscribe
+  }, [])
 
   // Adds a keyboard shortcut to toggle the sidebar.
   React.useEffect(() => {
