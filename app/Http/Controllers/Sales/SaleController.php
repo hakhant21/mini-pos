@@ -86,13 +86,19 @@ class SaleController extends Controller
             foreach ($data['items'] as $item) {
                 $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
 
-                if ($variant->stock_quantity < $item['quantity']) {
+                $isPackage = $item['pricing_mode'] === 'package';
+                $unitPrice = $isPackage ? (float) $variant->cost_price : (float) $variant->per_unit_price;
+                $unitsConsumed = $isPackage
+                    ? (float) $item['quantity'] * (float) $variant->units_per_package
+                    : (float) $item['quantity'];
+
+                if ($variant->stock_quantity < $unitsConsumed) {
                     throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity}",
+                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity} units",
                     ]);
                 }
 
-                $lineTotal = round($item['quantity'] * $variant->selling_price, 2);
+                $lineTotal = round($item['quantity'] * $unitPrice, 2);
                 $totalAmount += $lineTotal;
 
                 $saleItems[] = [
@@ -101,12 +107,12 @@ class SaleController extends Controller
                     'variant_name' => $variant->name,
                     'unit_name' => $variant->unit?->abbreviation,
                     'quantity' => $item['quantity'],
-                    'unit_price' => $variant->selling_price,
+                    'unit_price' => $unitPrice,
                     'cost_price' => $variant->cost_price,
                     'total_price' => $lineTotal,
                 ];
 
-                $variant->decrement('stock_quantity', $item['quantity']);
+                $variant->decrement('stock_quantity', $unitsConsumed);
             }
 
             $discount = $data['discount'] ?? 0;
@@ -143,13 +149,19 @@ class SaleController extends Controller
             foreach ($data['items'] as $item) {
                 $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
 
-                if ($variant->stock_quantity < $item['quantity']) {
+                $isPackage = $item['pricing_mode'] === 'package';
+                $unitPrice = $isPackage ? (float) $variant->cost_price : (float) $variant->per_unit_price;
+                $unitsConsumed = $isPackage
+                    ? (float) $item['quantity'] * (float) $variant->units_per_package
+                    : (float) $item['quantity'];
+
+                if ($variant->stock_quantity < $unitsConsumed) {
                     throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity}",
+                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity} units",
                     ]);
                 }
 
-                $lineTotal = round($item['quantity'] * $variant->selling_price, 2);
+                $lineTotal = round($item['quantity'] * $unitPrice, 2);
 
                 $sale->items()->create([
                     'product_variant_id' => $variant->id,
@@ -157,12 +169,12 @@ class SaleController extends Controller
                     'variant_name' => $variant->name,
                     'unit_name' => $variant->unit?->abbreviation,
                     'quantity' => $item['quantity'],
-                    'unit_price' => $variant->selling_price,
+                    'unit_price' => $unitPrice,
                     'cost_price' => $variant->cost_price,
                     'total_price' => $lineTotal,
                 ]);
 
-                $variant->decrement('stock_quantity', $item['quantity']);
+                $variant->decrement('stock_quantity', $unitsConsumed);
             }
 
             $newTotal = $sale->items()->sum('total_price');

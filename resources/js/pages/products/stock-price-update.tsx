@@ -162,12 +162,6 @@ return r;
 
                 const next = { ...r, [field]: value };
 
-                if (field === 'cost_price' || field === 'units_per_package') {
-                    const cost = parseFloat(next.cost_price) || 0;
-                    const units = next.units_per_package || 1;
-                    next.per_unit_price = String(cost / units);
-                }
-
                 return next;
             });
 

@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
             ]);
         } else {
             $this->call([
-                UserSeeder::class,
+                // UserSeeder::class,
                 CategorySeeder::class,
                 UnitSeeder::class,
                 ProductSeeder::class

@@ -92,15 +92,7 @@ export default function ProductsCreate({ categories, units }: Props) {
 return v;
 }
 
-            const updatedVariant = { ...v, [field]: value };
-
-            if (field === 'cost_price' || field === 'units_per_package') {
-                const cost = parseFloat(updatedVariant.cost_price) || 0;
-                const units = parseFloat(updatedVariant.units_per_package) || 1;
-                updatedVariant.per_unit_price = String(cost / units);
-            }
-
-            return updatedVariant;
+            return { ...v, [field]: value };
         });
         setData('variants', updated);
     };

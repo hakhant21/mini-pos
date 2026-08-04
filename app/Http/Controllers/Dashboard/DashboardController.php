@@ -17,7 +17,7 @@ class DashboardController extends Controller
     public function index(): Response
     {
         $inventoryValue = round(
-            ProductVariant::all()->sum(fn($v) => $v->stock_quantity * $v->cost_price),
+            ProductVariant::sum('cost_price'),
             2
         );
 

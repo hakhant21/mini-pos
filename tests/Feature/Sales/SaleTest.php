@@ -23,8 +23,10 @@ beforeEach(function () {
         ->create([
             'name' => 'Regular',
             'sku' => 'COLA001-REG',
+            'units_per_package' => 1,
             'selling_price' => 2.50,
             'cost_price' => 1.00,
+            'per_unit_price' => 0.50,
             'stock_quantity' => 50,
             'min_stock_level' => 10,
             'is_active' => true,
@@ -52,7 +54,7 @@ test('sales page redirects guests to login', function () {
 test('checkout creates sale and reduces stock', function () {
     $response = $this->post(route('sales.checkout'), [
         'items' => [
-            ['variant_id' => $this->variant->id, 'quantity' => 3],
+            ['variant_id' => $this->variant->id, 'pricing_mode' => 'package', 'quantity' => 3],
         ],
         'payment_method' => 'cash',
         'amount_paid' => 10.00,
@@ -63,19 +65,19 @@ test('checkout creates sale and reduces stock', function () {
     $response->assertRedirect(route('sales.index'));
 
     $this->assertDatabaseHas('sales', [
-        'total_amount' => 7.50,
+        'total_amount' => 3.00,
         'payment_method' => 'cash',
         'amount_paid' => 10.00,
-        'change' => 2.50,
+        'change' => 7.00,
         'user_id' => $this->user->id,
     ]);
 
     $this->assertDatabaseHas('sale_items', [
         'product_variant_id' => $this->variant->id,
         'quantity' => 3,
-        'unit_price' => 2.50,
+        'unit_price' => 1.00,
         'cost_price' => 1.00,
-        'total_price' => 7.50,
+        'total_price' => 3.00,
         'product_name' => 'Cola Soda',
     ]);
 
@@ -86,7 +88,7 @@ test('checkout creates sale and reduces stock', function () {
 test('checkout with discount and tax', function () {
     $response = $this->post(route('sales.checkout'), [
         'items' => [
-            ['variant_id' => $this->variant->id, 'quantity' => 2],
+            ['variant_id' => $this->variant->id, 'pricing_mode' => 'single', 'quantity' => 2],
         ],
         'payment_method' => 'kbzpay',
         'amount_paid' => 6.00,
@@ -97,10 +99,10 @@ test('checkout with discount and tax', function () {
     $response->assertRedirect(route('sales.index'));
 
     $this->assertDatabaseHas('sales', [
-        'total_amount' => 4.80,
+        'total_amount' => 0.80,
         'payment_method' => 'kbzpay',
         'amount_paid' => 6.00,
-        'change' => 1.20,
+        'change' => 5.20,
         'discount' => 0.50,
         'tax' => 0.30,
     ]);
@@ -109,7 +111,7 @@ test('checkout with discount and tax', function () {
 test('checkout fails with insufficient stock', function () {
     $response = $this->post(route('sales.checkout'), [
         'items' => [
-            ['variant_id' => $this->variant->id, 'quantity' => 999],
+            ['variant_id' => $this->variant->id, 'pricing_mode' => 'package', 'quantity' => 999],
         ],
         'payment_method' => 'cash',
         'amount_paid' => 9999,
@@ -131,7 +133,7 @@ test('checkout validates required fields', function () {
 test('checkout creates invoice number', function () {
     $this->post(route('sales.checkout'), [
         'items' => [
-            ['variant_id' => $this->variant->id, 'quantity' => 1],
+            ['variant_id' => $this->variant->id, 'pricing_mode' => 'package', 'quantity' => 1],
         ],
         'payment_method' => 'cash',
         'amount_paid' => 5.00,

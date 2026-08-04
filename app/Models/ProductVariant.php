@@ -68,13 +68,6 @@ class ProductVariant extends Model
         );
     }
 
-    public function recalculatePerUnitPrice(): void
-    {
-        if ($this->units_per_package > 0) {
-            $this->per_unit_price = $this->selling_price / $this->units_per_package;
-        }
-    }
-
     public function recalculateWeightedAverageCost(float $quantity, float $newCostPrice): void
     {
         $totalCost = ($this->stock_quantity * $this->cost_price) + ($quantity * $newCostPrice);

@@ -135,5 +135,8 @@
     "Max Stock": "Max Stock",
     "Create Product": "Create Product",
     "Delete Unit": "Delete Unit",
-    "Delete Category": "Delete Category"
+    "Delete Category": "Delete Category",
+    "Package": "Package",
+    "Pkg": "Pkg",
+    "Per Unit Price": "Per Unit Price"
 }

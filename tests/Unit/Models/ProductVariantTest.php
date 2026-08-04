@@ -29,19 +29,6 @@ test('belongs to unit', function () {
     expect($variant->unit->id)->toBe($unit->id);
 });
 
-test('recalculates per unit price', function () {
-    $variant = ProductVariant::factory()->create([
-        'selling_price' => 100.00,
-        'units_per_package' => 4,
-        'per_unit_price' => 0,
-    ]);
-
-    $variant->recalculatePerUnitPrice();
-    $variant->save();
-
-    expect((float) $variant->per_unit_price)->toBe(25.0);
-});
-
 test('recalculates weighted average cost', function () {
     $variant = ProductVariant::factory()->create([
         'stock_quantity' => 10,
@@ -102,12 +89,4 @@ test('create variant with factory', function () {
     $variant = ProductVariant::factory()->create();
     expect($variant)->toBeInstanceOf(ProductVariant::class);
     expect($variant->sku)->not->toBeEmpty();
-});
-
-test('per unit price is recalculated after create', function () {
-    $variant = ProductVariant::factory()->create([
-        'selling_price' => 50.00,
-        'units_per_package' => 5,
-    ]);
-    expect((float) $variant->per_unit_price)->toBe(10.0);
 });

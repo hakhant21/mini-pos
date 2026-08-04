@@ -16,6 +16,7 @@ class ProductVariantFactory extends Factory
     {
         $costPrice = fake()->randomFloat(2, 1, 50);
         $sellingPrice = $costPrice * fake()->randomFloat(2, 1.1, 1.5);
+        $perUnitPrice = fake()->randomFloat(2, 1, $costPrice);
         $stockQuantity = fake()->randomFloat(2, 0, 200);
 
         return [
@@ -26,20 +27,12 @@ class ProductVariantFactory extends Factory
             'units_per_package' => fake()->randomFloat(2, 1, 24),
             'cost_price' => $costPrice,
             'selling_price' => round($sellingPrice, 2),
-            'per_unit_price' => 0,
+            'per_unit_price' => round($perUnitPrice, 2),
             'stock_quantity' => $stockQuantity,
             'min_stock_level' => fake()->randomFloat(2, 0, 20),
             'max_stock_level' => $stockQuantity > 0 ? $stockQuantity * fake()->randomFloat(2, 1.2, 2) : 100,
             'is_active' => true,
         ];
-    }
-
-    public function configure(): static
-    {
-        return $this->afterCreating(function (ProductVariant $variant) {
-            $variant->recalculatePerUnitPrice();
-            $variant->save();
-        });
     }
 
     public function inactive(): static

@@ -86,32 +86,93 @@ export default function SalesCheckout({ products, sale = null }: Props) {
         });
     }, [products, search, selectedCategory]);
 
-    const getCartItemQuantity = (variantId: number): number => {
-        const item = cart.find((ci) => ci.variant_id === variantId);
+    const getCartItemQuantity = (
+        variantId: number,
+        mode: CartItem['pricing_mode'],
+    ): number => {
+        const item = cart.find(
+            (ci) => ci.variant_id === variantId && ci.pricing_mode === mode,
+        );
 
         return item?.quantity ?? 0;
+    };
+
+    const totalUnitsForVariant = (variantId: number): number =>
+        cart.reduce(
+            (sum, item) =>
+                item.variant_id === variantId
+                    ? sum +
+                      (item.pricing_mode === 'package'
+                          ? item.quantity * item.units_per_package
+                          : item.quantity)
+                    : sum,
+            0,
+        );
+
+    const canAddMode = (
+        variant: Product['variants'][number],
+        mode: CartItem['pricing_mode'],
+    ): boolean => {
+        const reserved = totalUnitsForVariant(variant.id);
+        const needed = mode === 'package' ? num(variant.units_per_package) : 1;
+
+        return num(variant.stock_quantity) - reserved >= needed;
+    };
+
+    const decrementLine = (
+        variantId: number,
+        mode: CartItem['pricing_mode'],
+    ) => {
+        const item = cart.find(
+            (ci) => ci.variant_id === variantId && ci.pricing_mode === mode,
+        );
+
+        if (item) {
+            updateQuantity(item.id, -1);
+        }
     };
 
     const addToCart = (
         variant: Product['variants'][number],
         productName: string,
+        pricing_mode: CartItem['pricing_mode'],
     ) => {
         if (num(variant.stock_quantity) <= 0) {
             return;
         }
 
+        const unitsPerPackage = num(variant.units_per_package);
+        const unitPrice =
+            pricing_mode === 'package'
+                ? num(variant.cost_price)
+                : num(variant.per_unit_price);
+
         setCart((prev) => {
+            const reserved = prev
+                .filter((item) => item.variant_id === variant.id)
+                .reduce(
+                    (sum, item) =>
+                        sum +
+                        (item.pricing_mode === 'package'
+                            ? item.quantity * item.units_per_package
+                            : item.quantity),
+                    0,
+                );
+            const needed = pricing_mode === 'package' ? unitsPerPackage : 1;
+
+            if (reserved + needed > num(variant.stock_quantity)) {
+                return prev;
+            }
+
             const existing = prev.find(
-                (item) => item.variant_id === variant.id,
+                (item) =>
+                    item.variant_id === variant.id &&
+                    item.pricing_mode === pricing_mode,
             );
 
             if (existing) {
-                if (existing.quantity >= variant.stock_quantity) {
-                    return prev;
-                }
-
                 return prev.map((item) =>
-                    item.variant_id === variant.id
+                    item.id === existing.id
                         ? { ...item, quantity: item.quantity + 1 }
                         : item,
                 );
@@ -124,13 +185,16 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                 {
                     id: `cart-${cartIdCounter}`,
                     variant_id: variant.id,
+                    pricing_mode,
                     product_name: productName,
                     variant_name: variant.name,
                     unit_name: variant.unit?.abbreviation ?? null,
-                    unit_price: num(variant.selling_price),
+                    units_per_package: unitsPerPackage,
+                    unit_price: unitPrice,
                     cost_price: num(variant.cost_price),
+                    per_unit_price: num(variant.per_unit_price),
                     quantity: 1,
-                    stock_quantity: variant.stock_quantity,
+                    stock_quantity: num(variant.stock_quantity),
                 },
             ];
         });
@@ -151,7 +215,26 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                             return null;
                         }
 
-                        if (newQty > item.stock_quantity) {
+                        const otherUnits = prev
+                            .filter(
+                                (i) =>
+                                    i.variant_id === item.variant_id &&
+                                    i.id !== item.id,
+                            )
+                            .reduce(
+                                (sum, i) =>
+                                    sum +
+                                    (i.pricing_mode === 'package'
+                                        ? i.quantity * i.units_per_package
+                                        : i.quantity),
+                                0,
+                            );
+                        const newUnits =
+                            item.pricing_mode === 'package'
+                                ? newQty * item.units_per_package
+                                : newQty;
+
+                        if (otherUnits + newUnits > item.stock_quantity) {
                             return item;
                         }
 
@@ -177,10 +260,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
     const saleDiscount = sale ? Number(sale.discount) || 0 : 0;
     const saleTax = sale ? Number(sale.tax) || 0 : 0;
     const existingTotal = sale
-        ? sale.items.reduce(
-              (sum, item) => sum + Number(item.total_price),
-              0,
-          )
+        ? sale.items.reduce((sum, item) => sum + Number(item.total_price), 0)
         : 0;
     const discountNum = parseFloat(discount) || 0;
     const taxNum = parseFloat(tax) || 0;
@@ -208,6 +288,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                 {
                     items: cart.map((item) => ({
                         variant_id: item.variant_id,
+                        pricing_mode: item.pricing_mode,
                         quantity: item.quantity,
                     })),
                     amount_paid: parseFloat(amountPaid) || 0,
@@ -233,6 +314,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                 {
                     items: cart.map((item) => ({
                         variant_id: item.variant_id,
+                        pricing_mode: item.pricing_mode,
                         quantity: item.quantity,
                     })),
                     payment_method: paymentMethod,
@@ -342,9 +424,15 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                         ) : (
                                             product.variants.map(
                                                 (variant: ProductVariant) => {
-                                                    const qtyInCart =
+                                                    const qtyPackage =
                                                         getCartItemQuantity(
                                                             variant.id,
+                                                            'package',
+                                                        );
+                                                    const qtySingle =
+                                                        getCartItemQuantity(
+                                                            variant.id,
+                                                            'single',
                                                         );
                                                     const isOutOfStock =
                                                         variant.stock_quantity <=
@@ -354,9 +442,6 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             0 &&
                                                         variant.stock_quantity <=
                                                             variant.min_stock_level;
-                                                    const atMaxStock =
-                                                        qtyInCart >=
-                                                        variant.stock_quantity;
 
                                                     return (
                                                         <div
@@ -364,39 +449,34 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             className={`rounded-md border p-1.5 transition-colors ${
                                                                 isOutOfStock
                                                                     ? 'opacity-40'
-                                                                    : 'cursor-pointer hover:bg-accent/50'
+                                                                    : 'hover:bg-accent/50'
                                                             }`}
-                                                            onClick={() => {
-                                                                if (!isOutOfStock) {
-                                                                    addToCart(
-                                                                        variant,
-                                                                        product.name,
-                                                                    );
-                                                                }
-                                                            }}
                                                         >
                                                             <div className="flex items-center justify-between gap-1">
-                                                                <div className="min-w-0 flex-1">
-                                                                    <p className="truncate text-[11px] leading-tight font-medium">
-                                                                        {variant.name ||
-                                                                            t(
-                                                                                'Default',
-                                                                            )}
-                                                                        <span className="ml-0.5 text-muted-foreground">
-                                                                            (
-                                                                            {variant
-                                                                                .unit
-                                                                                ?.abbreviation ||
-                                                                                'pc'}
-                                                                            )
-                                                                        </span>
-                                                                    </p>
-                                                                    <p className="text-[11px] font-semibold text-primary">
-                                                                        Ks{' '}
-                                                                        {ks(
-                                                                            variant.selling_price,
+                                                                <p className="truncate text-[11px] leading-tight font-medium">
+                                                                    {variant.name ||
+                                                                        t(
+                                                                            'Default',
                                                                         )}
-                                                                    </p>
+                                                                    <span className="ml-0.5 text-muted-foreground">
+                                                                        (
+                                                                        {variant
+                                                                            .unit
+                                                                            ?.abbreviation ||
+                                                                            'pc'}
+                                                                        )
+                                                                    </span>
+                                                                </p>
+                                                                {isOutOfStock ? (
+                                                                    <Badge
+                                                                        variant="destructive"
+                                                                        className="h-5 px-1.5 text-[9px]"
+                                                                    >
+                                                                        {t(
+                                                                            'Out',
+                                                                        )}
+                                                                    </Badge>
+                                                                ) : (
                                                                     <p className="text-[9px] text-muted-foreground">
                                                                         {t(
                                                                             'Stock',
@@ -416,76 +496,143 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                             </span>
                                                                         )}
                                                                     </p>
-                                                                </div>
-
-                                                                {isOutOfStock ? (
-                                                                    <Badge
-                                                                        variant="destructive"
-                                                                        className="h-5 px-1.5 text-[9px]"
-                                                                    >
-                                                                        {t(
-                                                                            'Out',
-                                                                        )}
-                                                                    </Badge>
-                                                                ) : (
-                                                                    <div className="flex items-center gap-0.5">
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="icon"
-                                                                            className="h-5 w-5"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                const item =
-                                                                                    cart.find(
-                                                                                        (
-                                                                                            ci,
-                                                                                        ) =>
-                                                                                            ci.variant_id ===
-                                                                                            variant.id,
-                                                                                    );
-
-                                                                                if (
-                                                                                    item
-                                                                                ) {
-                                                                                    updateQuantity(
-                                                                                        item.id,
-                                                                                        -1,
-                                                                                    );
-                                                                                }
-                                                                            }}
-
-                                                                            disabled={
-                                                                                qtyInCart ===
-                                                                                0
-                                                                            }
-                                                                        >
-                                                                            <MinusIcon className="h-2.5 w-2.5" />
-                                                                        </Button>
-                                                                        <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
-                                                                            {
-                                                                                qtyInCart
-                                                                            }
-                                                                        </span>
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="icon"
-                                                                            className="h-5 w-5"
-                                                                            onClick={(e) => {
-                                                                                e.stopPropagation();
-                                                                                addToCart(
-                                                                                    variant,
-                                                                                    product.name,
-                                                                                );
-                                                                            }}
-                                                                            disabled={
-                                                                                atMaxStock
-                                                                            }
-                                                                        >
-                                                                            <PlusIcon className="h-2.5 w-2.5" />
-                                                                        </Button>
-                                                                    </div>
                                                                 )}
                                                             </div>
+
+                                                            {isOutOfStock ? null : (
+                                                                <>
+                                                                    <div className="mt-1 flex items-center justify-between gap-1">
+                                                                        <p className="text-[11px] font-semibold text-primary">
+                                                                            Ks{' '}
+                                                                            {ks(
+                                                                                variant.cost_price,
+                                                                            )}
+                                                                            <span className="text-[9px] font-normal text-muted-foreground">
+                                                                                {' '}
+                                                                                /{' '}
+                                                                                {t(
+                                                                                    'Package',
+                                                                                )}
+                                                                            </span>
+                                                                        </p>
+                                                                        <div className="flex items-center gap-0.5">
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="icon"
+                                                                                className="h-5 w-5"
+                                                                                onClick={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    decrementLine(
+                                                                                        variant.id,
+                                                                                        'package',
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    qtyPackage ===
+                                                                                    0
+                                                                                }
+                                                                            >
+                                                                                <MinusIcon className="h-2.5 w-2.5" />
+                                                                            </Button>
+                                                                            <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                                {
+                                                                                    qtyPackage
+                                                                                }
+                                                                            </span>
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="icon"
+                                                                                className="h-5 w-5"
+                                                                                onClick={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    addToCart(
+                                                                                        variant,
+                                                                                        product.name,
+                                                                                        'package',
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    !canAddMode(
+                                                                                        variant,
+                                                                                        'package',
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <PlusIcon className="h-2.5 w-2.5" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="mt-1 flex items-center justify-between gap-1">
+                                                                        <p className="text-[11px] text-muted-foreground">
+                                                                            Ks{' '}
+                                                                            {ks(
+                                                                                variant.per_unit_price,
+                                                                            )}
+                                                                            <span className="text-[9px]">
+                                                                                {' '}
+                                                                                /{' '}
+                                                                                {t(
+                                                                                    'Unit',
+                                                                                )}
+                                                                            </span>
+                                                                        </p>
+                                                                        <div className="flex items-center gap-0.5">
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="icon"
+                                                                                className="h-5 w-5"
+                                                                                onClick={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    decrementLine(
+                                                                                        variant.id,
+                                                                                        'single',
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    qtySingle ===
+                                                                                    0
+                                                                                }
+                                                                            >
+                                                                                <MinusIcon className="h-2.5 w-2.5" />
+                                                                            </Button>
+                                                                            <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                                {
+                                                                                    qtySingle
+                                                                                }
+                                                                            </span>
+                                                                            <Button
+                                                                                variant="outline"
+                                                                                size="icon"
+                                                                                className="h-5 w-5"
+                                                                                onClick={(
+                                                                                    e,
+                                                                                ) => {
+                                                                                    e.stopPropagation();
+                                                                                    addToCart(
+                                                                                        variant,
+                                                                                        product.name,
+                                                                                        'single',
+                                                                                    );
+                                                                                }}
+                                                                                disabled={
+                                                                                    !canAddMode(
+                                                                                        variant,
+                                                                                        'single',
+                                                                                    )
+                                                                                }
+                                                                            >
+                                                                                <PlusIcon className="h-2.5 w-2.5" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     );
                                                 },
@@ -514,7 +661,10 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                 {sale ? (
                                     <>
                                         {sale.invoice_number}
-                                        <Badge variant="secondary" className="ml-auto text-[10px]">
+                                        <Badge
+                                            variant="secondary"
+                                            className="ml-auto text-[10px]"
+                                        >
                                             {t('Edit')}
                                         </Badge>
                                     </>
@@ -528,8 +678,8 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                         <CardContent className="flex flex-1 flex-col gap-0 overflow-auto p-0">
                             <div className="flex flex-1 flex-col">
                                 {sale && sale.items.length > 0 && (
-                                    <div className="border-b p-2">
-                                        <p className="mb-1.5 text-[10px] font-medium uppercase text-muted-foreground">
+                                    <div className="mt-1 border-b p-2">
+                                        <p className="mb-1.5 text-[10px] font-medium text-muted-foreground uppercase">
                                             {t('Existing Items')}
                                         </p>
                                         <Table>
@@ -551,19 +701,30 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                     <TableRow key={item.id}>
                                                         <TableCell className="py-1 text-[10px]">
                                                             <span className="font-medium">
-                                                                {item.product_name}
+                                                                {
+                                                                    item.product_name
+                                                                }
                                                             </span>
                                                             {item.variant_name && (
                                                                 <span className="ml-0.5 text-muted-foreground">
-                                                                    ({item.variant_name})
+                                                                    (
+                                                                    {
+                                                                        item.variant_name
+                                                                    }
+                                                                    )
                                                                 </span>
                                                             )}
                                                         </TableCell>
                                                         <TableCell className="py-1 text-right text-[10px]">
-                                                            {Number(item.quantity)}
+                                                            {Number(
+                                                                item.quantity,
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="py-1 text-right text-[10px] font-medium">
-                                                            Ks {ks(item.total_price)}
+                                                            Ks{' '}
+                                                            {ks(
+                                                                item.total_price,
+                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
@@ -581,242 +742,296 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                 )}
 
                                 {cart.length === 0 ? (
-                                <div className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
-                                    {t('Select products to add')}
-                                </div>
-                            
-                            ) : (
-                                <div className="flex flex-1 flex-col">
-                                    <div className="flex-1 space-y-1 overflow-auto px-2">
-                                        {cart.map((item) => (
-                                            <div
-                                                key={item.id}
-                                                className="flex items-center gap-1.5 rounded-md border p-1.5"
-                                            >
-                                                <div className="min-w-0 flex-1">
-                                                    <p className="truncate text-xs leading-tight font-medium">
-                                                        {item.product_name}
-                                                    </p>
-                                                    <p className="truncate text-[10px] text-muted-foreground">
-                                                        {item.variant_name ||
-                                                            t('Default')}
-                                                        {item.unit_name
-                                                            ? ` / ${item.unit_name}`
-                                                            : ''}
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="h-5 w-5"
-                                                        onClick={() =>
-                                                            updateQuantity(
-                                                                item.id,
-                                                                -1,
-                                                            )
-                                                        }
-                                                    >
-                                                        <MinusIcon className="h-2.5 w-2.5" />
-                                                    </Button>
-                                                    <span className="min-w-4.5 text-center text-[11px] font-semibold tabular-nums">
-                                                        {item.quantity}
-                                                    </span>
-                                                    <Button
-                                                        variant="outline"
-                                                        size="icon"
-                                                        className="h-5 w-5"
-                                                        disabled={
-                                                            item.quantity >=
-                                                            item.stock_quantity
-                                                        }
-                                                        onClick={() =>
-                                                            updateQuantity(
-                                                                item.id,
-                                                                1,
-                                                            )
-                                                        }
-                                                    >
-                                                        <PlusIcon className="h-2.5 w-2.5" />
-                                                    </Button>
-                                                </div>
-                                                <p className="w-14 text-right text-[11px] font-medium tabular-nums">
-                                                    {ks(
-                                                        item.unit_price *
-                                                            item.quantity,
-                                                    )}
-                                                </p>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-5 w-5 text-destructive"
-                                                    onClick={() =>
-                                                        removeFromCart(item.id)
-                                                    }
-                                                >
-                                                    <Trash2 className="h-3 w-3" />
-                                                </Button>
-                                            </div>
-                                        ))}
+                                    <div className="mt-1 flex flex-1 items-center justify-center text-xs text-muted-foreground">
+                                        {t('Select products to add')}
                                     </div>
-
-                                    <div className="space-y-2 p-2">
-                                        {errors.items && (
-                                            <p className="text-[10px] text-destructive">
-                                                {errors.items}
-                                            </p>
-                                        )}
-
-                                        {!sale && (
-                                            <div className="flex items-center gap-2">
-                                                <Input
-                                                    placeholder={t('Discount')}
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={discount}
-                                                    onChange={(e) =>
-                                                        setDiscount(e.target.value)
-                                                    }
-                                                    className="h-7 py-1 text-[11px]"
-                                                />
-                                                <Input
-                                                    placeholder={t('Tax')}
-                                                    type="number"
-                                                    min="0"
-                                                    step="0.01"
-                                                    value={tax}
-                                                    onChange={(e) =>
-                                                        setTax(e.target.value)
-                                                    }
-                                                    className="h-7 py-1 text-[11px]"
-                                                />
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-0.5 text-[11px]">
-                                            {sale && (
-                                                <div className="flex justify-between text-muted-foreground">
-                                                    <span>{t('Existing')}</span>
-                                                    <span>{ks(existingTotal)}</span>
+                                ) : (
+                                    <div className="mt-1 flex flex-1 flex-col">
+                                        <div className="flex-1 space-y-1 overflow-auto px-2">
+                                            {cart.map((item) => (
+                                                <div
+                                                    key={item.id}
+                                                    className="mt-2 flex items-center gap-1.5 rounded-md border p-1.5"
+                                                >
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="flex items-center gap-1 truncate text-xs leading-tight font-medium">
+                                                            {item.product_name}
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="h-4 shrink-0 px-1 text-[9px]"
+                                                            >
+                                                                {item.pricing_mode ===
+                                                                'package'
+                                                                    ? `${t('Pkg')} x${num(item.units_per_package)}`
+                                                                    : t('Unit')}
+                                                            </Badge>
+                                                        </p>
+                                                        <p className="truncate text-[10px] text-muted-foreground">
+                                                            {item.variant_name ||
+                                                                t('Default')}
+                                                            {item.unit_name
+                                                                ? ` / ${item.unit_name}`
+                                                                : ''}
+                                                        </p>
+                                                    </div>
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-5 w-5"
+                                                            onClick={() =>
+                                                                updateQuantity(
+                                                                    item.id,
+                                                                    -1,
+                                                                )
+                                                            }
+                                                        >
+                                                            <MinusIcon className="h-2.5 w-2.5" />
+                                                        </Button>
+                                                        <span className="min-w-4.5 text-center text-[11px] font-semibold tabular-nums">
+                                                            {item.quantity}
+                                                        </span>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="icon"
+                                                            className="h-5 w-5"
+                                                            disabled={
+                                                                item.quantity >=
+                                                                item.stock_quantity
+                                                            }
+                                                            onClick={() =>
+                                                                updateQuantity(
+                                                                    item.id,
+                                                                    1,
+                                                                )
+                                                            }
+                                                        >
+                                                            <PlusIcon className="h-2.5 w-2.5" />
+                                                        </Button>
+                                                    </div>
+                                                    <p className="w-14 text-right text-[11px] font-medium tabular-nums">
+                                                        {ks(
+                                                            item.unit_price *
+                                                                item.quantity,
+                                                        )}
+                                                    </p>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-5 w-5 text-destructive"
+                                                        onClick={() =>
+                                                            removeFromCart(
+                                                                item.id,
+                                                            )
+                                                        }
+                                                    >
+                                                        <Trash2 className="h-3 w-3" />
+                                                    </Button>
                                                 </div>
-                                            )}
-                                            <div className="flex justify-between text-muted-foreground">
-                                                <span>{t('Subtotal')}</span>
-                                                <span>{ks(subtotal)}</span>
-                                            </div>
-                                            {sale ? (
-                                                <>
-                                                    {saleDiscount > 0 && (
-                                                        <div className="flex justify-between text-muted-foreground">
-                                                            <span>{t('Discount')}</span>
-                                                            <span className="text-destructive">
-                                                                -{ks(saleDiscount)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {saleTax > 0 && (
-                                                        <div className="flex justify-between text-muted-foreground">
-                                                            <span>{t('Tax')}</span>
-                                                            <span>+{ks(saleTax)}</span>
-                                                        </div>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <>
-                                                    {discountNum > 0 && (
-                                                        <div className="flex justify-between text-muted-foreground">
-                                                            <span>{t('Discount')}</span>
-                                                            <span className="text-destructive">
-                                                                -{ks(discountNum)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    {taxNum > 0 && (
-                                                        <div className="flex justify-between text-muted-foreground">
-                                                            <span>{t('Tax')}</span>
-                                                            <span>+{ks(taxNum)}</span>
-                                                        </div>
-                                                    )}
-                                                </>
-                                            )}
-                                            <Separator className="my-1" />
-                                            <div className="flex justify-between text-sm font-bold">
-                                                <span>{t('Total')}</span>
-                                                <span>{ks(total)}</span>
-                                            </div>
+                                            ))}
                                         </div>
 
-                                        {!sale && (
-                                            <Select
-                                                value={paymentMethod}
-                                                onValueChange={setPaymentMethod}
-                                            >
-                                                <SelectTrigger className="h-7 text-[11px]">
-                                                    <SelectValue />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="cash">
-                                                        {t('Cash')}
-                                                    </SelectItem>
-                                                    <SelectItem value="kbzpay">
-                                                        KBZ Pay
-                                                    </SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        )}
+                                        <div className="space-y-2 p-2">
+                                            {errors.items && (
+                                                <p className="text-[10px] text-destructive">
+                                                    {errors.items}
+                                                </p>
+                                            )}
 
-                                        <Input
-                                            placeholder={t('Amount paid')}
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            value={amountPaid}
-                                            onChange={(e) =>
-                                                setAmountPaid(e.target.value)
-                                            }
-                                            className="h-7 text-[11px]"
-                                        />
+                                            {!sale && (
+                                                <div className="flex items-center gap-2">
+                                                    <Input
+                                                        placeholder={t(
+                                                            'Discount',
+                                                        )}
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={discount}
+                                                        onChange={(e) =>
+                                                            setDiscount(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        className="h-7 py-1 text-[11px]"
+                                                    />
+                                                    <Input
+                                                        placeholder={t('Tax')}
+                                                        type="number"
+                                                        min="0"
+                                                        step="0.01"
+                                                        value={tax}
+                                                        onChange={(e) =>
+                                                            setTax(
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        className="h-7 py-1 text-[11px]"
+                                                    />
+                                                </div>
+                                            )}
 
-                                        {parseFloat(amountPaid || '0') > 0 && (
-                                            <div className="flex justify-between text-[10px]">
-                                                <span className="text-muted-foreground">
-                                                    {t('Change')}
-                                                </span>
-                                                <span className="font-semibold text-green-600 dark:text-green-400">
-                                                    {ks(change)}
-                                                </span>
+                                            <div className="mt-1 space-y-0.5 text-[11px]">
+                                                {sale && (
+                                                    <div className="flex justify-between text-muted-foreground">
+                                                        <span>
+                                                            {t('Existing')}
+                                                        </span>
+                                                        <span>
+                                                            {ks(existingTotal)}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                <div className="flex justify-between text-muted-foreground">
+                                                    <span>{t('Subtotal')}</span>
+                                                    <span>{ks(subtotal)}</span>
+                                                </div>
+                                                {sale ? (
+                                                    <>
+                                                        {saleDiscount > 0 && (
+                                                            <div className="flex justify-between text-muted-foreground">
+                                                                <span>
+                                                                    {t(
+                                                                        'Discount',
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-destructive">
+                                                                    -
+                                                                    {ks(
+                                                                        saleDiscount,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {saleTax > 0 && (
+                                                            <div className="flex justify-between text-muted-foreground">
+                                                                <span>
+                                                                    {t('Tax')}
+                                                                </span>
+                                                                <span>
+                                                                    +
+                                                                    {ks(
+                                                                        saleTax,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        {discountNum > 0 && (
+                                                            <div className="flex justify-between text-muted-foreground">
+                                                                <span>
+                                                                    {t(
+                                                                        'Discount',
+                                                                    )}
+                                                                </span>
+                                                                <span className="text-destructive">
+                                                                    -
+                                                                    {ks(
+                                                                        discountNum,
+                                                                    )}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                        {taxNum > 0 && (
+                                                            <div className="flex justify-between text-muted-foreground">
+                                                                <span>
+                                                                    {t('Tax')}
+                                                                </span>
+                                                                <span>
+                                                                    +
+                                                                    {ks(taxNum)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                                <Separator className="my-1" />
+                                                <div className="flex justify-between text-sm font-bold">
+                                                    <span>{t('Total')}</span>
+                                                    <span>{ks(total)}</span>
+                                                </div>
                                             </div>
-                                        )}
 
-                                        {!sale && (
+                                            {!sale && (
+                                                <Select
+                                                    value={paymentMethod}
+                                                    onValueChange={
+                                                        setPaymentMethod
+                                                    }
+                                                >
+                                                    <SelectTrigger className="h-7 text-[11px]">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="cash">
+                                                            {t('Cash')}
+                                                        </SelectItem>
+                                                        <SelectItem value="kbzpay">
+                                                            KBZ Pay
+                                                        </SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                            )}
+
                                             <Input
-                                                placeholder={t('Notes (optional)')}
-                                                value={notes}
+                                                placeholder={t('Amount paid')}
+                                                type="number"
+                                                min="0"
+                                                step="0.01"
+                                                value={amountPaid}
                                                 onChange={(e) =>
-                                                    setNotes(e.target.value)
+                                                    setAmountPaid(
+                                                        e.target.value,
+                                                    )
                                                 }
                                                 className="h-7 text-[11px]"
                                             />
-                                        )}
 
-                                        <Button
-                                            className="w-full"
-                                            size="sm"
-                                            disabled={
-                                                cart.length === 0 || processing
-                                            }
-                                            onClick={handleCheckout}
-                                        >
-                                            {processing
-                                                ? t('Processing...')
-                                                : sale
-                                                    ? `${t('Add Items')} (${cart.length})`
-                                                    : `${t('Charge')} ${ks(total)}`}
-                                        </Button>
+                                            {parseFloat(amountPaid || '0') >
+                                                0 && (
+                                                <div className="flex justify-between text-[10px]">
+                                                    <span className="text-muted-foreground">
+                                                        {t('Change')}
+                                                    </span>
+                                                    <span className="font-semibold text-green-600 dark:text-green-400">
+                                                        {ks(change)}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {!sale && (
+                                                <Input
+                                                    placeholder={t(
+                                                        'Notes (optional)',
+                                                    )}
+                                                    value={notes}
+                                                    onChange={(e) =>
+                                                        setNotes(e.target.value)
+                                                    }
+                                                    className="h-7 text-[11px]"
+                                                />
+                                            )}
+
+                                            <Button
+                                                className="w-full"
+                                                size="sm"
+                                                disabled={
+                                                    cart.length === 0 ||
+                                                    processing
+                                                }
+                                                onClick={handleCheckout}
+                                            >
+                                                {processing
+                                                    ? t('Processing...')
+                                                    : sale
+                                                      ? `${t('Add Items')} (${cart.length})`
+                                                      : `${t('Charge')} ${ks(total)}`}
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
                             </div>
                         </CardContent>
                     </Card>

@@ -19,10 +19,6 @@ class ProductVariantController extends Controller
         $data = $request->validated();
         $data['sku'] = $this->generateVariantSku($product->sku, $data['name'] ?? '');
 
-        if (empty($data['per_unit_price']) && $data['units_per_package'] > 0) {
-            $data['per_unit_price'] = $data['cost_price'] / $data['units_per_package'];
-        }
-
         $product->variants()->create($data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Variant added successfully.']);
@@ -33,10 +29,6 @@ class ProductVariantController extends Controller
     public function update(UpdateProductVariantRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         $data = $request->validated();
-
-        if (empty($data['per_unit_price']) && $data['units_per_package'] > 0) {
-            $data['per_unit_price'] = $data['cost_price'] / $data['units_per_package'];
-        }
 
         $variant->update($data);
 
@@ -57,10 +49,6 @@ class ProductVariantController extends Controller
     public function updateStockPrice(UpdateStockPriceRequest $request, Product $product, ProductVariant $variant): RedirectResponse
     {
         $data = $request->validated();
-
-        if (empty($data['per_unit_price']) && $variant->units_per_package > 0) {
-            $data['per_unit_price'] = $data['cost_price'] / $variant->units_per_package;
-        }
 
         $variant->update($data);
 

@@ -16,6 +16,7 @@ class CheckoutRequest extends FormRequest
         return [
             'items' => ['required', 'array', 'min:1'],
             'items.*.variant_id' => ['required', 'exists:product_variants,id'],
+            'items.*.pricing_mode' => ['required', 'string', 'in:package,single'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'payment_method' => ['required', 'string', 'in:cash,kbzpay'],
             'amount_paid' => ['required', 'numeric', 'min:0'],

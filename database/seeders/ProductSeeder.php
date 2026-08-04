@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
 
 class ProductSeeder extends Seeder
@@ -136,7 +137,20 @@ class ProductSeeder extends Seeder
             if ($product['brand'] !== $product['name']) {
                 $product['name'] = $product['brand'] . ' - ' . $product['name'];
             }
-            Product::create($product);
+            $product = Product::create($product);
+        }
+
+        $product = Product::where('sku', 'GM-001')->first();
+
+        $variants = [
+            ['product_id' => $product->id, 'unit_id' => '5', 'name' => '45ml', 'sku' => 'GM-001-45ML', 'image' => null, 'cost_price' => 800, 'selling_price' => 1000, 'per_unit_price' => 22.22, 'stock_quantity' => 100, 'min_stock_level' => 10, 'max_stock_level' => 200],
+            ['product_id' => $product->id, 'unit_id' => '5', 'name' =>  '330ml', 'sku' => 'GM-001-330ML', 'image' => null, 'cost_price' => 1200, 'selling_price' => 1500, 'per_unit_price' => 4.55, 'stock_quantity' => 100, 'min_stock_level' => 10, 'max_stock_level' => 200],
+            ['product_id' => $product->id, 'unit_id' => '4', 'name' => '7L', 'sku' => 'GM-001-7L', 'image' => null, 'cost_price' => 2800, 'selling_price' => 3500, 'per_unit_price' => 500, 'stock_quantity' => 100, 'min_stock_level' => 10, 'max_stock_level' => 200],
+            ['product_id' => $product->id, 'unit_id' => '4', 'name' => '1L', 'sku' => 'GM-001-1L', 'image' => null, 'cost_price' => 4800, 'selling_price' => 6000, 'per_unit_price' => 6000, 'stock_quantity' => 100, 'min_stock_level' => 10, 'max_stock_level' => 200],
+        ];
+
+        foreach ($variants as $variant) {
+            ProductVariant::create($variant);
         }
     }
 }
