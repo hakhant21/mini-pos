@@ -546,7 +546,6 @@ save_credentials_to_env() {
 
         # Add new credentials to .env
         echo "" >> .env
-        echo "# Android Signing Credentials" >> .env
         echo "ANDROID_KEYSTORE_PATH=$KEYSTORE_PATH" >> .env
         echo "ANDROID_KEYSTORE_PASSWORD=$clean_keystore_password" >> .env
         echo "ANDROID_KEY_ALIAS=$KEY_ALIAS" >> .env
