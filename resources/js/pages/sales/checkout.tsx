@@ -56,6 +56,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [amountPaid, setAmountPaid] = useState('');
+    const [amountPaidTouched, setAmountPaidTouched] = useState(false);
     const [discount, setDiscount] = useState(sale ? '' : '');
     const [tax, setTax] = useState(sale ? '' : '');
     const [notes, setNotes] = useState('');
@@ -267,14 +268,20 @@ export default function SalesCheckout({ products, sale = null }: Props) {
     const total = sale
         ? existingTotal + subtotal - saleDiscount + saleTax
         : subtotal - discountNum + taxNum;
-    const change = Math.max(0, (parseFloat(amountPaid) || 0) - total);
+    const amountPaidValue = amountPaidTouched
+        ? amountPaid
+        : total > 0
+          ? String(total)
+          : '';
+
+    const change = Math.max(0, (parseFloat(amountPaidValue) || 0) - total);
 
     const handleCheckout = () => {
         if (cart.length === 0) {
             return;
         }
 
-        if ((parseFloat(amountPaid) || 0) < (sale ? subtotal : total)) {
+        if ((parseFloat(amountPaidValue) || 0) < (sale ? subtotal : total)) {
             alert(t('Amount paid must be at least the total amount.'));
 
             return;
@@ -291,13 +298,14 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                         pricing_mode: item.pricing_mode,
                         quantity: item.quantity,
                     })),
-                    amount_paid: parseFloat(amountPaid) || 0,
+                    amount_paid: parseFloat(amountPaidValue) || 0,
                 },
                 {
                     preserveScroll: true,
                     onSuccess: () => {
                         setCart([]);
                         setAmountPaid('');
+                        setAmountPaidTouched(false);
                         setProcessing(false);
                     },
                     onError: () => {
@@ -318,7 +326,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                         quantity: item.quantity,
                     })),
                     payment_method: paymentMethod,
-                    amount_paid: parseFloat(amountPaid) || total,
+                    amount_paid: parseFloat(amountPaidValue) || total,
                     discount: discountNum,
                     tax: taxNum,
                     notes: notes || null,
@@ -328,6 +336,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                     onSuccess: () => {
                         setCart([]);
                         setAmountPaid('');
+                        setAmountPaidTouched(false);
                         setDiscount('');
                         setTax('');
                         setNotes('');
@@ -450,9 +459,8 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             variant.min_stock_level;
 
                                                     return (
-                                                        <div>
+                                                        <div key={variant.id}>
                                                             <div className="mx-1 flex items-center justify-end gap-1 py-1">
-
                                                                 {isOutOfStock ? (
                                                                     <Badge
                                                                         variant="destructive"
@@ -484,14 +492,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                     </p>
                                                                 )}
                                                             </div>
-                                                            <div
-                                                                key={variant.id}
-                                                                className={`rounded-md border ${
-                                                                    isOutOfStock
-                                                                        ? 'opacity-40'
-                                                                        : ''
-                                                                }`}
-                                                            >
+                                                            <div className="${ isOutOfStock ? 'opacity-40' : '' } rounded-md border">
                                                                 <div className="flex items-stretch">
                                                                     <button
                                                                         type="button"
@@ -960,16 +961,17 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                 type="number"
                                                 min="0"
                                                 step="0.01"
-                                                value={amountPaid}
-                                                onChange={(e) =>
+                                                value={amountPaidValue}
+                                                onChange={(e) => {
+                                                    setAmountPaidTouched(true);
                                                     setAmountPaid(
                                                         e.target.value,
-                                                    )
-                                                }
+                                                    );
+                                                }}
                                                 className="h-7 text-[11px]"
                                             />
 
-                                            {parseFloat(amountPaid || '0') >
+                                            {parseFloat(amountPaidValue) >
                                                 0 && (
                                                 <div className="flex justify-between text-[10px]">
                                                     <span className="text-muted-foreground">

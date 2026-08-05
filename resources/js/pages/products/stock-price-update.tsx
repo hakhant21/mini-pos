@@ -25,11 +25,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import {
-    productsStockPriceUpdate,
-    variantsUpdateStockPrice,
-    dashboard,
-} from '@/feature-routes';
+import { variantsUpdateStockPrice, dashboard } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import type { Product } from '@/types';
 
@@ -45,6 +41,7 @@ type VariantRow = {
     variant_name: string;
     unit_abbreviation: string;
     units_per_package: number;
+    quantity: string;
     stock_quantity: string;
     cost_price: string;
     selling_price: string;
@@ -95,6 +92,8 @@ export default function StockPriceUpdate({ products }: Props) {
 
     for (const product of products) {
         for (const variant of product.variants ?? []) {
+            const unitsPerPackage = Number(variant.units_per_package) || 0;
+
             rows.push({
                 product_id: product.id,
                 product_name: product.name,
@@ -102,7 +101,8 @@ export default function StockPriceUpdate({ products }: Props) {
                 variant_id: variant.id,
                 variant_name: variant.name || '—',
                 unit_abbreviation: variant.unit?.abbreviation || '—',
-                units_per_package: Number(variant.units_per_package),
+                units_per_package: unitsPerPackage,
+                quantity: '',
                 stock_quantity: String(Number(variant.stock_quantity)),
                 cost_price: String(Number(variant.cost_price)),
                 selling_price: String(Number(variant.selling_price)),
@@ -157,8 +157,8 @@ export default function StockPriceUpdate({ products }: Props) {
         setData((prev) => {
             const updated = prev.map((r) => {
                 if (r.variant_id !== variantId) {
-return r;
-}
+                    return r;
+                }
 
                 const next = { ...r, [field]: value };
 
@@ -169,12 +169,32 @@ return r;
         });
     };
 
+    const updateQuantity = (variantId: number, value: string) => {
+        setData((prev) =>
+            prev.map((r) => {
+                if (r.variant_id !== variantId) {
+                    return r;
+                }
+
+                const integerValue = value.replace(/[^0-9]/g, '');
+                const qty = parseInt(integerValue, 10) || 0;
+                const stock = String(qty * r.units_per_package);
+
+                return {
+                    ...r,
+                    quantity: integerValue,
+                    stock_quantity: stock,
+                };
+            }),
+        );
+    };
+
     const handleSave = (variantId: number) => {
         const row = data.find((r) => r.variant_id === variantId);
 
         if (!row) {
-return;
-}
+            return;
+        }
 
         setSavingId(variantId);
 
@@ -201,8 +221,8 @@ return;
         const current = data.find((r) => r.variant_id === variantId);
 
         if (!original || !current) {
-return false;
-}
+            return false;
+        }
 
         return (
             original.stock_quantity !== current.stock_quantity ||
@@ -293,8 +313,10 @@ return false;
                                     <TableHead>{t('Product')}</TableHead>
                                     <TableHead>{t('Category')}</TableHead>
                                     <TableHead>{t('Variant')}</TableHead>
-                                    <TableHead>{t('Unit')}</TableHead>
-                                    <TableHead>{t('Pkg')}</TableHead>
+                                    <TableHead>
+                                        {t('Units Per Package')}
+                                    </TableHead>
+                                    <TableHead>{t('Quantity')}</TableHead>
                                     <TableHead>{t('Stock')}</TableHead>
                                     <TableHead>{t('Cost Price')}</TableHead>
                                     <TableHead>{t('Selling Price')}</TableHead>
@@ -307,7 +329,7 @@ return false;
                             <TableBody>
                                 {paginated.map((row) => (
                                     <TableRow key={row.variant_id}>
-                                        <TableCell className="font-medium">
+                                        <TableCell>
                                             {row.product_name}
                                         </TableCell>
                                         <TableCell>
@@ -317,10 +339,22 @@ return false;
                                             {row.variant_name}
                                         </TableCell>
                                         <TableCell>
-                                            {row.unit_abbreviation}
+                                            {Number(row.units_per_package)}
                                         </TableCell>
                                         <TableCell>
-                                            {Number(row.units_per_package)}
+                                            <Input
+                                                type="number"
+                                                step="1"
+                                                min="0"
+                                                className="h-8 w-24"
+                                                value={row.quantity}
+                                                onChange={(e) =>
+                                                    updateQuantity(
+                                                        row.variant_id,
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
                                         </TableCell>
                                         <TableCell>
                                             <Input

@@ -30,8 +30,9 @@ class DashboardController extends Controller
 
         // Calculate Profit/Loss from Sales
         $totalRevenue = Sale::sum('total_amount');
-        $totalCost = SaleItem::sum('cost_price');
-        $totalProfit = round($totalRevenue - $totalCost, 2);
+        $totalSellingPrice = SaleItem::sum('total_price');
+        $totalCost = round(SaleItem::sum(DB::raw('quantity * cost_price')), 2);
+        $totalProfit = round($totalSellingPrice - $totalCost, 2);
 
         // Total sales count
         $totalSales = Sale::whereDate('created_at', today())->sum('total_amount');
@@ -57,6 +58,7 @@ class DashboardController extends Controller
                     $q->where('product_id', $product->id);
                 })->sum('quantity');
                 $product->total_sold = $totalSold;
+
                 return $product;
             })
             ->sortByDesc('total_sold')
