@@ -42,7 +42,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products', 'mobile_public');
+            $data['image'] = $request->file('image')->store('images/products');
         }
 
         $data['sku'] = $this->generateSku($data['name']);
@@ -87,7 +87,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products', 'mobile_public');
+            $data['image'] = $request->file('image')->store('images/products');
         } else {
             unset($data['image']);
         }

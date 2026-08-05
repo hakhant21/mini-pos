@@ -48,11 +48,11 @@ class Product extends Model
 
     public function getImageAttribute(): ?string
     {
-        return Storage::disk('mobile_public')->exists($this->attributes['image'] ?? '') ? Storage::disk('mobile_public')->url($this->attributes['image']) : null;
+        return $this->attributes['image'] ? asset('storage/' . $this->attributes['image']) : null;
     }
 
     public function getImageUrlAttribute(): ?string
     {
-        return Storage::disk('mobile_public')->exists($this->attributes['image'] ?? '') ? Storage::disk('mobile_public')->url($this->attributes['image']) : null;
+        return $this->attributes['image'] ? asset('storage/' . $this->attributes['image']) : null;
     }
 }
