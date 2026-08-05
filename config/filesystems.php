@@ -41,7 +41,16 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => rtrim((string) env('APP_URL', 'http://localhost'), '/').'/storage',
+            'url' => rtrim((string) env('APP_URL', 'http://localhost'), '/') . '/storage',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
+        'mobile_public' => [
+            'driver' => 'local',
+            'root' => storage_path('app/mobile_public'),
+            'url' => rtrim((string) env('APP_URL', 'http://localhost'), '/') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,

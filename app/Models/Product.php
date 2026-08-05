@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -49,11 +48,11 @@ class Product extends Model
 
     public function getImageAttribute(): ?string
     {
-        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
+        return Storage::disk('mobile_public')->exists($this->attributes['image'] ?? '') ? Storage::disk('mobile_public')->url($this->attributes['image']) : null;
     }
 
     public function getImageUrlAttribute(): ?string
     {
-        return $this->attributes['image'] ? Storage::url($this->attributes['image']) : null;
+        return Storage::disk('mobile_public')->exists($this->attributes['image'] ?? '') ? Storage::disk('mobile_public')->url($this->attributes['image']) : null;
     }
 }

@@ -11,7 +11,6 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Unit;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +42,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products', 'public');
+            $data['image'] = $request->file('image')->store('images/products', 'mobile_public');
         }
 
         $data['sku'] = $this->generateSku($data['name']);
@@ -88,10 +87,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            if ($product->image) {
-                Storage::disk('public')->delete($product->image);
-            }
-            $data['image'] = $request->file('image')->store('images/products', 'public');
+            $data['image'] = $request->file('image')->store('images/products', 'mobile_public');
         } else {
             unset($data['image']);
         }
