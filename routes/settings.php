@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Settings\PrinterController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\SecurityController;
 use App\Http\Controllers\Settings\UserController;
@@ -27,6 +28,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('settings/appearance', 'settings/appearance')->name('appearance.edit');
 
     Route::middleware(['admin'])->group(function () {
+        Route::get('settings/printer', [PrinterController::class, 'edit'])->name('settings.printer.edit');
+        Route::patch('settings/printer', [PrinterController::class, 'update'])->name('settings.printer.update');
+
         Route::get('settings/users', [UserController::class, 'index'])->name('settings.users.index');
         Route::post('settings/users', [UserController::class, 'store'])->name('settings.users.store');
         Route::patch('settings/users/{user}', [UserController::class, 'update'])->name('settings.users.update');

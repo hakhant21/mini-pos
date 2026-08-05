@@ -10,6 +10,7 @@ use App\Http\Resources\SaleResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
+use App\Services\ReceiptPrinter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -25,8 +26,8 @@ class SaleController extends Controller
         $endDate = $request->input('end_date');
         $perPage = 15;
 
-        $applyDateFilter = fn($query) => $startDate && $endDate
-            ? $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
+        $applyDateFilter = fn ($query) => $startDate && $endDate
+            ? $query->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
             : $query->whereDate('created_at', today());
 
         $paginatedSales = $applyDateFilter(Sale::with('items')->orderBy('created_at', 'desc'))->paginate($perPage);
@@ -138,6 +139,8 @@ class SaleController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => "Sale {$sale->invoice_number} completed successfully."]);
 
+        app(ReceiptPrinter::class)->printSale($sale);
+
         return redirect()->route('sales.index');
     }
 
@@ -191,6 +194,8 @@ class SaleController extends Controller
         });
 
         Inertia::flash('toast', ['type' => 'success', 'message' => "Items added to {$sale->invoice_number} successfully."]);
+
+        app(ReceiptPrinter::class)->printSale($sale);
 
         return redirect()->route('sales.index');
     }

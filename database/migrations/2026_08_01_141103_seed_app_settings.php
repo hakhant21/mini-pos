@@ -19,21 +19,21 @@ return new class extends Migration
                 'name' => 'Admin',
                 'email' => 'admin@gmail.com',
                 'password' => bcrypt('password'),
-                'role' => 'admin'
+                'role' => 'admin',
             ],
             [
                 'name' => 'Cashier',
                 'email' => 'cashier@gmail.com',
                 'password' => bcrypt('password'),
-                'role' => 'cashier'
-            ]
+                'role' => 'cashier',
+            ],
         ]);
 
         DB::table('categories')->insert([
-            ['name' => 'အချိုရည်', 'description' => 'အချိုရည်'],
-            ['name' => 'ကော်ဖီ', 'description' => 'ကော်ဖီ'],
-            ['name' => 'ခရုဆီ', 'description' => 'ခရုဆီ'],
-            ['name' => 'တစ်ရူး', 'description' => 'တစ်ရူး'],
+            ['name' => 'အချိုရည်', 'slug' => 'soft-drinks', 'description' => 'အချိုရည်'],
+            ['name' => 'ကော်ဖီ', 'slug' => 'coffee', 'description' => 'ကော်ဖီ'],
+            ['name' => 'ခရုဆီ', 'slug' => 'oyster-sauce', 'description' => 'ခရုဆီ'],
+            ['name' => 'တစ်ရူး', 'slug' => 'tissue', 'description' => 'တစ်ရူး'],
         ]);
 
         DB::table('units')->insert([
@@ -46,7 +46,7 @@ return new class extends Migration
             ['name' => 'ဂရမ်', 'abbreviation' => 'gဂရမ်'],
             ['name' => 'ထုပ်', 'abbreviation' => 'ထုပ်'],
             ['name' => 'လီတာ', 'abbreviation' => 'လိတာ'],
-            ['name' => 'မီလီလီတာ', 'abbreviation' => 'မီလီလီတာ']
+            ['name' => 'မီလီလီတာ', 'abbreviation' => 'မီလီလီတာ'],
         ]);
     }
 

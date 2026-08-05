@@ -4,10 +4,12 @@ import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { useCurrentUrl } from '@/hooks/use-current-url';
+import { useTranslation } from '@/lib/i18n';
 import { cn, toUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
 import { edit } from '@/routes/profile';
 import { edit as editSecurity } from '@/routes/security';
+import { edit as editPrinter } from '@/routes/settings/printer';
 import type { Auth, NavItem } from '@/types';
 
 const baseNavItems: NavItem[] = [
@@ -30,6 +32,11 @@ const baseNavItems: NavItem[] = [
 
 const adminNavItems: NavItem[] = [
     {
+        title: 'Printer',
+        href: editPrinter(),
+        icon: null,
+    },
+    {
         title: 'Users',
         href: '/settings/users',
         icon: null,
@@ -39,6 +46,7 @@ const adminNavItems: NavItem[] = [
 export default function SettingsLayout({ children }: PropsWithChildren) {
     const { isCurrentOrParentUrl } = useCurrentUrl();
     const { auth } = usePage<{ auth: Auth }>().props;
+    const { t } = useTranslation();
     const isAdmin = auth?.user?.role === 'admin';
 
     const sidebarNavItems = isAdmin
@@ -72,7 +80,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                     {item.icon && (
                                         <item.icon className="h-4 w-4" />
                                     )}
-                                    {item.title}
+                                    {t(item.title)}
                                 </Link>
                             </Button>
                         ))}
