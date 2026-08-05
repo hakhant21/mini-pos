@@ -434,56 +434,42 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             variant.id,
                                                             'single',
                                                         );
+                                                    const reservedUnits =
+                                                        totalUnitsForVariant(
+                                                            variant.id,
+                                                        );
+                                                    const availableStock =
+                                                        num(
+                                                            variant.stock_quantity,
+                                                        ) - reservedUnits;
                                                     const isOutOfStock =
-                                                        variant.stock_quantity <=
-                                                        0;
+                                                        availableStock <= 0;
                                                     const isLowStock =
-                                                        variant.stock_quantity >
-                                                            0 &&
-                                                        variant.stock_quantity <=
+                                                        availableStock > 0 &&
+                                                        availableStock <=
                                                             variant.min_stock_level;
 
                                                     return (
-                                                        <div
-                                                            key={variant.id}
-                                                            className={`rounded-md border p-1.5 transition-colors ${
-                                                                isOutOfStock
-                                                                    ? 'opacity-40'
-                                                                    : 'hover:bg-accent/50'
-                                                            }`}
-                                                        >
-                                                            <div className="flex items-center justify-between gap-1">
-                                                                <p className="truncate text-[11px] leading-tight font-medium">
-                                                                    {variant.name ||
-                                                                        t(
-                                                                            'Default',
-                                                                        )}
-                                                                    <span className="ml-0.5 text-muted-foreground">
-                                                                        (
-                                                                        {variant
-                                                                            .unit
-                                                                            ?.abbreviation ||
-                                                                            'pc'}
-                                                                        )
-                                                                    </span>
-                                                                </p>
+                                                        <div>
+                                                            <div className="mx-1 flex items-center justify-end gap-1 py-1">
+
                                                                 {isOutOfStock ? (
                                                                     <Badge
                                                                         variant="destructive"
-                                                                        className="h-5 px-1.5 text-[9px]"
+                                                                        className="h-4 px-1.5 text-[10px]"
                                                                     >
                                                                         {t(
                                                                             'Out',
                                                                         )}
                                                                     </Badge>
                                                                 ) : (
-                                                                    <p className="text-[9px] text-muted-foreground">
+                                                                    <p className="shrink-0 text-[10px] text-muted-foreground">
                                                                         {t(
                                                                             'Stock',
                                                                         )}
                                                                         :{' '}
                                                                         {Number(
-                                                                            variant.stock_quantity,
+                                                                            availableStock,
                                                                         )}
                                                                         {isLowStock && (
                                                                             <span className="ml-0.5 text-orange-600 dark:text-orange-400">
@@ -498,141 +484,142 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                     </p>
                                                                 )}
                                                             </div>
-
-                                                            {isOutOfStock ? null : (
-                                                                <>
-                                                                    <div className="mt-1 flex items-center justify-between gap-1">
+                                                            <div
+                                                                key={variant.id}
+                                                                className={`rounded-md border ${
+                                                                    isOutOfStock
+                                                                        ? 'opacity-40'
+                                                                        : ''
+                                                                }`}
+                                                            >
+                                                                <div className="flex items-stretch">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            addToCart(
+                                                                                variant,
+                                                                                product.name,
+                                                                                'single',
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            isOutOfStock ||
+                                                                            !canAddMode(
+                                                                                variant,
+                                                                                'single',
+                                                                            )
+                                                                        }
+                                                                        className={`flex min-h-9 flex-1 flex-col justify-center gap-0.5 p-1 text-left ${
+                                                                            isOutOfStock
+                                                                                ? 'cursor-not-allowed'
+                                                                                : 'cursor-pointer hover:bg-accent/50'
+                                                                        }`}
+                                                                    >
+                                                                        <div className="flex items-center justify-between gap-1">
+                                                                            <p className="text-[11px] font-semibold text-primary">
+                                                                                Ks{' '}
+                                                                                {ks(
+                                                                                    variant.per_unit_price,
+                                                                                )}
+                                                                                <span className="text-[10px] font-normal text-muted-foreground">
+                                                                                    {' '}
+                                                                                    /{' '}
+                                                                                    {t(
+                                                                                        'Single',
+                                                                                    )}
+                                                                                </span>
+                                                                            </p>
+                                                                            {qtySingle >
+                                                                            0 ? (
+                                                                                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">
+                                                                                    x
+                                                                                    {
+                                                                                        qtySingle
+                                                                                    }
+                                                                                </span>
+                                                                            ) : (
+                                                                                <PlusIcon className="h-3 w-3 text-muted-foreground" />
+                                                                            )}
+                                                                        </div>
+                                                                    </button>
+                                                                    {qtySingle >
+                                                                        0 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                decrementLine(
+                                                                                    variant.id,
+                                                                                    'single',
+                                                                                )
+                                                                            }
+                                                                            className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                                        >
+                                                                            <MinusIcon className="h-3 w-3" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                                <div className="flex items-stretch border-t">
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            addToCart(
+                                                                                variant,
+                                                                                product.name,
+                                                                                'package',
+                                                                            )
+                                                                        }
+                                                                        disabled={
+                                                                            isOutOfStock ||
+                                                                            !canAddMode(
+                                                                                variant,
+                                                                                'package',
+                                                                            )
+                                                                        }
+                                                                        className={`flex min-h-9 flex-1 items-center justify-between gap-1 px-1.5 py-1 text-left ${
+                                                                            isOutOfStock
+                                                                                ? 'cursor-not-allowed'
+                                                                                : 'cursor-pointer hover:bg-accent/50'
+                                                                        }`}
+                                                                    >
                                                                         <p className="text-[11px] font-semibold text-primary">
                                                                             Ks{' '}
                                                                             {ks(
                                                                                 variant.cost_price,
+                                                                            )}{' '}
+                                                                            /{' '}
+                                                                            {t(
+                                                                                'Package',
                                                                             )}
-                                                                            <span className="text-[9px] font-normal text-muted-foreground">
-                                                                                {' '}
-                                                                                /{' '}
-                                                                                {t(
-                                                                                    'Package',
-                                                                                )}
-                                                                            </span>
                                                                         </p>
-                                                                        <div className="flex items-center gap-0.5">
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                size="icon"
-                                                                                className="h-5 w-5"
-                                                                                onClick={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    e.stopPropagation();
-                                                                                    decrementLine(
-                                                                                        variant.id,
-                                                                                        'package',
-                                                                                    );
-                                                                                }}
-                                                                                disabled={
-                                                                                    qtyPackage ===
-                                                                                    0
-                                                                                }
-                                                                            >
-                                                                                <MinusIcon className="h-2.5 w-2.5" />
-                                                                            </Button>
-                                                                            <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
+                                                                        {qtyPackage >
+                                                                        0 ? (
+                                                                            <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-[9px] font-semibold">
+                                                                                x
                                                                                 {
                                                                                     qtyPackage
                                                                                 }
                                                                             </span>
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                size="icon"
-                                                                                className="h-5 w-5"
-                                                                                onClick={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    e.stopPropagation();
-                                                                                    addToCart(
-                                                                                        variant,
-                                                                                        product.name,
-                                                                                        'package',
-                                                                                    );
-                                                                                }}
-                                                                                disabled={
-                                                                                    !canAddMode(
-                                                                                        variant,
-                                                                                        'package',
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <PlusIcon className="h-2.5 w-2.5" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="mt-1 flex items-center justify-between gap-1">
-                                                                        <p className="text-[11px] text-muted-foreground">
-                                                                            Ks{' '}
-                                                                            {ks(
-                                                                                variant.per_unit_price,
-                                                                            )}
-                                                                            <span className="text-[9px]">
-                                                                                {' '}
-                                                                                /{' '}
-                                                                                {t(
-                                                                                    'Unit',
-                                                                                )}
-                                                                            </span>
-                                                                        </p>
-                                                                        <div className="flex items-center gap-0.5">
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                size="icon"
-                                                                                className="h-5 w-5"
-                                                                                onClick={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    e.stopPropagation();
-                                                                                    decrementLine(
-                                                                                        variant.id,
-                                                                                        'single',
-                                                                                    );
-                                                                                }}
-                                                                                disabled={
-                                                                                    qtySingle ===
-                                                                                    0
-                                                                                }
-                                                                            >
-                                                                                <MinusIcon className="h-2.5 w-2.5" />
-                                                                            </Button>
-                                                                            <span className="min-w-5 text-center text-[11px] font-semibold tabular-nums">
-                                                                                {
-                                                                                    qtySingle
-                                                                                }
-                                                                            </span>
-                                                                            <Button
-                                                                                variant="outline"
-                                                                                size="icon"
-                                                                                className="h-5 w-5"
-                                                                                onClick={(
-                                                                                    e,
-                                                                                ) => {
-                                                                                    e.stopPropagation();
-                                                                                    addToCart(
-                                                                                        variant,
-                                                                                        product.name,
-                                                                                        'single',
-                                                                                    );
-                                                                                }}
-                                                                                disabled={
-                                                                                    !canAddMode(
-                                                                                        variant,
-                                                                                        'single',
-                                                                                    )
-                                                                                }
-                                                                            >
-                                                                                <PlusIcon className="h-2.5 w-2.5" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    </div>
-                                                                </>
-                                                            )}
+                                                                        ) : (
+                                                                            <PlusIcon className="h-3 w-3 text-muted-foreground" />
+                                                                        )}
+                                                                    </button>
+                                                                    {qtyPackage >
+                                                                        0 && (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() =>
+                                                                                decrementLine(
+                                                                                    variant.id,
+                                                                                    'package',
+                                                                                )
+                                                                            }
+                                                                            className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                                                        >
+                                                                            <MinusIcon className="h-3 w-3" />
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+                                                            </div>
                                                         </div>
                                                     );
                                                 },
@@ -754,25 +741,18 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                     className="mt-2 flex items-center gap-1.5 rounded-md border p-1.5"
                                                 >
                                                     <div className="min-w-0 flex-1">
-                                                        <p className="flex items-center gap-1 truncate text-xs leading-tight font-medium">
+                                                        <p className="truncate text-[10px] leading-tight font-medium">
                                                             {item.product_name}
-                                                            <Badge
-                                                                variant="secondary"
-                                                                className="h-4 shrink-0 px-1 text-[9px]"
-                                                            >
-                                                                {item.pricing_mode ===
-                                                                'package'
-                                                                    ? `${t('Pkg')} x${num(item.units_per_package)}`
-                                                                    : t('Unit')}
-                                                            </Badge>
                                                         </p>
-                                                        <p className="truncate text-[10px] text-muted-foreground">
-                                                            {item.variant_name ||
-                                                                t('Default')}
-                                                            {item.unit_name
-                                                                ? ` / ${item.unit_name}`
-                                                                : ''}
-                                                        </p>
+                                                        <Badge
+                                                            variant="secondary"
+                                                            className="mt-0.5 h-4 shrink-0 px-1 text-[9px]"
+                                                        >
+                                                            {item.pricing_mode ===
+                                                            'package'
+                                                                ? `${t('Pkg')} x${num(item.units_per_package)}`
+                                                                : t('Single')}
+                                                        </Badge>
                                                     </div>
                                                     <div className="flex items-center gap-1">
                                                         <Button
