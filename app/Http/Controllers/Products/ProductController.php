@@ -42,7 +42,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products');
+            $data['image'] = $request->file('image')->store('images/products', 'public');
         }
 
         $data['sku'] = $this->generateSku($data['name']);
@@ -87,7 +87,7 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products');
+            $data['image'] = $request->file('image')->store('images/products', 'public');
         } else {
             unset($data['image']);
         }
@@ -120,7 +120,7 @@ class ProductController extends Controller
 
     public function toggleActive(Product $product): RedirectResponse
     {
-        $product->update(['is_active' => !$product->is_active]);
+        $product->update(['is_active' => ! $product->is_active]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Product status updated successfully.']);
 
@@ -151,7 +151,7 @@ class ProductController extends Controller
     private function generateVariantSku(string $productSku, string $variantName): string
     {
         $suffix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $variantName), 0, 2));
-        $variantCount = ProductVariant::where('sku', 'like', $productSku . '-%')->count();
+        $variantCount = ProductVariant::where('sku', 'like', $productSku.'-%')->count();
 
         return sprintf('%s-%s%02d', $productSku, $suffix ?: 'VN', $variantCount + 1);
     }
