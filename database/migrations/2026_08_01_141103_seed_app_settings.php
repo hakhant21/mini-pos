@@ -44,8 +44,8 @@ return new class extends Migration
         ]);
 
         DB::table('products')->insert([
-            ['category_id' => 1, 'sku' => 'SE-001', 'name' => 'Golden Mountain Oyster Sauce', 'image' => 'storage/images/products/golden-moutain.jpg'],
-            ['category_id' => 2, 'sku' => 'TI-001', 'name' => 'Shwe', 'image' => 'storage/images/products/shwe.png'],
+            ['category_id' => 1, 'sku' => 'SE-001', 'name' => 'Golden Mountain Oyster Sauce', 'image' => 'images/products/golden-moutain.jpg'],
+            ['category_id' => 2, 'sku' => 'TI-001', 'name' => 'Shwe', 'image' => 'images/products/shwe.png'],
         ]);
 
         DB::table('product_variants')->insert([
