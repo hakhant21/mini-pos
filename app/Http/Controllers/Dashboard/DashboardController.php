@@ -16,10 +16,9 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
-        $inventoryValue = round(
-            ProductVariant::sum('cost_price'),
-            2
-        );
+        $inventoryValue = round(ProductVariant::select(
+            DB::raw('SUM(cost_price * stock_quantity) as total_inventory_value')
+        )->value('total_inventory_value') ?? 0, 2);
 
         $lowStockVariants = ProductVariant::with(['product', 'unit'])
             ->where('stock_quantity', '>', 0)
@@ -29,8 +28,13 @@ class DashboardController extends Controller
             ->get();
 
         // Calculate Profit/Loss from Sales
-        $totalRevenue = Sale::sum('total_amount');
-        $totalCost = ProductVariant::sum('cost_price');
+        $totalRevenue = Sale::sum('total_amount') ?? 0;
+
+        $totalCost = SaleItem::select(
+            DB::raw('SUM(product_variants.cost_price * sale_items.quantity) as total_cost')
+        )
+            ->join('product_variants', 'sale_items.product_variant_id', '=', 'product_variants.id')
+            ->value('total_cost') ?? 0;
         $totalProfit =  $totalRevenue - $totalCost;
 
         // Total sales count

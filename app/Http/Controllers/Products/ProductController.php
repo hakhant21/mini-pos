@@ -10,12 +10,16 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Unit;
+use App\Traits\HasImage;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
+use Native\Mobile\Facades\File;
 
 class ProductController extends Controller
 {
+    use HasImage;
+
     public function index(): Response
     {
         $products = Product::query()
@@ -41,14 +45,14 @@ class ProductController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products', 'public');
-        }
-
         $data['sku'] = $this->generateSku($data['name']);
 
         $variants = $data['variants'] ?? [];
         unset($data['variants']);
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $this->uploadImage('products', $request->file('image'));
+        }
 
         $product = Product::create($data);
 
@@ -87,9 +91,12 @@ class ProductController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/products', 'public');
-        } else {
-            unset($data['image']);
+            // Delete the old image if it exists
+            if ($product->image) {
+                $this->deleteImage($product->image);
+            }
+
+            $data['image'] = $this->uploadImage('products', $request->file('image'));
         }
 
         $product->update($data);
@@ -151,7 +158,7 @@ class ProductController extends Controller
     private function generateVariantSku(string $productSku, string $variantName): string
     {
         $suffix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $variantName), 0, 2));
-        $variantCount = ProductVariant::where('sku', 'like', $productSku.'-%')->count();
+        $variantCount = ProductVariant::where('sku', 'like', $productSku . '-%')->count();
 
         return sprintf('%s-%s%02d', $productSku, $suffix ?: 'VN', $variantCount + 1);
     }
