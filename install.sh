@@ -185,7 +185,14 @@ ensure_docker_group() {
 export_caddy_certificate() {
     info "Exporting Caddy root certificate for local trust..."
 
-    # Wait for Caddy to start and generate certificates
+    # Check if Caddy container is running
+    if ! docker ps --filter "name=caddy" --filter "status=running" | grep -q caddy; then
+        warn "Caddy container is not running yet. Certificate export will be skipped."
+        warn "You can export it later with: docker exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt"
+        return 0
+    fi
+
+    # Wait for Caddy to generate certificates
     local max_attempts=30
     local attempt=0
 
@@ -224,7 +231,9 @@ export_caddy_certificate() {
         sleep 2
     done
 
-    warn "Could not export Caddy certificate (Caddy may not be running yet)"
+    warn "Could not export Caddy certificate after $max_attempts attempts"
+    warn "The certificate may not have been generated yet."
+    warn "You can try again later with: docker exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt"
 }
 
 start_stack() {
@@ -238,15 +247,25 @@ start_stack() {
     info "Building and starting the stack with HTTPS..."
     info "First build downloads dependencies and may take a while."
 
-    # Update environment with current IP and domain
+    # Start the stack
     APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}" APP_PORT="$APP_PORT" \
         ${SUDO_PREFIX:-}docker compose up -d --build
 
-    ok "Stack is running at ${APP_PROTOCOL}://${APP_DOMAIN} (IP: ${ip})"
-    info "You can also access via: ${APP_PROTOCOL}://${ip}:${APP_PORT}"
+    # Wait for containers to be ready
+    info "Waiting for containers to be ready..."
+    sleep 5
 
-    # Export certificate for trust
-    export_caddy_certificate
+    # Check if containers are running
+    if ${SUDO_PREFIX:-}docker compose ps | grep -q "Up"; then
+        ok "Stack is running at ${APP_PROTOCOL}://${APP_DOMAIN} (IP: ${ip})"
+        info "You can also access via: ${APP_PROTOCOL}://${ip}:${APP_PORT}"
+
+        # Export certificate for trust
+        export_caddy_certificate
+    else
+        warn "Containers may not have started properly. Check with: docker compose ps"
+        warn "Check logs with: docker compose logs"
+    fi
 }
 
 IP_STATE="/etc/bee-kyal-lan-ip"
@@ -286,6 +305,9 @@ update_ip() {
         APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}" APP_PORT="$APP_PORT" \
             ${SUDO_PREFIX:-}docker compose up -d
         ok "Stack updated to ${APP_PROTOCOL}://${APP_DOMAIN} (IP: ${ip})"
+
+        # Wait for containers
+        sleep 5
 
         # Re-export certificate in case it changed
         export_caddy_certificate
