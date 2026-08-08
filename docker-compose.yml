@@ -15,7 +15,7 @@ services:
             DB_PORT: ${DB_PORT:-3306}
             DB_DATABASE: ${DB_DATABASE:-minipos}
             DB_USERNAME: ${DB_USERNAME:-minipos}
-            DB_PASSWORD: ${DB_PASSWORD:-asdffdsa}
+            DB_PASSWORD: ${DB_PASSWORD:-secret}
             SESSION_DRIVER: file
             CACHE_STORE: file
             QUEUE_CONNECTION: database
