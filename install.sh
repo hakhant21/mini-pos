@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# mini-pos LAN deployment setup with HTTPS
+# mini-pos LAN deployment setup (HTTP only)
 #  - detects the machine's LAN IP
 #  - installs Docker (+ Compose) via get.docker.com if missing
 #  - adds the current user to the docker group
-#  - builds & starts the stack with HTTPS via Caddy
+#  - builds & starts the stack, reachable at http://<LAN_IP>:<APP_PORT>
 #  - adds bee-kyal.local to /etc/hosts with the detected IP
 #
 # Extra modes:
@@ -15,14 +15,14 @@ set -euo pipefail
 #                                  runs "update-ip" to follow a dynamic LAN IP
 #
 # Usage:
-#   ./install.sh                 # default port 443 (HTTPS)
-#   APP_PORT=8443 ./install.sh   # custom HTTPS port
+#   ./install.sh                 # default port 80
+#   APP_PORT=8080 ./install.sh   # custom port
 #   APP_IP=192.168.1.50 ./install.sh  # skip detection, use a fixed IP
 
-APP_PORT="${APP_PORT:-443}"
+APP_PORT="${APP_PORT:-80}"
 APP_IP="${APP_IP:-}"
 APP_DOMAIN="${APP_DOMAIN:-bee-kyal.local}"
-APP_PROTOCOL="${APP_PROTOCOL:-https}"
+APP_PROTOCOL="http"
 
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
@@ -41,7 +41,6 @@ cd "$SCRIPT_DIR"
 SUDO_PREFIX=""
 HOSTS_FILE="/etc/hosts"
 ENV_FILE="$SCRIPT_DIR/.env"
-CADDY_ROOT_CRT="$SCRIPT_DIR/caddy-root.crt"
 
 detect_lan_ip() {
     [ -n "$APP_IP" ] && { echo "$APP_IP"; return 0; }
@@ -108,10 +107,10 @@ update_env() {
 
     # Update or add APP_URL
     if grep -q "^APP_URL=" "$ENV_FILE" 2>/dev/null; then
-        sed -i.bak "s|^APP_URL=.*|APP_URL=${protocol}://${domain}|" "$ENV_FILE"
+        sed -i.bak "s|^APP_URL=.*|APP_URL=${protocol}://${domain}:${APP_PORT}|" "$ENV_FILE"
         rm -f "${ENV_FILE}.bak"
     else
-        echo "APP_URL=${protocol}://${domain}" >> "$ENV_FILE"
+        echo "APP_URL=${protocol}://${domain}:${APP_PORT}" >> "$ENV_FILE"
     fi
 
     # Update or add APP_DOMAIN
@@ -122,23 +121,18 @@ update_env() {
         echo "APP_DOMAIN=${domain}" >> "$ENV_FILE"
     fi
 
-    # Update or add SESSION_SECURE_COOKIE for HTTPS
+    # Remove HTTPS-specific settings if they exist
     if grep -q "^SESSION_SECURE_COOKIE=" "$ENV_FILE" 2>/dev/null; then
-        sed -i.bak "s|^SESSION_SECURE_COOKIE=.*|SESSION_SECURE_COOKIE=true|" "$ENV_FILE"
+        sed -i.bak "/^SESSION_SECURE_COOKIE=/d" "$ENV_FILE"
         rm -f "${ENV_FILE}.bak"
-    else
-        echo "SESSION_SECURE_COOKIE=true" >> "$ENV_FILE"
     fi
 
-    # Update or add TRUSTED_PROXIES for Caddy
     if grep -q "^TRUSTED_PROXIES=" "$ENV_FILE" 2>/dev/null; then
-        sed -i.bak "s|^TRUSTED_PROXIES=.*|TRUSTED_PROXIES=172.*|" "$ENV_FILE"
+        sed -i.bak "/^TRUSTED_PROXIES=/d" "$ENV_FILE"
         rm -f "${ENV_FILE}.bak"
-    else
-        echo "TRUSTED_PROXIES=172.*" >> "$ENV_FILE"
     fi
 
-    ok "Updated $ENV_FILE with APP_URL=${protocol}://${domain}"
+    ok "Updated $ENV_FILE with APP_URL=${protocol}://${domain}:${APP_PORT}"
 }
 
 ensure_docker() {
@@ -182,60 +176,6 @@ ensure_docker_group() {
     SUDO_PREFIX="sudo "
 }
 
-export_caddy_certificate() {
-    info "Exporting Caddy root certificate for local trust..."
-
-    # Check if Caddy container is running
-    if ! docker ps --filter "name=caddy" --filter "status=running" | grep -q caddy; then
-        warn "Caddy container is not running yet. Certificate export will be skipped."
-        warn "You can export it later with: docker exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt"
-        return 0
-    fi
-
-    # Wait for Caddy to generate certificates
-    local max_attempts=30
-    local attempt=0
-
-    while [ $attempt -lt $max_attempts ]; do
-        if docker exec caddy test -f /data/caddy/pki/authorities/local/root.crt 2>/dev/null; then
-            docker exec caddy cat /data/caddy/pki/authorities/local/root.crt > "$CADDY_ROOT_CRT"
-            ok "Caddy root certificate exported to $CADDY_ROOT_CRT"
-
-            # Show instructions for trusting the certificate
-            echo ""
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo "To trust the self-signed certificate and avoid browser warnings:"
-            echo ""
-            if $IS_MAC; then
-                echo "  macOS: Double-click $CADDY_ROOT_CRT, add to System keychain"
-                echo "  Then right-click -> Get Info -> Always Trust"
-            elif command -v update-ca-certificates >/dev/null 2>&1; then
-                echo "  Linux (Debian/Ubuntu):"
-                echo "    sudo cp $CADDY_ROOT_CRT /usr/local/share/ca-certificates/"
-                echo "    sudo update-ca-certificates"
-            elif command -v trust >/dev/null 2>&1; then
-                echo "  Linux (Fedora/RHEL):"
-                echo "    sudo trust anchor $CADDY_ROOT_CRT"
-            else
-                echo "  Linux:"
-                echo "    sudo cp $CADDY_ROOT_CRT /usr/share/ca-certificates/"
-                echo "    sudo update-ca-certificates --fresh"
-            fi
-            echo ""
-            echo "  Or simply click 'Advanced' -> 'Proceed to site' in your browser"
-            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            echo ""
-            return 0
-        fi
-        attempt=$((attempt + 1))
-        sleep 2
-    done
-
-    warn "Could not export Caddy certificate after $max_attempts attempts"
-    warn "The certificate may not have been generated yet."
-    warn "You can try again later with: docker exec caddy cat /data/caddy/pki/authorities/local/root.crt > caddy-root.crt"
-}
-
 start_stack() {
     local ip="$1"
 
@@ -244,11 +184,11 @@ start_stack() {
         return 0
     fi
 
-    info "Building and starting the stack with HTTPS..."
+    info "Building and starting the stack (HTTP only)..."
     info "First build downloads dependencies and may take a while."
 
-    # Start the stack
-    APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}" APP_PORT="$APP_PORT" \
+    # Start the stack with HTTP
+    APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT}" APP_PORT="$APP_PORT" \
         ${SUDO_PREFIX:-}docker compose up -d --build
 
     # Wait for containers to be ready
@@ -257,11 +197,8 @@ start_stack() {
 
     # Check if containers are running
     if ${SUDO_PREFIX:-}docker compose ps | grep -q "Up"; then
-        ok "Stack is running at ${APP_PROTOCOL}://${APP_DOMAIN} (IP: ${ip})"
+        ok "Stack is running at ${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT} (IP: ${ip})"
         info "You can also access via: ${APP_PROTOCOL}://${ip}:${APP_PORT}"
-
-        # Export certificate for trust
-        export_caddy_certificate
     else
         warn "Containers may not have started properly. Check with: docker compose ps"
         warn "Check logs with: docker compose logs"
@@ -301,16 +238,10 @@ update_ip() {
     update_env "$ip"
 
     if [ -f docker-compose.yml ]; then
-        info "Recreating stack with APP_URL=${APP_PROTOCOL}://${APP_DOMAIN} ..."
-        APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}" APP_PORT="$APP_PORT" \
+        info "Recreating stack with APP_URL=${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT} ..."
+        APP_URL="${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT}" APP_PORT="$APP_PORT" \
             ${SUDO_PREFIX:-}docker compose up -d
-        ok "Stack updated to ${APP_PROTOCOL}://${APP_DOMAIN} (IP: ${ip})"
-
-        # Wait for containers
-        sleep 5
-
-        # Re-export certificate in case it changed
-        export_caddy_certificate
+        ok "Stack updated to ${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT} (IP: ${ip})"
     fi
 }
 
@@ -367,21 +298,18 @@ main() {
         setup-cron)
             setup_cron
             ;;
-        trust-cert)
-            # Manually export and trust certificate
-            export_caddy_certificate
-            ;;
         *)
             [ "$(id -u)" -eq 0 ] && die "Run as a regular user (sudo is used internally when needed)."
 
-            info "mini-pos Docker setup with HTTPS ($SCRIPT_DIR)"
+            info "mini-pos Docker setup (HTTP only) - $SCRIPT_DIR"
 
             LAN_IP="$(detect_lan_ip)"
             [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
 
             ok "Detected LAN IP: $LAN_IP"
             ok "Using domain: $APP_DOMAIN"
-            ok "Using protocol: $APP_PROTOCOL"
+            ok "Using protocol: $APP_PROTOCOL (HTTP)"
+            ok "Using port: $APP_PORT"
 
             save_ip_state "$LAN_IP"
             ensure_docker
@@ -403,12 +331,8 @@ main() {
             ok "Setup complete!"
             info ""
             info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            info "Access your app at: ${APP_PROTOCOL}://${APP_DOMAIN}"
+            info "Access your app at: ${APP_PROTOCOL}://${APP_DOMAIN}:${APP_PORT}"
             info "Or via IP: ${APP_PROTOCOL}://${LAN_IP}:${APP_PORT}"
-            info ""
-            info "Since this is a self-signed certificate, your browser will show a warning:"
-            info "  - Click 'Advanced' -> 'Proceed to site' (or similar)"
-            info "  - Or install the certificate: sudo $0 trust-cert"
             info ""
             info "To update IP automatically, run: sudo $0 setup-cron"
             info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
