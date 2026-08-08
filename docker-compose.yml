@@ -25,8 +25,8 @@ services:
       - storage_data:/var/www/storage/app
       - storage_logs:/var/www/storage/logs
 
-  nginx:
-    image: nginx:1.27-alpine
+  caddy:
+    image: caddy:2-alpine
     restart: unless-stopped
     depends_on:
       - app
@@ -35,10 +35,14 @@ services:
     volumes:
       - app_code:/var/www:ro
       - storage_data:/var/www/storage/app:ro
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
 
 volumes:
   app_code:
   sqlite_data:
   storage_data:
   storage_logs:
+  caddy_data:
+  caddy_config:
