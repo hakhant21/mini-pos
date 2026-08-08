@@ -407,7 +407,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                 })),
                             ]}
                             placeholder={t('All Products')}
-                            className="w-40"
+                            className="w-2/4"
                         />
                         <div className="flex flex-1 items-center gap-2 rounded-md px-2 py-2 text-sm shadow-xs">
                             <Input

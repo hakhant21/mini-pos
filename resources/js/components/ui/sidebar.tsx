@@ -94,7 +94,7 @@ function SidebarProvider({
 
   // Close the mobile sidebar whenever a page navigation starts.
   React.useEffect(() => {
-    const unsubscribe = router.on("start", () => {
+    const unsubscribe = router.on("navigate", () => {
       setOpenMobile(false)
     })
 
