@@ -575,15 +575,17 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                             {cart.map((item) => (
                                                 <div
                                                     key={item.id}
-                                                    className="mt-2 flex items-center gap-1.5 rounded-md border p-1.5"
+                                                    className="mt-2 rounded-md border p-1.5"
                                                 >
-                                                    <div className="min-w-0 flex-1">
-                                                        <p className="truncate text-[10px] leading-tight font-medium">
+                                                    <div className="flex items-center justify-between gap-1.5">
+                                                        <p className="min-w-0 flex-1 truncate text-[10px] leading-tight font-medium">
                                                             {item.product_name}
+                                                            {item.variant_name &&
+                                                                ` - ${item.variant_name}`}
                                                         </p>
                                                         <Badge
                                                             variant="secondary"
-                                                            className="mt-0.5 h-4 shrink-0 px-1 text-[9px]"
+                                                            className="h-4 shrink-0 px-1 text-[10px]"
                                                         >
                                                             {item.pricing_mode ===
                                                             'package'
@@ -591,59 +593,62 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                 : t('Single')}
                                                         </Badge>
                                                     </div>
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="mt-1 flex items-center justify-between gap-1.5">
+                                                        <p className="text-right text-[11px] font-medium tabular-nums">
+                                                            Ks:
+                                                            {ks(
+                                                                item.unit_price *
+                                                                    item.quantity,
+                                                            )}
+                                                        </p>
+                                                        <div className="flex items-center gap-1">
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-5 w-5"
+                                                                onClick={() =>
+                                                                    updateQuantity(
+                                                                        item.id,
+                                                                        -1,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <MinusIcon className="h-2.5 w-2.5" />
+                                                            </Button>
+                                                            <span className="min-w-4.5 text-center text-[11px] font-semibold tabular-nums">
+                                                                {item.quantity}
+                                                            </span>
+                                                            <Button
+                                                                variant="outline"
+                                                                size="icon"
+                                                                className="h-5 w-5"
+                                                                disabled={
+                                                                    item.quantity >=
+                                                                    item.stock_quantity
+                                                                }
+                                                                onClick={() =>
+                                                                    updateQuantity(
+                                                                        item.id,
+                                                                        1,
+                                                                    )
+                                                                }
+                                                            >
+                                                                <PlusIcon className="h-2.5 w-2.5" />
+                                                            </Button>
+                                                        </div>
                                                         <Button
-                                                            variant="outline"
+                                                            variant="ghost"
                                                             size="icon"
-                                                            className="h-5 w-5"
+                                                            className="h-5 w-5 text-destructive"
                                                             onClick={() =>
-                                                                updateQuantity(
+                                                                removeFromCart(
                                                                     item.id,
-                                                                    -1,
                                                                 )
                                                             }
                                                         >
-                                                            <MinusIcon className="h-2.5 w-2.5" />
-                                                        </Button>
-                                                        <span className="min-w-4.5 text-center text-[11px] font-semibold tabular-nums">
-                                                            {item.quantity}
-                                                        </span>
-                                                        <Button
-                                                            variant="outline"
-                                                            size="icon"
-                                                            className="h-5 w-5"
-                                                            disabled={
-                                                                item.quantity >=
-                                                                item.stock_quantity
-                                                            }
-                                                            onClick={() =>
-                                                                updateQuantity(
-                                                                    item.id,
-                                                                    1,
-                                                                )
-                                                            }
-                                                        >
-                                                            <PlusIcon className="h-2.5 w-2.5" />
+                                                            <Trash2 className="h-3 w-3" />
                                                         </Button>
                                                     </div>
-                                                    <p className="w-14 text-right text-[11px] font-medium tabular-nums">
-                                                        {ks(
-                                                            item.unit_price *
-                                                                item.quantity,
-                                                        )}
-                                                    </p>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-5 w-5 text-destructive"
-                                                        onClick={() =>
-                                                            removeFromCart(
-                                                                item.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <Trash2 className="h-3 w-3" />
-                                                    </Button>
                                                 </div>
                                             ))}
                                         </div>
@@ -656,7 +661,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                             )}
 
                                             {!sale && (
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 py-2">
                                                     <Input
                                                         placeholder={t(
                                                             'Discount',
@@ -670,7 +675,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        className="h-7 py-1 text-[11px]"
+                                                        className="h-8 py-2 text-[11px]"
                                                     />
                                                     <Input
                                                         placeholder={t('Tax')}
@@ -683,7 +688,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                 e.target.value,
                                                             )
                                                         }
-                                                        className="h-7 py-1 text-[11px]"
+                                                        className="h-8 py-2 text-[11px]"
                                                     />
                                                 </div>
                                             )}
@@ -695,13 +700,16 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             {t('Existing')}
                                                         </span>
                                                         <span>
+                                                            Ks:
                                                             {ks(existingTotal)}
                                                         </span>
                                                     </div>
                                                 )}
                                                 <div className="flex justify-between text-muted-foreground">
                                                     <span>{t('Subtotal')}</span>
-                                                    <span>{ks(subtotal)}</span>
+                                                    <span>
+                                                        Ks: {ks(subtotal)}
+                                                    </span>
                                                 </div>
                                                 {sale ? (
                                                     <>
@@ -713,7 +721,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                                     )}
                                                                 </span>
                                                                 <span className="text-destructive">
-                                                                    -
+                                                                    - Ks:{' '}
                                                                     {ks(
                                                                         saleDiscount,
                                                                     )}
@@ -767,7 +775,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                 <Separator className="my-1" />
                                                 <div className="flex justify-between text-sm font-bold">
                                                     <span>{t('Total')}</span>
-                                                    <span>{ks(total)}</span>
+                                                    <span>Ks: {ks(total)}</span>
                                                 </div>
                                             </div>
 
