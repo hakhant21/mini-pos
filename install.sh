@@ -17,6 +17,7 @@ set -euo pipefail
 # Usage:
 #   ./install.sh                 # default port 443 (HTTPS)
 #   APP_PORT=8443 ./install.sh   # custom HTTPS port
+#   APP_IP=192.168.1.50 ./install.sh  # skip detection, use a fixed IP
 
 APP_PORT="${APP_PORT:-443}"
 APP_IP="${APP_IP:-}"
@@ -67,6 +68,8 @@ detect_lan_ip() {
 update_hosts() {
     local ip="$1"
     local domain="$APP_DOMAIN"
+
+    info "Updating hosts file with $domain -> $ip"
 
     if $IS_MAC; then
         # macOS uses a different approach
@@ -125,6 +128,14 @@ update_env() {
         rm -f "${ENV_FILE}.bak"
     else
         echo "SESSION_SECURE_COOKIE=true" >> "$ENV_FILE"
+    fi
+
+    # Update or add TRUSTED_PROXIES for Caddy
+    if grep -q "^TRUSTED_PROXIES=" "$ENV_FILE" 2>/dev/null; then
+        sed -i.bak "s|^TRUSTED_PROXIES=.*|TRUSTED_PROXIES=172.*|" "$ENV_FILE"
+        rm -f "${ENV_FILE}.bak"
+    else
+        echo "TRUSTED_PROXIES=172.*" >> "$ENV_FILE"
     fi
 
     ok "Updated $ENV_FILE with APP_URL=${protocol}://${domain}"
@@ -312,6 +323,15 @@ setup_cron() {
 }
 
 main() {
+    # Check for internal commands first (these are called with sudo)
+    case "${1:-}" in
+        update-hosts-internal)
+            shift
+            update_hosts "$@"
+            exit 0
+            ;;
+    esac
+
     case "${1:-}" in
         update-ip)
             # Check if running with proper permissions for hosts file
@@ -352,7 +372,7 @@ main() {
             else
                 warn "Updating hosts file requires root privileges."
                 warn "Running update_hosts with sudo..."
-                sudo "$0" update_hosts_internal "$LAN_IP"
+                sudo "$0" update-hosts-internal "$LAN_IP"
                 update_env "$LAN_IP"
             fi
 
@@ -372,12 +392,6 @@ main() {
             info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             ;;
     esac
-}
-
-# Internal function for sudo to update hosts
-update_hosts_internal() {
-    local ip="$1"
-    update_hosts "$ip"
 }
 
 main "$@"
