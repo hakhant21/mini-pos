@@ -102,7 +102,6 @@ update_env() {
     # Update or add environment variables
     cat > "$ENV_FILE" <<EOF
 # Application
-APP_NAME="ဘီးကြဲ"
 APP_URL=${protocol}://${domain}:${APP_PORT}
 APP_DOMAIN=${domain}
 APP_ENV=production
