@@ -21,7 +21,6 @@ services:
             SESSION_DRIVER: database
             CACHE_STORE: database
             QUEUE_CONNECTION: database
-            PHP_MEMORY_LIMIT: 256M
             # Trust proxies (important for HTTPS behind Caddy)
             TRUSTED_PROXIES: "172.*"
         volumes:
