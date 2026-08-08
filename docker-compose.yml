@@ -9,14 +9,6 @@ services:
         image: mini-pos:latest
         restart: unless-stopped
         working_dir: /var/www
-        deploy:
-            resources:
-                limits:
-                    cpus: "0.75"
-                    memory: 512M
-                reservations:
-                    cpus: "0.25"
-                    memory: 256M
         env_file:
             - path: .env
               required: false
