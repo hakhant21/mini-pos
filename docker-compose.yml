@@ -21,7 +21,7 @@ services:
             QUEUE_CONNECTION: database
         volumes:
             - app_code:/var/www
-            - ./docker/database:/var/www/database
+            - sqlite_data:/var/www/database/
             - storage_data:/var/www/storage/app
             - storage_logs:/var/www/storage/logs
 
@@ -41,6 +41,7 @@ services:
 
 volumes:
     app_code:
+    sqlite_data:
     storage_data:
     storage_logs:
     caddy_data:
