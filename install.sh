@@ -14,6 +14,9 @@ set -euo pipefail
 #                                  runs "update-hosts", so dynamic IPs stay in sync
 #   sudo ./install.sh setup-dns  - install/configure dnsmasq on this server so LAN
 #                                  devices can resolve <APP_DOMAIN> to its LAN IP
+#
+#   A plain "./install.sh" also installs and configures dnsmasq automatically
+#   (Linux servers only), so LAN devices can use <APP_DOMAIN> right away.
 
 APP_DOMAIN="${APP_DOMAIN:-bee-kyal.test}"
 APP_PORT="${APP_PORT:-80}"
@@ -75,13 +78,12 @@ add_hosts_entry() {
     ok "Mapped $ip -> $APP_DOMAIN in /etc/hosts"
 }
 
-sync_dnsmasq() {
+write_dnsmasq_conf() {
     local ip="$1"
     local conf="/etc/dnsmasq.d/bee-kyal.conf"
     local tmp
     local sudo_cmd="sudo"
 
-    [ -f "$conf" ] || return 0
     [ "$(id -u)" -eq 0 ] && sudo_cmd=""
 
     tmp="$(mktemp)"
@@ -92,7 +94,15 @@ listen-address=$ip
 EOF
     $sudo_cmd cp "$tmp" "$conf"
     rm -f "$tmp"
-    $sudo_cmd sh -c "systemctl restart dnsmasq >/dev/null 2>&1 || service dnsmasq restart >/dev/null 2>&1" || true
+    $sudo_cmd sh -c "systemctl enable dnsmasq >/dev/null 2>&1 || true; \
+        systemctl restart dnsmasq >/dev/null 2>&1 || service dnsmasq restart >/dev/null 2>&1" || true
+}
+
+sync_dnsmasq() {
+    local ip="$1"
+
+    [ -f "/etc/dnsmasq.d/bee-kyal.conf" ] || return 0
+    write_dnsmasq_conf "$ip"
     ok "Refreshed dnsmasq: $APP_DOMAIN -> $ip"
 }
 
@@ -115,31 +125,32 @@ update_hosts() {
 
 setup_dns() {
     local ip
+    local sudo_cmd="sudo"
 
     $IS_MAC && die "setup-dns runs on the Linux server (Raspberry Pi), not macOS."
-    [ "$(id -u)" -eq 0 ] || die "setup-dns must run as root (use: sudo $0 setup-dns)"
+    [ "$(id -u)" -eq 0 ] && sudo_cmd=""
 
     ip="$(detect_lan_ip)" || true
     [ -z "$ip" ] && die "Could not detect the LAN IP (set APP_IP=<ip> to override)."
 
     if ! command -v dnsmasq >/dev/null 2>&1; then
-        info "Installing dnsmasq..."
+        info "Installing dnsmasq (apt-get install -y dnsmasq)..."
         if command -v apt-get >/dev/null 2>&1; then
-            apt-get update -y
-            apt-get install -y dnsmasq
+            $sudo_cmd apt-get update -y
+            $sudo_cmd apt-get install -y dnsmasq
         else
             die "dnsmasq not found and no apt-get available. Install dnsmasq manually and re-run."
         fi
     fi
 
     add_hosts_entry "$ip"
-    sync_dnsmasq "$ip"
+    write_dnsmasq_conf "$ip"
 
     ok "dnsmasq serving $APP_DOMAIN -> $ip (listening on $ip:53)."
     warn "Point LAN devices at this machine as their DNS server:"
     warn "  - set the router's DHCP DNS server to $ip, and/or"
     warn "  - set each device's DNS manually to $ip."
-    warn "Run 'sudo $0 setup-dns' again after network changes; the daily cron keeps it in sync."
+    warn "The daily cron keeps /etc/hosts and dnsmasq in sync on IP changes."
 }
 
 setup_cron() {
@@ -250,6 +261,7 @@ main() {
             add_hosts_entry "$LAN_IP"
             ensure_docker
             ensure_docker_group
+            $IS_MAC || setup_dns
             start_stack
             ;;
     esac
