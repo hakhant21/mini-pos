@@ -5,39 +5,58 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
+        container_name: minipos
         image: mini-pos:latest
         restart: unless-stopped
         working_dir: /var/www
+        deploy:
+            resources:
+                limits:
+                    cpus: "0.75"
+                    memory: 512M
+                reservations:
+                    cpus: "0.25"
+                    memory: 256M
         env_file:
             - path: .env
               required: false
         environment:
             APP_ENV: production
-            APP_URL: ${APP_URL:-http://localhost:${APP_PORT:-80}}
+            APP_URL: ${APP_URL:-https://bee-kyal.local}
+            APP_DOMAIN: ${APP_DOMAIN:-bee-kyal.local}
             DB_CONNECTION: sqlite
             DB_DATABASE: /var/www/database/database.sqlite
             SESSION_DRIVER: database
             CACHE_STORE: database
             QUEUE_CONNECTION: database
+            PHP_MEMORY_LIMIT: 256M
+            # Trust proxies (important for HTTPS behind Caddy)
+            TRUSTED_PROXIES: "172.*"
         volumes:
             - app_code:/var/www
             - sqlite_data:/var/www/database/
             - storage_data:/var/www/storage/app
             - storage_logs:/var/www/storage/logs
+        networks:
+            - minipos_network
 
     caddy:
+        container_name: caddy
         image: caddy:2-alpine
         restart: unless-stopped
-        depends_on:
-            - app
         ports:
-            - "${APP_PORT:-80}:80"
+            - "80:80"
+            - "443:443"
         volumes:
             - app_code:/var/www:ro
             - storage_data:/var/www/storage/app:ro
             - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
             - caddy_data:/data
             - caddy_config:/config
+        depends_on:
+            - app
+        networks:
+            - minipos_network
 
 volumes:
     app_code:
@@ -46,3 +65,7 @@ volumes:
     storage_logs:
     caddy_data:
     caddy_config:
+
+networks:
+    minipos_network:
+        driver: bridge

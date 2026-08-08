@@ -1,6 +1,38 @@
-:80 {
-	root * /var/www/public
-	php_fastcgi app:9000
-	encode gzip
-	file_server
+bee-kyal.local {
+    root * /var/www/public
+    file_server {
+        precompressed br gzip
+    }
+
+    php_fastcgi app:9000 {
+        # Pass HTTPS environment
+        env APP_ENV production
+        env APP_DEBUG false
+        env HTTPS on
+    }
+
+    header {
+        # Enable HSTS (force HTTPS)
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        # Security headers
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        # Cache static assets
+        Cache-Control "public, max-age=31536000, immutable"
+    }
+    encode gzip br
+
+    @forbidden {
+        path /.env
+        path /storage/*.php
+        path /vendor/*
+        path /docker/*
+    }
+    abort @forbidden 403
+}
+
+bee-kyal.local:80 {
+    redir https://bee-kyal.local{uri} permanent
 }
