@@ -1,29 +1,22 @@
-# HTTPS configuration for bee-kyal.local
+{
+    admin off
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+}
+
 bee-kyal.local {
     root * /var/www/public
     php_fastcgi app:9000
     file_server
-
-    header {
-        Strict-Transport-Security "max-age=31536000"
-        X-Content-Type-Options "nosniff"
-        X-Frame-Options "DENY"
-        X-XSS-Protection "1; mode=block"
-    }
-
-    encode gzip
-
-    # Block access to sensitive files
-    @forbidden {
-        path /.env
-        path /storage/*.php
-        path /vendor/*
-        path /docker/*
-    }
-    respond @forbidden 403
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
 }
 
-# Redirect HTTP to HTTPS
+192.168.100.70 {
+    root * /var/www/public
+    php_fastcgi app:9000
+    file_server
+    tls /etc/caddy/certs/server.crt /etc/caddy/certs/server.key
+}
+
 bee-kyal.local:80 {
     redir https://bee-kyal.local{uri} permanent
 }
