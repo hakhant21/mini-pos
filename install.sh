@@ -23,6 +23,7 @@ set -euo pipefail
 #   DB_PASSWORD=mysecret ./install.sh  # custom MySQL password
 #   SKIP_CADDY=true ./install.sh  # skip Caddy installation
 
+APP_NAME="${APP_NAME:-mini-pos}"
 APP_PORT="${APP_PORT:-80}"
 APP_IP="${APP_IP:-}"
 APP_DOMAIN="${APP_DOMAIN:-bee-kyal.lan}"
@@ -102,6 +103,7 @@ update_env() {
     # Update or add environment variables
     cat > "$ENV_FILE" <<EOF
 # Application
+APP_NAME=${APP_NAME}
 APP_URL=${protocol}://${domain}:${APP_PORT}
 APP_DOMAIN=${domain}
 APP_ENV=production
