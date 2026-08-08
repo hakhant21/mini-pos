@@ -1,0 +1,41 @@
+.git
+.github
+.gitignore
+.env
+.env.production
+.env.backup
+.DS_Store
+
+# Dependencies
+node_modules
+vendor
+
+# Frontend build output
+public/build
+public/hot
+public/storage
+
+# Runtime generated data
+storage/app/*
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+database/database.sqlite
+
+# NativePHP / mobile build artifacts
+native
+nativephp
+nativephp.lock
+credentials
+
+# Local tooling
+.idea
+.vscode
+.zed
+.fleet
+.nova
+.vtcode
+.phpunit.cache
+*.log
