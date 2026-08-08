@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { dashboard } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 
@@ -47,9 +41,7 @@ export default function CreateUser() {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">{t('Create User')}</h1>
                     <Link href="/settings/users">
-                        <Button variant="outline">
-                            {t('Back to Users')}
-                        </Button>
+                        <Button variant="outline">{t('Back to Users')}</Button>
                     </Link>
                 </div>
 
@@ -127,26 +119,23 @@ export default function CreateUser() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="role">{t('Role')}</Label>
-                                    <Select
+                                    <SearchableSelect
                                         value={data.role}
                                         onValueChange={(v) =>
                                             setData('role', v)
                                         }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue
-                                                placeholder={t('Select role')}
-                                            />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="admin">
-                                                {t('Admin')}
-                                            </SelectItem>
-                                            <SelectItem value="cashier">
-                                                {t('Cashier')}
-                                            </SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                        options={[
+                                            {
+                                                value: 'admin',
+                                                label: t('Admin'),
+                                            },
+                                            {
+                                                value: 'cashier',
+                                                label: t('Cashier'),
+                                            },
+                                        ]}
+                                        placeholder={t('Select role')}
+                                    />
                                     {errors.role && (
                                         <p className="text-sm text-destructive">
                                             {errors.role}

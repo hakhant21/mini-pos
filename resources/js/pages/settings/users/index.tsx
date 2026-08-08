@@ -15,13 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Table,
     TableBody,
@@ -379,24 +373,15 @@ export default function UsersIndex({ users: usersData }: Props) {
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="edit-role">{t('Role')}</Label>
-                            <Select
+                            <SearchableSelect
                                 value={data.role}
                                 onValueChange={(v) => setData('role', v)}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue
-                                        placeholder={t('Select role')}
-                                    />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="admin">
-                                        {t('Admin')}
-                                    </SelectItem>
-                                    <SelectItem value="cashier">
-                                        {t('Cashier')}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                options={[
+                                    { value: 'admin', label: t('Admin') },
+                                    { value: 'cashier', label: t('Cashier') },
+                                ]}
+                                placeholder={t('Select role')}
+                            />
                             {errors.role && (
                                 <p className="text-sm text-destructive">
                                     {errors.role}

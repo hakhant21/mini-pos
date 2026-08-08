@@ -13,13 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Table,
     TableBody,
@@ -117,24 +111,19 @@ export default function ProductsIndex({ products: productsData }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <Select
+                    <SearchableSelect
                         value={categoryFilter}
                         onValueChange={setCategoryFilter}
-                    >
-                        <SelectTrigger className="w-100 lg:w-45">
-                            <SelectValue placeholder={t('All Categories')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                {t('All Categories')}
-                            </SelectItem>
-                            {categories.map((cat) => (
-                                <SelectItem key={cat.id} value={String(cat.id)}>
-                                    {cat.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        options={[
+                            { value: 'all', label: t('All Categories') },
+                            ...categories.map((cat) => ({
+                                value: String(cat.id),
+                                label: cat.name,
+                            })),
+                        ]}
+                        placeholder={t('All Categories')}
+                        className="w-100 lg:w-45"
+                    />
 
                     <Input
                         placeholder={t('Search by name, SKU, or brand...')}

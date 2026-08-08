@@ -1,14 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import {
-    Plus,
-    Pencil,
-    Trash2,
-    EyeOff,
-    Eye,
-    LoaderCircle,
-    Search,
-} from 'lucide-react';
+import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,13 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Table,
     TableBody,
@@ -280,25 +266,17 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <Select
+                    <SearchableSelect
                         value={statusFilter}
                         onValueChange={setStatusFilter}
-                    >
-                        <SelectTrigger className="w-full lg:w-35">
-                            <SelectValue placeholder={t('All Status')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                {t('All Status')}
-                            </SelectItem>
-                            <SelectItem value="active">
-                                {t('Active')}
-                            </SelectItem>
-                            <SelectItem value="inactive">
-                                {t('Inactive')}
-                            </SelectItem>
-                        </SelectContent>
-                    </Select>
+                        options={[
+                            { value: 'all', label: t('All Status') },
+                            { value: 'active', label: t('Active') },
+                            { value: 'inactive', label: t('Inactive') },
+                        ]}
+                        placeholder={t('All Status')}
+                        className="w-full lg:w-35"
+                    />
 
                     <Input
                         placeholder={t('Search by name or description...')}

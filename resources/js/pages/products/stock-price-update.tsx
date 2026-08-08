@@ -10,13 +10,7 @@ import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     Table,
     TableBody,
@@ -243,51 +237,38 @@ export default function StockPriceUpdate({ products }: Props) {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-4">
-                    <Select
+                    <SearchableSelect
                         value={categoryFilter}
                         onValueChange={(v) => {
                             setCategoryFilter(v);
                             setPage(1);
                         }}
-                    >
-                        <SelectTrigger className="w-100 lg:w-45">
-                            <SelectValue placeholder={t('All Categories')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                {t('All Categories')}
-                            </SelectItem>
-                            {categories.map((cat) => (
-                                <SelectItem key={cat.id} value={String(cat.id)}>
-                                    {cat.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Select
+                        options={[
+                            { value: 'all', label: t('All Categories') },
+                            ...categories.map((cat) => ({
+                                value: String(cat.id),
+                                label: cat.name,
+                            })),
+                        ]}
+                        placeholder={t('All Categories')}
+                        className="w-100 lg:w-45"
+                    />
+                    <SearchableSelect
                         value={unitFilter}
                         onValueChange={(v) => {
                             setUnitFilter(v);
                             setPage(1);
                         }}
-                    >
-                        <SelectTrigger className="w-100 lg:w-45">
-                            <SelectValue placeholder={t('All Units')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">
-                                {t('All Units')}
-                            </SelectItem>
-                            {units.map((u) => (
-                                <SelectItem
-                                    key={u.abbreviation}
-                                    value={u.abbreviation}
-                                >
-                                    {u.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                        options={[
+                            { value: 'all', label: t('All Units') },
+                            ...units.map((u) => ({
+                                value: u.abbreviation,
+                                label: u.name,
+                            })),
+                        ]}
+                        placeholder={t('All Units')}
+                        className="w-100 lg:w-45"
+                    />
                     <Input
                         placeholder={t(
                             'Search by product, variant, or unit...',

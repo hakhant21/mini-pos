@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
     products,
     productsCreate,
@@ -89,8 +83,8 @@ export default function ProductsCreate({ categories, units }: Props) {
     const updateVariant = (index: number, field: string, value: string) => {
         const updated = variants.map((v, i) => {
             if (i !== index) {
-return v;
-}
+                return v;
+            }
 
             return { ...v, [field]: value };
         });
@@ -130,30 +124,17 @@ return v;
                                     <Label htmlFor="category_id">
                                         {t('Category')}
                                     </Label>
-                                    <Select
+                                    <SearchableSelect
                                         value={data.category_id}
                                         onValueChange={(v) =>
                                             setData('category_id', v)
                                         }
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue
-                                                placeholder={t(
-                                                    'Select category',
-                                                )}
-                                            />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {categories.map((cat) => (
-                                                <SelectItem
-                                                    key={cat.id}
-                                                    value={String(cat.id)}
-                                                >
-                                                    {cat.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        options={categories.map((cat) => ({
+                                            value: String(cat.id),
+                                            label: cat.name,
+                                        }))}
+                                        placeholder={t('Select category')}
+                                    />
                                     {formErrors.category_id && (
                                         <p className="text-sm text-destructive">
                                             {formErrors.category_id}
@@ -253,7 +234,7 @@ return v;
                                             <Label className="text-xs">
                                                 {t('Unit')}
                                             </Label>
-                                            <Select
+                                            <SearchableSelect
                                                 value={variant.unit_id}
                                                 onValueChange={(v) =>
                                                     updateVariant(
@@ -262,23 +243,13 @@ return v;
                                                         v,
                                                     )
                                                 }
-                                            >
-                                                <SelectTrigger className="w-full">
-                                                    <SelectValue
-                                                        placeholder={t('Unit')}
-                                                    />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    {units.map((u) => (
-                                                        <SelectItem
-                                                            key={u.id}
-                                                            value={String(u.id)}
-                                                        >
-                                                            {u.name}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                                options={units.map((u) => ({
+                                                    value: String(u.id),
+                                                    label: u.name,
+                                                }))}
+                                                placeholder={t('Unit')}
+                                                className="w-full"
+                                            />
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">

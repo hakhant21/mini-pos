@@ -26,8 +26,8 @@ class SaleController extends Controller
         $endDate = $request->input('end_date');
         $perPage = 15;
 
-        $applyDateFilter = fn ($query) => $startDate && $endDate
-            ? $query->whereBetween('created_at', [$startDate.' 00:00:00', $endDate.' 23:59:59'])
+        $applyDateFilter = fn($query) => $startDate && $endDate
+            ? $query->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
             : $query->whereDate('created_at', today());
 
         $paginatedSales = $applyDateFilter(Sale::with('items')->orderBy('created_at', 'desc'))->paginate($perPage);

@@ -12,13 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import { Separator } from '@/components/ui/separator';
 import {
     Table,
@@ -28,6 +22,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { VariantPriceBlock } from '@/components/variant-price-block';
 import {
     salesCheckout,
     salesAddItems,
@@ -46,8 +41,6 @@ type Props = {
 
 let cartIdCounter = 0;
 
-const MAX_VARIANTS = 2;
-
 export default function SalesCheckout({ products, sale = null }: Props) {
     const { t } = useTranslation();
 
@@ -56,6 +49,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [search, setSearch] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    const [selectedProduct, setSelectedProduct] = useState<string>('all');
     const [paymentMethod, setPaymentMethod] = useState('cash');
     const [amountPaid, setAmountPaid] = useState('');
     const [amountPaidTouched, setAmountPaidTouched] = useState(false);
@@ -63,23 +57,6 @@ export default function SalesCheckout({ products, sale = null }: Props) {
     const [tax, setTax] = useState(sale ? '' : '');
     const [notes, setNotes] = useState('');
     const [processing, setProcessing] = useState(false);
-    const [expandedProducts, setExpandedProducts] = useState<Set<number>>(
-        new Set(),
-    );
-
-    const toggleVariants = (productId: number) => {
-        setExpandedProducts((prev) => {
-            const next = new Set(prev);
-
-            if (next.has(productId)) {
-                next.delete(productId);
-            } else {
-                next.add(productId);
-            }
-
-            return next;
-        });
-    };
 
     const categories = useMemo(() => {
         const cats = new Map<number, { id: number; name: string }>();
@@ -92,19 +69,43 @@ export default function SalesCheckout({ products, sale = null }: Props) {
         return Array.from(cats.values());
     }, [products]);
 
-    const filteredProducts = useMemo(() => {
-        return products.filter((p) => {
+    const variantCards = useMemo(() => {
+        const cards: { product: Product; variant: ProductVariant }[] = [];
+
+        products.forEach((p) => {
+            p.variants.forEach((v) => {
+                cards.push({ product: p, variant: v });
+            });
+        });
+
+        return cards;
+    }, [products]);
+
+    const filteredVariantCards = useMemo(() => {
+        return variantCards.filter(({ product, variant }) => {
+            const q = search.trim().toLowerCase();
             const matchesSearch =
-                !search ||
-                p.name.toLowerCase().includes(search.toLowerCase()) ||
-                p.sku.toLowerCase().includes(search.toLowerCase());
+                !q ||
+                product.name.toLowerCase().includes(q) ||
+                product.sku.toLowerCase().includes(q) ||
+                variant.name?.toLowerCase().includes(q) ||
+                variant.sku.toLowerCase().includes(q);
             const matchesCategory =
                 selectedCategory === 'all' ||
-                p.category?.id.toString() === selectedCategory;
+                product.category?.id.toString() === selectedCategory;
+            const matchesProduct =
+                selectedProduct === 'all' ||
+                product.id.toString() === selectedProduct;
 
-            return matchesSearch && matchesCategory && p.is_active;
+            return (
+                matchesSearch &&
+                matchesCategory &&
+                matchesProduct &&
+                product.is_active &&
+                variant.is_active
+            );
         });
-    }, [products, search, selectedCategory]);
+    }, [variantCards, search, selectedCategory, selectedProduct]);
 
     const getCartItemQuantity = (
         variantId: number,
@@ -379,29 +380,35 @@ export default function SalesCheckout({ products, sale = null }: Props) {
             <div className="flex h-full flex-1 flex-col gap-4 p-4 pb-24 lg:flex-row lg:pb-4">
                 <div className="flex flex-1 flex-col gap-3 lg:overflow-auto">
                     <div className="flex flex-wrap items-center gap-3">
-                        <Select
+                        <SearchableSelect
                             value={selectedCategory}
-                            onValueChange={setSelectedCategory}
-                        >
-                            <SelectTrigger className="w-40">
-                                <SelectValue
-                                    placeholder={t('All Categories')}
-                                />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">
-                                    {t('All Categories')}
-                                </SelectItem>
-                                {categories.map((cat) => (
-                                    <SelectItem
-                                        key={cat.id}
-                                        value={cat.id.toString()}
-                                    >
-                                        {cat.name}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                            onValueChange={(v) => {
+                                setSelectedProduct('all');
+                                setSelectedCategory(v);
+                            }}
+                            options={[
+                                { value: 'all', label: t('All Categories') },
+                                ...categories.map((cat) => ({
+                                    value: cat.id.toString(),
+                                    label: cat.name,
+                                })),
+                            ]}
+                            placeholder={t('All Categories')}
+                            className="w-40"
+                        />
+                        <SearchableSelect
+                            value={selectedProduct}
+                            onValueChange={setSelectedProduct}
+                            options={[
+                                { value: 'all', label: t('All Products') },
+                                ...products.map((p) => ({
+                                    value: p.id.toString(),
+                                    label: p.name,
+                                })),
+                            ]}
+                            placeholder={t('All Products')}
+                            className="w-40"
+                        />
                         <div className="flex flex-1 items-center gap-2 rounded-md px-2 py-2 text-sm shadow-xs">
                             <Input
                                 placeholder={t('Search products...')}
@@ -414,23 +421,14 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                     </div>
 
                     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredProducts.map((product: Product) => {
-                            const primaryVariant = product.variants[0];
+                        {filteredVariantCards.map(({ product, variant }) => {
                             const imgSrc =
-                                product.image_url ||
-                                primaryVariant?.image_url ||
-                                null;
-                            const isExpanded = expandedProducts.has(product.id);
-                            const visibleVariants = isExpanded
-                                ? product.variants
-                                : product.variants.slice(0, MAX_VARIANTS);
-                            const hiddenCount =
-                                product.variants.length -
-                                visibleVariants.length;
+                                product.image_url || variant.image_url || null;
+                            const showVariantName = product.variants.length > 1;
 
                             return (
                                 <Card
-                                    key={product.id}
+                                    key={variant.id}
                                     className="overflow-hidden p-0 transition-shadow hover:shadow-md"
                                 >
                                     {imgSrc ? (
@@ -449,254 +447,26 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                     <CardHeader className="p-2 pb-0">
                                         <CardTitle className="truncate text-xs leading-tight font-semibold">
                                             {product.name}
+                                            {showVariantName && (
+                                                <> - ( {variant.name} )</>
+                                            )}
                                         </CardTitle>
                                     </CardHeader>
                                     <CardContent className="space-y-1 p-2 pt-1">
-                                        {product.variants.length === 0 ? (
-                                            <p className="py-1 text-center text-[10px] text-muted-foreground">
-                                                {t('No variants')}
-                                            </p>
-                                        ) : (
-                                            <>
-                                                {visibleVariants.map(
-                                                    (
-                                                        variant: ProductVariant,
-                                                    ) => {
-                                                        const qtyPackage =
-                                                            getCartItemQuantity(
-                                                                variant.id,
-                                                                'package',
-                                                            );
-                                                        const qtySingle =
-                                                            getCartItemQuantity(
-                                                                variant.id,
-                                                                'single',
-                                                            );
-                                                        const reservedUnits =
-                                                            totalUnitsForVariant(
-                                                                variant.id,
-                                                            );
-                                                        const availableStock =
-                                                            num(
-                                                                variant.stock_quantity,
-                                                            ) - reservedUnits;
-                                                        const isOutOfStock =
-                                                            availableStock <= 0;
-                                                        const isLowStock =
-                                                            availableStock >
-                                                                0 &&
-                                                            availableStock <=
-                                                                variant.min_stock_level;
-
-                                                        return (
-                                                            <div
-                                                                key={variant.id}
-                                                            >
-                                                                <div className="mx-1 flex items-center justify-end gap-1 py-1">
-                                                                    {isOutOfStock ? (
-                                                                        <Badge
-                                                                            variant="destructive"
-                                                                            className="h-4 px-1.5 text-[10px]"
-                                                                        >
-                                                                            {t(
-                                                                                'Out',
-                                                                            )}
-                                                                        </Badge>
-                                                                    ) : (
-                                                                        <p className="shrink-0 text-[10px] text-muted-foreground">
-                                                                            {t(
-                                                                                'Stock',
-                                                                            )}
-                                                                            :{' '}
-                                                                            {Number(
-                                                                                availableStock,
-                                                                            )}
-                                                                            {isLowStock && (
-                                                                                <span className="ml-0.5 text-orange-600 dark:text-orange-400">
-                                                                                    (
-                                                                                    {t(
-                                                                                        'Low',
-                                                                                    )}
-
-                                                                                    )
-                                                                                </span>
-                                                                            )}
-                                                                        </p>
-                                                                    )}
-                                                                </div>
-                                                                <div
-                                                                    className={`${
-                                                                        isOutOfStock
-                                                                            ? 'opacity-40'
-                                                                            : ''
-                                                                    } rounded-md border`}
-                                                                >
-                                                                    <div className="flex items-stretch">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                addToCart(
-                                                                                    variant,
-                                                                                    product.name,
-                                                                                    'single',
-                                                                                )
-                                                                            }
-                                                                            disabled={
-                                                                                isOutOfStock ||
-                                                                                !canAddMode(
-                                                                                    variant,
-                                                                                    'single',
-                                                                                )
-                                                                            }
-                                                                            className={`flex min-h-9 flex-1 flex-col justify-center gap-0.5 p-1 text-left ${
-                                                                                isOutOfStock
-                                                                                    ? 'cursor-not-allowed'
-                                                                                    : 'cursor-pointer hover:bg-accent/50'
-                                                                            }`}
-                                                                        >
-                                                                            <div className="flex items-center justify-between gap-1">
-                                                                                <p className="text-[11px] font-semibold text-primary">
-                                                                                    <small>
-                                                                                        {
-                                                                                            variant.name
-                                                                                        }
-                                                                                    </small>
-                                                                                    Ks{' '}
-                                                                                    {ks(
-                                                                                        variant.per_unit_price,
-                                                                                    )}
-                                                                                    <span className="text-[10px] font-normal text-muted-foreground">
-                                                                                        {' '}
-                                                                                        /{' '}
-                                                                                        {t(
-                                                                                            'Single',
-                                                                                        )}
-                                                                                    </span>
-                                                                                </p>
-                                                                                {qtySingle >
-                                                                                0 ? (
-                                                                                    <span className="rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">
-                                                                                        x
-                                                                                        {
-                                                                                            qtySingle
-                                                                                        }
-                                                                                    </span>
-                                                                                ) : (
-                                                                                    <PlusIcon className="h-3 w-3 text-muted-foreground" />
-                                                                                )}
-                                                                            </div>
-                                                                        </button>
-                                                                        {qtySingle >
-                                                                            0 && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    decrementLine(
-                                                                                        variant.id,
-                                                                                        'single',
-                                                                                    )
-                                                                                }
-                                                                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                                                            >
-                                                                                <MinusIcon className="h-3 w-3" />
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                    <div className="flex items-stretch border-t">
-                                                                        <button
-                                                                            type="button"
-                                                                            onClick={() =>
-                                                                                addToCart(
-                                                                                    variant,
-                                                                                    product.name,
-                                                                                    'package',
-                                                                                )
-                                                                            }
-                                                                            disabled={
-                                                                                isOutOfStock ||
-                                                                                !canAddMode(
-                                                                                    variant,
-                                                                                    'package',
-                                                                                )
-                                                                            }
-                                                                            className={`flex min-h-9 flex-1 items-center justify-between gap-1 px-1.5 py-1 text-left ${
-                                                                                isOutOfStock
-                                                                                    ? 'cursor-not-allowed'
-                                                                                    : 'cursor-pointer hover:bg-accent/50'
-                                                                            }`}
-                                                                        >
-                                                                            <p className="text-[11px] font-semibold text-primary">
-                                                                                <small>
-                                                                                    {
-                                                                                        variant.name
-                                                                                    }
-                                                                                </small>
-                                                                                Ks{' '}
-                                                                                {ks(
-                                                                                    variant.cost_price,
-                                                                                )}{' '}
-                                                                                /{' '}
-                                                                                {t(
-                                                                                    'Package',
-                                                                                )}
-                                                                            </p>
-                                                                            {qtyPackage >
-                                                                            0 ? (
-                                                                                <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-[9px] font-semibold">
-                                                                                    x
-                                                                                    {
-                                                                                        qtyPackage
-                                                                                    }
-                                                                                </span>
-                                                                            ) : (
-                                                                                <PlusIcon className="h-3 w-3 text-muted-foreground" />
-                                                                            )}
-                                                                        </button>
-                                                                        {qtyPackage >
-                                                                            0 && (
-                                                                            <button
-                                                                                type="button"
-                                                                                onClick={() =>
-                                                                                    decrementLine(
-                                                                                        variant.id,
-                                                                                        'package',
-                                                                                    )
-                                                                                }
-                                                                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                                                                            >
-                                                                                <MinusIcon className="h-3 w-3" />
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    },
-                                                )}
-                                                {product.variants.length >
-                                                    MAX_VARIANTS && (
-                                                    <button
-                                                        type="button"
-                                                        onClick={() =>
-                                                            toggleVariants(
-                                                                product.id,
-                                                            )
-                                                        }
-                                                        className="flex w-full items-center justify-center gap-1 py-1 text-[10px] font-medium text-muted-foreground hover:text-foreground"
-                                                    >
-                                                        <PlusIcon className="h-3 w-3" />
-                                                        {isExpanded
-                                                            ? t('Show less')
-                                                            : `+${hiddenCount} ${t('more')}`}
-                                                    </button>
-                                                )}
-                                            </>
-                                        )}
+                                        <VariantPriceBlock
+                                            variant={variant}
+                                            productName={product.name}
+                                            getQuantity={getCartItemQuantity}
+                                            totalUnits={totalUnitsForVariant}
+                                            canAddMode={canAddMode}
+                                            onAdd={addToCart}
+                                            onDecrement={decrementLine}
+                                        />
                                     </CardContent>
                                 </Card>
                             );
                         })}
-                        {filteredProducts.length === 0 && (
+                        {filteredVariantCards.length === 0 && (
                             <div className="col-span-full flex items-center justify-center py-16 text-muted-foreground">
                                 {t('No products found')}
                             </div>
@@ -1002,24 +772,23 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                             </div>
 
                                             {!sale && (
-                                                <Select
+                                                <SearchableSelect
                                                     value={paymentMethod}
                                                     onValueChange={
                                                         setPaymentMethod
                                                     }
-                                                >
-                                                    <SelectTrigger className="h-7 text-[11px]">
-                                                        <SelectValue />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="cash">
-                                                            {t('Cash')}
-                                                        </SelectItem>
-                                                        <SelectItem value="kbzpay">
-                                                            KBZ Pay
-                                                        </SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                    options={[
+                                                        {
+                                                            value: 'cash',
+                                                            label: t('Cash'),
+                                                        },
+                                                        {
+                                                            value: 'kbzpay',
+                                                            label: 'KBZ Pay',
+                                                        },
+                                                    ]}
+                                                    className="h-7 text-[11px]"
+                                                />
                                             )}
 
                                             <Input
