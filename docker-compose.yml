@@ -10,9 +10,9 @@ services:
         environment:
             APP_ENV: production
             APP_URL: http://${APP_DOMAIN:-bee-kyal.lan}:${APP_PORT:-80}
-            DB_CONNECTION: mysql
-            DB_HOST: mysql
-            DB_PORT: 3306
+            DB_CONNECTION: ${DB_CONNECTION:-mysql}
+            DB_HOST: ${DB_HOST:-mysql}
+            DB_PORT: ${DB_PORT:-3306}
             DB_DATABASE: ${DB_DATABASE:-minipos}
             DB_USERNAME: ${DB_USERNAME:-minipos}
             DB_PASSWORD: ${DB_PASSWORD:-asdffdsa}
