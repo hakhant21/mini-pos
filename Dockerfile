@@ -25,6 +25,7 @@ RUN composer dump-autoload --optimize --no-interaction \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
     && npm install -g pnpm@11 \
     && pnpm install --frozen-lockfile --ignore-scripts=false \
+    && pnpm approve-builds --all \
     && pnpm run build
 
 #################
@@ -32,20 +33,12 @@ RUN composer dump-autoload --optimize --no-interaction \
 #################
 FROM php:8.4-fpm-alpine
 
-RUN apk add --no-cache \
-        curl git unzip \
-        icu-dev libzip-dev oniguruma-dev sqlite-dev \
-        freetype-dev libpng-dev libjpeg-turbo-dev libwebp-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
-    && docker-php-ext-install -j"$(nproc)" \
-        pdo_sqlite \
-        mbstring \
-        intl \
-        zip \
-        gd \
-        bcmath \
-        opcache \
-    && docker-php-ext-enable opcache \
+# Fast prebuilt extension install (no slow from-source compilation)
+RUN apk add --no-cache curl git unzip \
+    && curl -sSL -o /usr/local/bin/install-php-extensions \
+    https://github.com/mlocati/docker-php-extension-installer/releases/latest/download/install-php-extensions \
+    && chmod +x /usr/local/bin/install-php-extensions \
+    && install-php-extensions pdo_sqlite mbstring intl zip gd bcmath opcache \
     && rm -rf /var/cache/apk/*
 
 WORKDIR /var/www
@@ -60,8 +53,8 @@ COPY --chown=www-data:www-data docker/php/entrypoint.sh /usr/local/bin/entrypoin
 RUN composer dump-autoload --optimize --no-interaction \
     && chmod +x /usr/local/bin/entrypoint.sh \
     && mkdir -p /var/www/storage/framework/cache/data \
-        /var/www/storage/framework/sessions \
-        /var/www/storage/framework/views \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/views \
     && chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
 
 EXPOSE 9000

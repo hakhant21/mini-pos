@@ -1,198 +1,202 @@
 #!/usr/bin/env bash
-#
-# Mini POS - one-time Docker installer for a LAN server
-#
-#   - Detects the machine's LAN IP
-#   - Registers it as "mini-pos.local" in /etc/hosts
-#   - Installs Docker (+ Compose) if missing, using https://get.docker.com
-#   - Adds the current user to the "docker" group
-#   - Builds & starts the stack and prints the access URL
-#
-# Usage:
-#   ./install.sh                 # provision host + build & start the stack
-#   APP_PORT=8080 ./install.sh   # use a custom web port
-#   SKIP_BUILD=1 ./install.sh    # only provision the host, don't start the app
-#
 set -euo pipefail
 
-APP_DOMAIN="mini-pos.local"
+# mini-pos LAN deployment setup
+#  - detects the machine's LAN IP
+#  - maps it to <APP_DOMAIN> in /etc/hosts (updates automatically if the IP changes)
+#  - installs Docker (+ Compose) via get.docker.com if missing
+#  - adds the current user to the docker group
+#  - builds & starts the stack
+#
+# Extra modes:
+#   ./install.sh update-hosts   - detect LAN IP and refresh /etc/hosts only if it changed
+#   sudo ./install.sh setup-cron - install a cron job (default daily at 09:00) that
+#                                  runs "update-hosts", so dynamic IPs stay in sync
+
+APP_DOMAIN="${APP_DOMAIN:-bee-kyal.pos}"
 APP_PORT="${APP_PORT:-80}"
-SKIP_BUILD="${SKIP_BUILD:-0}"
-SUDO=""
+APP_IP="${APP_IP:-}"
 
-# ------------------------------------------------------------------ helpers
-info()  { printf '\033[1;34m[INFO]\033[0m %s\n' "$*"; }
-ok()    { printf '\033[1;32m[OK]\033[0m   %s\n' "$*"; }
-warn()  { printf '\033[1;33m[WARN]\033[0m %s\n' "$*"; }
-fail()  { printf '\033[1;31m[ERROR]\033[0m %s\n' "$*" >&2; exit 1; }
+C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
+C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
 
-require_sudo() {
-    if [ "$(id -u)" -eq 0 ]; then
-        SUDO=""
-    else
-        sudo -v 2>/dev/null || fail "This script needs sudo access. Run it with an account that has sudo privileges."
-        SUDO="sudo"
-    fi
-}
+info() { printf "[INFO] %s\n" "$*"; }
+ok()   { printf "[%sOK%s] %s\n" "$C_GREEN" "$C_RESET" "$*"; }
+warn() { printf "[%sWARN%s] %s\n" "$C_YELLOW" "$C_RESET" "$*"; }
+die()  { printf "[%sERROR%s] %s\n" "$C_RED" "$C_RESET" "$*" >&2; exit 1; }
 
-# --------------------------------------------------------------- LAN IP
+IS_MAC=false
+[ "$(uname -s)" = "Darwin" ] && IS_MAC=true
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+SUDO_PREFIX=""
+
 detect_lan_ip() {
-    local ip=""
+    [ -n "$APP_IP" ] && { echo "$APP_IP"; return 0; }
 
-    # macOS
-    if command -v ipconfig >/dev/null 2>&1; then
+    local ip=""
+    if $IS_MAC; then
         for iface in en0 en1; do
             ip=$(ipconfig getifaddr "$iface" 2>/dev/null || true)
             [ -n "$ip" ] && break
         done
-    fi
-
-    # Linux: the interface of the default route
-    if [ -z "$ip" ] && command -v ip >/dev/null 2>&1; then
-        local iface
-        iface=$(ip route show default 2>/dev/null | awk '/^default/ {print $5; exit}')
-        if [ -n "$iface" ]; then
-            ip=$(ip -4 -o addr show dev "$iface" 2>/dev/null | awk '{split($4,a,"/"); print a[1]}' | head -1)
+    else
+        if command -v ip >/dev/null 2>&1; then
+            local iface
+            iface=$(ip route show default 2>/dev/null | awk '/^default/ {print $5; exit}')
+            [ -n "$iface" ] && ip=$(ip -4 -o addr show dev "$iface" 2>/dev/null | awk '{print $4; exit}' | cut -d/ -f1)
+        fi
+        if [ -z "$ip" ] && command -v hostname >/dev/null 2>&1; then
+            ip=$(hostname -I 2>/dev/null | awk '{print $1}')
         fi
     fi
-
-    # Linux fallback
-    if [ -z "$ip" ] && command -v hostname >/dev/null 2>&1; then
-        ip=$(hostname -I 2>/dev/null | awk '{print $1}')
-    fi
-
-    if [ -z "$ip" ] || ! printf '%s' "$ip" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-        return 1
-    fi
-    printf '%s' "$ip"
+    echo "$ip"
 }
 
 add_hosts_entry() {
-    local ip="$1"
+    local ip="$1" tmp
+    local sudo_cmd="sudo"
+    [ "$(id -u)" -eq 0 ] && sudo_cmd=""
 
-    if grep -Eq "[[:space:]]${APP_DOMAIN}([[:space:]]|$)" /etc/hosts; then
-        info "Updating existing ${APP_DOMAIN} entry in /etc/hosts"
-        if [ "$(uname -s)" = "Darwin" ]; then
-            $SUDO sed -i '' "/${APP_DOMAIN}/d" /etc/hosts
-        else
-            $SUDO sed -i "/${APP_DOMAIN}/d" /etc/hosts
-        fi
+    if grep -q "$APP_DOMAIN" /etc/hosts 2>/dev/null; then
+        info "Replacing existing /etc/hosts entry for $APP_DOMAIN"
+        tmp="$(mktemp)"
+        grep -v "$APP_DOMAIN" /etc/hosts > "$tmp" || true
+        $sudo_cmd mv "$tmp" /etc/hosts
+        rm -f "$tmp"
     fi
 
-    printf '%s %s\n' "$ip" "$APP_DOMAIN" | $SUDO tee -a /etc/hosts >/dev/null
-    ok "Registered ${APP_DOMAIN} -> ${ip} in /etc/hosts"
+    printf '%s %s\n' "$ip" "$APP_DOMAIN" | $sudo_cmd tee -a /etc/hosts >/dev/null
+    $sudo_cmd chmod 644 /etc/hosts
+    ok "Mapped $ip -> $APP_DOMAIN in /etc/hosts"
 }
 
-# ----------------------------------------------------------------- Docker
+update_hosts() {
+    local ip current
+
+    ip="$(detect_lan_ip)" || true
+    [ -z "$ip" ] && die "Could not detect the LAN IP (set APP_IP=<ip> to override)."
+
+    current="$(grep "$APP_DOMAIN" /etc/hosts 2>/dev/null | awk '{print $1; exit}')"
+    if [ -n "$current" ] && [ "$current" = "$ip" ]; then
+        info "LAN IP unchanged for $APP_DOMAIN ($ip) - nothing to do."
+        return 0
+    fi
+
+    [ -n "$current" ] && warn "LAN IP changed for $APP_DOMAIN: $current -> $ip"
+    add_hosts_entry "$ip"
+}
+
+setup_cron() {
+    local interval="${CRON_INTERVAL:-0 9}"
+    local script="$SCRIPT_DIR/install.sh"
+    local logfile="/var/log/bee-kyal-hosts.log"
+
+    [ "$(id -u)" -eq 0 ] || die "setup-cron must run as root (use: sudo $0 setup-cron)"
+
+    if $IS_MAC; then
+        local tmp line
+        line="$interval * * * * $script update-hosts >> $logfile 2>&1"
+        tmp="$(mktemp)"
+        crontab -l 2>/dev/null | grep -v "$script update-hosts" > "$tmp" || true
+        printf '%s\n' "$line" >> "$tmp"
+        crontab "$tmp"
+        rm -f "$tmp"
+        ok "Installed cron job in root's crontab (daily at 09:00)."
+    else
+        local cronfile="/etc/cron.d/bee-kyal-hosts" tmp line
+        line="$interval * * * * root $script update-hosts >> $logfile 2>&1"
+        tmp="$(mktemp)"
+        grep -v "$script update-hosts" "$cronfile" 2>/dev/null > "$tmp" || true
+        printf '%s\n' "$line" >> "$tmp"
+        mv "$tmp" "$cronfile"
+        rm -f "$tmp"
+        chmod 644 "$cronfile"
+        ok "Installed cron job in $cronfile (daily at 09:00)."
+        printf '    %s\n' "$line"
+    fi
+}
+
 ensure_docker() {
     if command -v docker >/dev/null 2>&1; then
-        ok "Docker already installed: $(docker --version 2>/dev/null)"
+        info "Docker found: $(docker --version 2>/dev/null || true)"
     else
-        info "Docker not found. Installing via https://get.docker.com ..."
-        command -v curl >/dev/null 2>&1 || fail "curl is required to install Docker."
-        curl -fsSL https://get.docker.com | $SUDO sh
+        if $IS_MAC; then
+            die "Docker not found. Install Docker Desktop (https://www.docker.com/products/docker-desktop/) and re-run."
+        fi
+        info "Docker not found. Installing via get.docker.com..."
+        curl -fsSL https://get.docker.com | sudo sh
         ok "Docker installed."
     fi
 
-    # Start + enable the daemon on Linux (Docker Desktop handles this on macOS)
-    if [ "$(uname -s)" != "Darwin" ]; then
-        $SUDO systemctl enable --now docker 2>/dev/null || \
-        $SUDO service docker start 2>/dev/null || true
+    if ! docker compose version >/dev/null 2>&1; then
+        die "Docker Compose plugin is missing. Restart Docker and re-run this script."
     fi
 
-    if docker compose version >/dev/null 2>&1; then
-        ok "Docker Compose (v2) available: $(docker compose version 2>/dev/null)"
-    elif command -v docker-compose >/dev/null 2>&1; then
-        ok "docker-compose (v1) available: $(docker-compose --version 2>/dev/null)"
-    else
-        warn "Docker Compose plugin not found. Attempting to install it..."
-        if [ "$(uname -s)" != "Darwin" ] && command -v apt-get >/dev/null 2>&1; then
-            $SUDO apt-get update -y
-            $SUDO apt-get install -y docker-compose-plugin || true
-        fi
+    if command -v systemctl >/dev/null 2>&1; then
+        sudo systemctl enable --now docker >/dev/null 2>&1 || true
+    elif command -v service >/dev/null 2>&1 && ! $IS_MAC; then
+        sudo service docker start >/dev/null 2>&1 || true
     fi
-
-    if ! docker compose version >/dev/null 2>&1 && ! command -v docker-compose >/dev/null 2>&1; then
-        fail "Docker Compose is unavailable. Install it manually (e.g. 'sudo apt install docker-compose-plugin')."
-    fi
+    ok "Docker and Compose are ready."
 }
 
-add_docker_group() {
-    if [ "$(id -u)" -ne 0 ]; then
-        if id -nG "$USER" 2>/dev/null | grep -qw docker; then
-            ok "User ${USER} is already in the 'docker' group."
-        else
-            info "Adding ${USER} to the 'docker' group..."
-            $SUDO usermod -aG docker "$USER"
-            warn "Log out and back in (or run 'newgrp docker') for the group change to take effect."
-        fi
+ensure_docker_group() {
+    if $IS_MAC; then
+        return 0
     fi
+
+    if groups "$USER" 2>/dev/null | grep -q "\bdocker\b"; then
+        ok "User '$USER' is already in the docker group."
+        return 0
+    fi
+
+    info "Adding user '$USER' to the docker group..."
+    sudo usermod -aG docker "$USER"
+    warn "User added to the docker group. Log out and back in for it to take effect."
+    warn "Continuing this run using 'sudo' for docker commands."
+    SUDO_PREFIX="sudo "
 }
 
-# ------------------------------------------------------------------ stack
-ensure_env_file() {
-    if [ ! -f .env ]; then
-        info "Creating .env from .env.example"
-        cp .env.example .env
+start_stack() {
+    if [ ! -f docker-compose.yml ]; then
+        warn "docker-compose.yml not found in $SCRIPT_DIR; skipping build/start."
+        return 0
     fi
+
+    info "Building and starting the stack..."
+    info "First build downloads dependencies and may take a while."
+    APP_URL="http://${APP_DOMAIN}" APP_PORT="$APP_PORT" \
+        ${SUDO_PREFIX:-}docker compose up -d --build
+    ok "Stack is running at http://$APP_DOMAIN"
 }
 
-run_stack() {
-    if [ "$SKIP_BUILD" = "1" ]; then
-        info "SKIP_BUILD=1, skipping build & start."
-        return
-    fi
-
-    local -a cmd=(docker)
-    if ! docker info >/dev/null 2>&1; then
-        cmd=($SUDO docker)
-    fi
-
-    info "Building and starting the stack (first build downloads packages and may take a while)..."
-    APP_URL="http://${APP_DOMAIN}" APP_PORT="$APP_PORT" "${cmd[@]}" compose up -d --build
-    ok "Stack is up."
-}
-
-# ------------------------------------------------------------------- main
 main() {
-    echo
-    info "Mini POS - Docker installer"
-    echo "   Machine: $(uname -srm)"
-    echo
+    case "${1:-}" in
+        update-hosts)
+            update_hosts
+            ;;
+        setup-cron)
+            setup_cron
+            ;;
+        *)
+            [ "$(id -u)" -eq 0 ] && die "Run as a regular user (sudo is used internally when needed)."
 
-    cd "$(dirname "$0")"
+            info "mini-pos Docker setup ($SCRIPT_DIR)"
 
-    require_sudo
+            LAN_IP="$(detect_lan_ip)"
+            [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
 
-    local lan_ip=""
-    lan_ip="$(detect_lan_ip)" || true
+            ok "Detected LAN IP: $LAN_IP"
 
-    echo
-    if [ -n "$lan_ip" ]; then
-        info "Detected LAN IP: ${lan_ip}"
-        add_hosts_entry "$lan_ip"
-    else
-        warn "Could not auto-detect the LAN IP. Skipping /etc/hosts update."
-        warn "Run it manually:  sudo sh -c 'echo \"<LAN-IP> ${APP_DOMAIN}\" >> /etc/hosts'"
-    fi
-
-    echo
-    ensure_docker
-
-    echo
-    add_docker_group
-
-    echo
-    ensure_env_file
-    run_stack
-
-    echo
-    ok "Done!"
-    if [ "$APP_PORT" = "80" ]; then
-        printf '    Access the app at:  \033[1mhttp://%s\033[0m\n' "$APP_DOMAIN"
-    else
-        printf '    Access the app at:  \033[1mhttp://%s:%s\033[0m\n' "$APP_DOMAIN" "$APP_PORT"
-    fi
+            add_hosts_entry "$LAN_IP"
+            ensure_docker
+            ensure_docker_group
+            start_stack
+            ;;
+    esac
 }
 
 main "$@"
