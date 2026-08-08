@@ -9,50 +9,51 @@ class UnitSeeder extends Seeder
 {
     public function run(): void
     {
-        $units = [
+        $units =
             [
-                "id" => 1,
-                "name" => "ပါကင်",
-                "abbreviation" => "pack",
-                "created_at" => "2026-07-20 16:47:12",
-                "updated_at" => "2026-07-20 16:49:07"
-            ],
-            [
-                "id" => 2,
-                "name" => "ဘူး",
-                "abbreviation" => "can",
-                "created_at" => "2026-07-20 16:47:18",
-                "updated_at" => "2026-07-20 16:49:48"
-            ],
-            [
-                "id" => 3,
-                "name" => "ပုလင်း",
-                "abbreviation" => "bottle",
-                "created_at" => "2026-07-20 16:47:24",
-                "updated_at" => "2026-07-20 16:50:10"
-            ],
-            [
-                "id" => 4,
-                "name" => "ကီလိုဂရမ်",
-                "abbreviation" => "kg",
-                "created_at" => "2026-07-20 16:47:30",
-                "updated_at" => "2026-07-20 16:50:31"
-            ],
-            [
-                "id" => 5,
-                "name" => "ဂရမ်",
-                "abbreviation" => "g",
-                "created_at" => "2026-07-20 16:47:36",
-                "updated_at" => "2026-07-20 16:50:51"
-            ],
-            [
-                "id" => 6,
-                "name" => "ထုပ်",
-                "abbreviation" => "bundle",
-                "created_at" => "2026-07-20 16:47:42",
-                "updated_at" => "2026-07-20 16:51:11"
-            ]
-        ];
+                [
+                    "id" => 1,
+                    "name" => "အထုပ်",
+                    "abbreviation" => "pack",
+                    "created_at" => "2026-07-20 16:47:12",
+                    "updated_at" => "2026-07-20 16:49:07"
+                ],
+                [
+                    "id" => 2,
+                    "name" => "ဘူး",
+                    "abbreviation" => "can",
+                    "created_at" => "2026-07-20 16:47:18",
+                    "updated_at" => "2026-07-20 16:49:48"
+                ],
+                [
+                    "id" => 4,
+                    "name" => "လီတာ",
+                    "abbreviation" => "li",
+                    "created_at" => "2026-07-20 16:47:37",
+                    "updated_at" => "2026-07-20 16:48:57"
+                ],
+                [
+                    "id" => 5,
+                    "name" => "မီလီ လီတာ",
+                    "abbreviation" => "ml",
+                    "created_at" => "2026-07-20 16:47:50",
+                    "updated_at" => "2026-07-20 16:48:48"
+                ],
+                [
+                    'id' => 6,
+                    "name" => "ပက်",
+                    "abbreviation" => "shot",
+                    "created_at" => "2026-07-20 16:47:50",
+                    "updated_at" => "2026-07-20 16:48:48"
+                ],
+                [
+                    'id' => 7,
+                    "name" => "လိပ်",
+                    "abbreviation" => "lt",
+                    "created_at" => "2026-07-20 16:47:50",
+                    "updated_at" => "2026-07-20 16:48:48"
+                ]
+            ];
 
         foreach ($units as $unit) {
             Unit::create($unit);
