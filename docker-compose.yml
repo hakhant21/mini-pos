@@ -40,7 +40,7 @@ services:
             MYSQL_USER: ${DB_USERNAME:-minipos}
             MYSQL_PASSWORD: ${DB_PASSWORD:-asdffdsa}
         ports:
-            - "${DB_HOST}:3306"
+            - "${DB_PORT:-3306}"
         volumes:
             - mysql_data:/var/lib/mysql
             - ./docker/mysql/init:/docker-entrypoint-initdb.d:ro
