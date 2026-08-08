@@ -26,7 +26,7 @@ set -euo pipefail
 APP_NAME="${APP_NAME:-mini-pos}"
 APP_PORT="${APP_PORT:-80}"
 APP_IP="${APP_IP:-}"
-APP_DOMAIN="${APP_DOMAIN:-bee-kyal.lan}"
+APP_DOMAIN="${APP_DOMAIN:-bee-kyal.test}"
 APP_PROTOCOL="http"
 SKIP_CADDY="${SKIP_CADDY:-false}"
 
