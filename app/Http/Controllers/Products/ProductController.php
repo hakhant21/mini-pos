@@ -12,9 +12,9 @@ use App\Models\ProductVariant;
 use App\Models\Unit;
 use App\Traits\HasImage;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\UploadedFile;
 use Inertia\Inertia;
 use Inertia\Response;
-use Native\Mobile\Facades\File;
 
 class ProductController extends Controller
 {
@@ -50,13 +50,13 @@ class ProductController extends Controller
         $variants = $data['variants'] ?? [];
         unset($data['variants']);
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $this->uploadImage('products', $request->file('image'));
-        }
-
         $product = Product::create($data);
 
         foreach ($variants as $variant) {
+            if (isset($variant['image']) && $variant['image'] instanceof UploadedFile) {
+                $variant['image'] = $this->uploadImage('images/variants', $variant['image']);
+            }
+
             $variant['sku'] = $this->generateVariantSku($product->sku, $variant['name'] ?? '');
             $product->variants()->create($variant);
         }
@@ -89,15 +89,6 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
         $data = $request->validated();
-
-        if ($request->hasFile('image')) {
-            // Delete the old image if it exists
-            if ($product->image) {
-                $this->deleteImage($product->image);
-            }
-
-            $data['image'] = $this->uploadImage('products', $request->file('image'));
-        }
 
         $product->update($data);
 
@@ -158,7 +149,7 @@ class ProductController extends Controller
     private function generateVariantSku(string $productSku, string $variantName): string
     {
         $suffix = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $variantName), 0, 2));
-        $variantCount = ProductVariant::where('sku', 'like', $productSku . '-%')->count();
+        $variantCount = ProductVariant::where('sku', 'like', $productSku.'-%')->count();
 
         return sprintf('%s-%s%02d', $productSku, $suffix ?: 'VN', $variantCount + 1);
     }

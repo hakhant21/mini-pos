@@ -6,7 +6,7 @@ use App\Models\ProductVariant;
 
 test('has fillable attributes', function () {
     $category = new Category;
-    expect($category->getFillable())->toBe(['name', 'description', 'image', 'is_active']);
+    expect($category->getFillable())->toBe(['name', 'description', 'is_active']);
 });
 
 test('has casts', function () {
@@ -41,16 +41,6 @@ test('has products relation', function () {
 
     expect($category->products)->toHaveCount(1);
     expect($category->products->first()->id)->toBe($product->id);
-});
-
-test('image url returns null when no image', function () {
-    $category = Category::factory()->create(['image' => null]);
-    expect($category->image_url)->toBeNull();
-});
-
-test('image url returns storage url when image exists', function () {
-    $category = Category::factory()->create(['image' => 'images/categories/test.jpg']);
-    expect($category->image_url)->toContain('images/categories/test.jpg');
 });
 
 test('can create category with factory', function () {

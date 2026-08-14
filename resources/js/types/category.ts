@@ -3,8 +3,6 @@ export type Category = {
     name: string;
     slug: string;
     description: string | null;
-    image: string | null;
-    image_url: string | null;
     is_active: boolean;
     products_count?: number;
     created_at: string;
@@ -15,6 +13,5 @@ export type Category = {
 export type CategoryForm = {
     name: string;
     description?: string;
-    image?: File | string | null;
     is_active?: boolean;
 };

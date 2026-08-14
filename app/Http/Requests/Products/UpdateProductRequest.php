@@ -16,7 +16,6 @@ class UpdateProductRequest extends FormRequest
         return [
             'category_id' => ['required', 'exists:categories,id'],
             'name' => ['nullable', 'string', 'max:255'],
-            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'brand' => ['nullable', 'string', 'max:255'],
             'is_active' => ['boolean'],
         ];

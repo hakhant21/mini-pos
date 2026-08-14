@@ -422,8 +422,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
 
                     <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
                         {filteredVariantCards.map(({ product, variant }) => {
-                            const imgSrc =
-                                product.image_url || variant.image_url || null;
+                            const imgSrc = variant.image_url || null;
                             const showVariantName = product.variants.length > 1;
 
                             return (

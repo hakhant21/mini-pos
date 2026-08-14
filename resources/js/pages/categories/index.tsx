@@ -84,7 +84,6 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
     } = useForm<CategoryForm>({
         name: '',
         description: '',
-        image: null,
         is_active: true,
     });
 
@@ -99,7 +98,6 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
         setData({
             name: category.name,
             description: category.description ?? '',
-            image: category.image,
             is_active: category.is_active,
         });
         setDialogOpen(true);
@@ -217,39 +215,6 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="image">{t('Image')}</Label>
-                                    <Input
-                                        id="image"
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/jpg,image/webp"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-
-                                            if (file) {
-                                                setData('image', file);
-                                            }
-                                        }}
-                                    />
-                                    {editingCategory &&
-                                        data.image &&
-                                        typeof data.image === 'string' && (
-                                            <img
-                                                src={
-                                                    (
-                                                        editingCategory as Category
-                                                    ).image_url ?? ''
-                                                }
-                                                alt="Preview"
-                                                className="mt-1 h-20 w-20 rounded object-cover"
-                                            />
-                                        )}
-                                    {formErrors.image && (
-                                        <p className="text-sm text-destructive">
-                                            {formErrors.image}
-                                        </p>
-                                    )}
-                                </div>
                                 <DialogFooter>
                                     <Button type="submit" disabled={processing}>
                                         {processing && (
@@ -293,7 +258,6 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead>{t('Image')}</TableHead>
                                     <TableHead>{t('Name')}</TableHead>
                                     <TableHead>{t('Description')}</TableHead>
                                     <TableHead>{t('Products')}</TableHead>
@@ -306,17 +270,6 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                             <TableBody>
                                 {filteredCategories.map((category) => (
                                     <TableRow key={category.id}>
-                                        <TableCell>
-                                            {category.image_url ? (
-                                                <img
-                                                    src={category.image_url}
-                                                    alt={category.name}
-                                                    className="h-10 w-10 rounded object-cover"
-                                                />
-                                            ) : (
-                                                <div className="h-10 w-10 rounded bg-muted" />
-                                            )}
-                                        </TableCell>
                                         <TableCell className="font-medium">
                                             {category.name}
                                         </TableCell>
@@ -451,7 +404,7 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                                 {filteredCategories.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={6}
+                                            colSpan={5}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             {t('No categories found.')}

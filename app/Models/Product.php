@@ -3,15 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Attributes\Fillable;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['category_id', 'name', 'sku', 'image', 'brand', 'is_active'])]
+#[Fillable(['category_id', 'name', 'sku', 'brand', 'is_active'])]
 class Product extends Model
 {
     /** @use HasFactory<ProductFactory> */
@@ -22,13 +20,6 @@ class Product extends Model
         return [
             'is_active' => 'boolean',
         ];
-    }
-
-    public function imageUrl(): Attribute
-    {
-        return Attribute::make(
-            get: fn() => $this->image ? Storage::url($this->image) : null,
-        );
     }
 
     public function category(): BelongsTo
@@ -44,15 +35,5 @@ class Product extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
-    }
-
-    public function getImageAttribute(): ?string
-    {
-        return $this->attributes['image'] ? asset('storage/' . $this->attributes['image']) : null;
-    }
-
-    public function getImageUrlAttribute(): ?string
-    {
-        return $this->attributes['image'] ? asset('storage/' . $this->attributes['image']) : null;
     }
 }

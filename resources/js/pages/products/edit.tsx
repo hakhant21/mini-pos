@@ -51,7 +51,6 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     } = useForm({
         category_id: String(product.category?.id ?? ''),
         name: product.name,
-        image: product.image as string | File | null,
         brand: product.brand ?? '',
         is_active: product.is_active,
     });
@@ -59,6 +58,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     const [newVariant, setNewVariant] = useState({
         unit_id: '',
         name: '',
+        image: null as File | null,
         units_per_package: '1',
         cost_price: '0',
         selling_price: '0',
@@ -85,6 +85,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
             variantsStore({ id: product.id }).url,
             {
                 ...newVariant,
+                image: newVariant.image ?? null,
                 units_per_package: parseFloat(newVariant.units_per_package),
                 cost_price: parseFloat(newVariant.cost_price),
                 selling_price: parseFloat(newVariant.selling_price),
@@ -113,6 +114,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         setNewVariant({
             unit_id: String(variant.unit_id),
             name: variant.name || '',
+            image: null,
             units_per_package: String(variant.units_per_package),
             cost_price: String(variant.cost_price),
             selling_price: String(variant.selling_price),
@@ -131,20 +133,29 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         }
 
         setEditVariantProcessing(true);
+
+        const payload: Record<string, unknown> = {
+            ...newVariant,
+            units_per_package: parseFloat(newVariant.units_per_package),
+            cost_price: parseFloat(newVariant.cost_price),
+            selling_price: parseFloat(newVariant.selling_price),
+            per_unit_price: parseFloat(newVariant.per_unit_price),
+            min_stock_level: parseFloat(newVariant.min_stock_level),
+            max_stock_level: newVariant.max_stock_level
+                ? parseFloat(newVariant.max_stock_level)
+                : null,
+        };
+
+        if (newVariant.image instanceof File) {
+            payload.image = newVariant.image;
+        } else {
+            delete payload.image;
+        }
+
         router.patch(
             variantsUpdate({ product: product.id, variant: editingVariant.id })
                 .url,
-            {
-                ...newVariant,
-                units_per_package: parseFloat(newVariant.units_per_package),
-                cost_price: parseFloat(newVariant.cost_price),
-                selling_price: parseFloat(newVariant.selling_price),
-                per_unit_price: parseFloat(newVariant.per_unit_price),
-                min_stock_level: parseFloat(newVariant.min_stock_level),
-                max_stock_level: newVariant.max_stock_level
-                    ? parseFloat(newVariant.max_stock_level)
-                    : null,
-            },
+            payload,
             {
                 preserveScroll: true,
                 onSuccess: () => {
@@ -183,8 +194,8 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                             <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2 md:col-span-2 lg:col-span-1">
                                     <Label htmlFor="category_id">
                                         {t('Category')}
                                     </Label>
@@ -225,35 +236,6 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         }
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="image">{t('Image')}</Label>
-                                    <Input
-                                        id="image"
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/jpg,image/webp"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-
-                                            if (file) {
-                                                setData('image', file);
-                                            }
-                                        }}
-                                    />
-                                    {data.image &&
-                                        typeof data.image === 'string' &&
-                                        product.image_url && (
-                                            <img
-                                                src={product.image_url}
-                                                alt={product.name}
-                                                className="mt-1 h-20 w-20 rounded object-cover"
-                                            />
-                                        )}
-                                    {formErrors.image && (
-                                        <p className="text-sm text-destructive">
-                                            {formErrors.image}
-                                        </p>
-                                    )}
-                                </div>
                             </div>
                             <div className="flex justify-end">
                                 <Button type="submit" disabled={processing}>
@@ -276,6 +258,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                             <Table>
                                 <TableHeader>
                                     <TableRow>
+                                        <TableHead>{t('Image')}</TableHead>
                                         <TableHead>{t('Name')}</TableHead>
                                         <TableHead>{t('Unit')}</TableHead>
                                         <TableHead>{t('Cost Price')}</TableHead>
@@ -292,6 +275,20 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                 <TableBody>
                                     {product?.variants?.map((variant) => (
                                         <TableRow key={variant.id}>
+                                            <TableCell>
+                                                {variant.image_url ? (
+                                                    <img
+                                                        src={variant.image_url}
+                                                        alt={
+                                                            variant.name ||
+                                                            'Variant'
+                                                        }
+                                                        className="h-9 w-9 rounded object-cover"
+                                                    />
+                                                ) : (
+                                                    '—'
+                                                )}
+                                            </TableCell>
                                             <TableCell>
                                                 {variant.name || '—'}
                                             </TableCell>
@@ -347,7 +344,35 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                             <h3 className="mb-3 text-sm font-medium">
                                 {t('Add New Variant')}
                             </h3>
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2">
+                                    <Label className="text-xs">
+                                        {t('Image')}
+                                    </Label>
+                                    <Input
+                                        type="file"
+                                        accept="image/jpeg,image/png,image/jpg,image/webp"
+                                        onChange={(e) => {
+                                            const file = e.target.files?.[0];
+
+                                            if (file) {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    image: file,
+                                                });
+                                            }
+                                        }}
+                                    />
+                                    {newVariant.image instanceof File && (
+                                        <img
+                                            src={URL.createObjectURL(
+                                                newVariant.image,
+                                            )}
+                                            alt="Variant preview"
+                                            className="h-12 w-12 rounded object-cover"
+                                        />
+                                    )}
+                                </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs">
                                         {t('Unit')}
@@ -365,6 +390,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             label: u.name,
                                         }))}
                                         placeholder={t('Unit')}
+                                        className="w-full"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -507,7 +533,39 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                         <DialogHeader>
                             <DialogTitle>{t('Edit Variant')}</DialogTitle>
                         </DialogHeader>
-                        <div className="grid grid-cols-1 gap-3 py-4 sm:grid-cols-2 lg:grid-cols-2">
+                        <div className="grid grid-cols-1 gap-3 py-4 md:grid-cols-2 lg:grid-cols-3">
+                            <div className="space-y-2">
+                                <Label className="text-xs">{t('Image')}</Label>
+                                <Input
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/jpg,image/webp"
+                                    onChange={(e) => {
+                                        const file = e.target.files?.[0];
+
+                                        if (file) {
+                                            setNewVariant({
+                                                ...newVariant,
+                                                image: file,
+                                            });
+                                        }
+                                    }}
+                                />
+                                {(newVariant.image instanceof File
+                                    ? URL.createObjectURL(newVariant.image)
+                                    : editingVariant?.image_url) && (
+                                    <img
+                                        src={
+                                            newVariant.image instanceof File
+                                                ? URL.createObjectURL(
+                                                      newVariant.image,
+                                                  )
+                                                : editingVariant?.image_url
+                                        }
+                                        alt="Variant preview"
+                                        className="h-14 w-14 rounded object-cover"
+                                    />
+                                )}
+                            </div>
                             <div className="space-y-2">
                                 <Label className="text-xs">{t('Unit')}</Label>
                                 <SearchableSelect

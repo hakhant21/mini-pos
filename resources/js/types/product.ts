@@ -5,8 +5,6 @@ export type Product = {
     id: number;
     name: string;
     sku: string;
-    image: string | null;
-    image_url: string | null;
     brand: string | null;
     is_active: boolean;
     category: Category | null;
@@ -44,7 +42,6 @@ export type ProductForm = {
     category_id: number;
     name: string;
     sku: string;
-    image?: File | string | null;
     brand?: string;
     is_active?: boolean;
 };
@@ -52,6 +49,7 @@ export type ProductForm = {
 export type ProductVariantForm = {
     unit_id: number;
     name?: string;
+    image?: File | string | null;
     sku: string;
     units_per_package: number;
     cost_price: number;

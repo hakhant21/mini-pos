@@ -11,9 +11,8 @@ test('has validation rules', function () {
     $request = new StoreCategoryRequest;
     $rules = $request->rules();
 
-    expect($rules)->toHaveKeys(['name', 'description', 'image', 'is_active']);
+    expect($rules)->toHaveKeys(['name', 'description', 'is_active']);
     expect($rules['name'])->toContain('required', 'unique:categories,name');
     expect($rules['description'])->toContain('nullable');
-    expect($rules['image'])->toContain('nullable', 'image');
     expect($rules['is_active'])->toContain('boolean');
 });

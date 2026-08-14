@@ -13,7 +13,6 @@ return new class extends Migration
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->string('sku')->unique();
-            $table->string('image')->nullable();
             $table->string('brand')->nullable();
             $table->boolean('is_active')->default(true);
             $table->softDeletes();

@@ -13,8 +13,6 @@ class ProductResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'sku' => $this->sku,
-            'image' => $this->image,
-            'image_url' => $this->image_url,
             'brand' => $this->brand,
             'is_active' => $this->is_active,
             'category' => $this->whenLoaded('category') ? new CategoryResource($this->category) : null,

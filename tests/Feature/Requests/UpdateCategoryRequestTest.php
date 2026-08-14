@@ -20,7 +20,7 @@ test('has validation rules', function () {
 
     $rules = $request->rules();
 
-    expect($rules)->toHaveKeys(['name', 'description', 'image', 'is_active']);
+    expect($rules)->toHaveKeys(['name', 'description', 'is_active']);
     expect($rules['name'])->toContain('required');
     expect($rules['description'])->toContain('nullable');
     expect($rules['is_active'])->toContain('boolean');

@@ -23,6 +23,7 @@ type Props = {
 type VariantForm = {
     unit_id: string;
     name: string;
+    image: File | null;
     units_per_package: string;
     cost_price: string;
     selling_price: string;
@@ -42,14 +43,12 @@ export default function ProductsCreate({ categories, units }: Props) {
     } = useForm<{
         category_id: string;
         name: string;
-        image: File | null;
         brand: string;
         is_active: boolean;
         variants: VariantForm[];
     }>({
         category_id: '',
         name: '',
-        image: null,
         brand: '',
         is_active: true,
         variants: [],
@@ -63,6 +62,7 @@ export default function ProductsCreate({ categories, units }: Props) {
             {
                 unit_id: '',
                 name: '',
+                image: null,
                 units_per_package: '1',
                 cost_price: '0',
                 selling_price: '0',
@@ -80,7 +80,11 @@ export default function ProductsCreate({ categories, units }: Props) {
         );
     };
 
-    const updateVariant = (index: number, field: string, value: string) => {
+    const updateVariant = (
+        index: number,
+        field: string,
+        value: string | File,
+    ) => {
         const updated = variants.map((v, i) => {
             if (i !== index) {
                 return v;
@@ -119,8 +123,8 @@ export default function ProductsCreate({ categories, units }: Props) {
                             <CardTitle>{t('Product Details')}</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                                <div className="space-y-2">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="space-y-2 md:col-span-2 lg:col-span-1">
                                     <Label htmlFor="category_id">
                                         {t('Category')}
                                     </Label>
@@ -134,6 +138,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             label: cat.name,
                                         }))}
                                         placeholder={t('Select category')}
+                                        className="w-full"
                                     />
                                     {formErrors.category_id && (
                                         <p className="text-sm text-destructive">
@@ -168,28 +173,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                     {formErrors.brand && (
                                         <p className="text-sm text-destructive">
                                             {formErrors.brand}
-                                        </p>
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="image">
-                                        {t('Upload Image')}
-                                    </Label>
-                                    <Input
-                                        id="image"
-                                        type="file"
-                                        accept="image/jpeg,image/png,image/jpg,image/webp"
-                                        onChange={(e) => {
-                                            const file = e.target.files?.[0];
-
-                                            if (file) {
-                                                setData('image', file);
-                                            }
-                                        }}
-                                    />
-                                    {formErrors.image && (
-                                        <p className="text-sm text-destructive">
-                                            {formErrors.image}
                                         </p>
                                     )}
                                 </div>
@@ -229,7 +212,28 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             <Trash2 className="h-4 w-4 text-destructive" />
                                         </Button>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
+                                                {t('Image')}
+                                            </Label>
+                                            <Input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                                onChange={(e) => {
+                                                    const file =
+                                                        e.target.files?.[0];
+
+                                                    if (file) {
+                                                        updateVariant(
+                                                            index,
+                                                            'image',
+                                                            file,
+                                                        );
+                                                    }
+                                                }}
+                                            />
+                                        </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
                                                 {t('Unit')}

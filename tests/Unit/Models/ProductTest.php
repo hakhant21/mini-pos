@@ -6,7 +6,7 @@ use App\Models\ProductVariant;
 
 test('has fillable attributes', function () {
     $product = new Product;
-    expect($product->getFillable())->toBe(['category_id', 'name', 'sku', 'image', 'brand', 'is_active']);
+    expect($product->getFillable())->toBe(['category_id', 'name', 'sku', 'brand', 'is_active']);
 });
 
 test('has casts', function () {
@@ -41,16 +41,6 @@ test('scope active filters correctly', function () {
     Product::factory()->create(['name' => 'Inactive', 'is_active' => false]);
 
     expect(Product::active()->get())->toHaveCount(1);
-});
-
-test('image url returns null when no image', function () {
-    $product = Product::factory()->create(['image' => null]);
-    expect($product->image_url)->toBeNull();
-});
-
-test('image url returns url when image exists', function () {
-    $product = Product::factory()->create(['image' => 'images/products/test.jpg']);
-    expect($product->image_url)->toContain('images/products/test.jpg');
 });
 
 test('inactive state works', function () {

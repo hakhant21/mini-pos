@@ -10,7 +10,7 @@ trait HasImage
     {
         $uid = uniqid();
 
-        $path = $file->storeAs($path, $uid . '.' . $file->extension(), $disk);
+        $path = $file->storeAs($path, $uid.'.'.$file->extension(), $disk);
 
         return $path;
     }

@@ -143,7 +143,6 @@ export default function ProductsIndex({ products: productsData }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>{t('Category')}</TableHead>
-                                    <TableHead>{t('Image')}</TableHead>
                                     <TableHead>{t('Name')}</TableHead>
                                     <TableHead>{t('SKU')}</TableHead>
                                     <TableHead>{t('Brand')}</TableHead>
@@ -159,17 +158,6 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                     <TableRow key={product.id}>
                                         <TableCell>
                                             {product.category?.name || '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            {product.image_url ? (
-                                                <img
-                                                    src={product.image_url}
-                                                    alt={product.name}
-                                                    className="h-10 w-10 rounded object-cover"
-                                                />
-                                            ) : (
-                                                <div className="h-10 w-10 rounded bg-muted" />
-                                            )}
                                         </TableCell>
                                         <TableCell className="font-medium">
                                             {product.name}
@@ -261,7 +249,7 @@ export default function ProductsIndex({ products: productsData }: Props) {
                                 {filteredProducts.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={8}
+                                            colSpan={7}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             {t('No products found.')}

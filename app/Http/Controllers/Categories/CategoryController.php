@@ -8,7 +8,6 @@ use App\Http\Requests\Categories\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,10 +29,6 @@ class CategoryController extends Controller
     {
         $data = $request->validated();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('images/categories', 'public');
-        }
-
         Category::create($data);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Category created successfully.']);
@@ -44,15 +39,6 @@ class CategoryController extends Controller
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
         $data = $request->validated();
-
-        if ($request->hasFile('image')) {
-            if ($category->image) {
-                Storage::disk('public')->delete($category->image);
-            }
-            $data['image'] = $request->file('image')->store('images/categories', 'public');
-        } else {
-            unset($data['image']);
-        }
 
         $category->update($data);
 
@@ -88,7 +74,7 @@ class CategoryController extends Controller
 
     public function toggleActive(Category $category): RedirectResponse
     {
-        $category->update(['is_active' => !$category->is_active]);
+        $category->update(['is_active' => ! $category->is_active]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => 'Category status updated successfully.']);
 
