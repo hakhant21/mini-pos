@@ -8,7 +8,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        if (config('app.env' == 'production')) {
+        if (config('app.env') === 'production') {
             $this->call([
                 UserSeeder::class,
             ]);
@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
                 UserSeeder::class,
                 CategorySeeder::class,
                 UnitSeeder::class,
-                ProductSeeder::class
+                ProductSeeder::class,
+                ProductVariantSeeder::class,
             ]);
         }
     }

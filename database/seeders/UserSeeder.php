@@ -14,14 +14,14 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'email' => 'admin@gmail.com',
                 'password' => bcrypt('password'),
-                'role' => 'admin'
+                'role' => 'admin',
             ],
             [
                 'name' => 'Cashier',
                 'email' => 'cashier@gmail.com',
                 'password' => bcrypt('password'),
-                'role' => 'cashier'
-            ]
+                'role' => 'cashier',
+            ],
         ];
 
         foreach ($users as $user) {
