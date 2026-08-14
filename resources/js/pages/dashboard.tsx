@@ -50,23 +50,7 @@ export default function Dashboard({
         <>
             <Head title={t('Dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">
-                                {t('Inventory Value')}
-                            </CardTitle>
-                            <Banknote className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="py-1 text-2xl font-bold">
-                                Ks {ks(inventoryValue)}
-                            </div>
-                            <p className="py-1 text-xs text-muted-foreground">
-                                {t('total cost value')}
-                            </p>
-                        </CardContent>
-                    </Card>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">
                             <CardTitle className="text-sm font-medium">

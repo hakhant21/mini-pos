@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Product;
 use App\Models\ProductVariant;
 use Illuminate\Database\Seeder;
 
@@ -5507,6 +5508,43 @@ class ProductVariantSeeder extends Seeder
 
         foreach ($variants as $variant) {
             ProductVariant::create($variant);
+        }
+
+        $unitIdByCategory = [
+            1 => 1, // pack
+            2 => 1, // pack
+            3 => 2, // can
+            4 => 4, // litre
+            5 => 2, // can
+            6 => 2, // can
+            7 => 4, // litre
+            8 => 4, // litre
+            9 => 1, // pack
+            10 => 1, // pack
+            11 => 2, // can
+        ];
+
+        $selfVariants = Product::query()
+            ->with('category')
+            ->whereDoesntHave('variants')
+            ->get();
+
+        foreach ($selfVariants as $product) {
+            ProductVariant::create([
+                'product_id' => $product->id,
+                'unit_id' => $unitIdByCategory[$product->category_id] ?? 1,
+                'name' => $product->name,
+                'image' => null,
+                'sku' => $product->sku,
+                'units_per_package' => 1,
+                'cost_price' => 0,
+                'selling_price' => 0,
+                'per_unit_price' => 0,
+                'stock_quantity' => 0,
+                'min_stock_level' => 0,
+                'max_stock_level' => null,
+                'is_active' => true,
+            ]);
         }
     }
 }
