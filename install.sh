@@ -3,44 +3,40 @@ set -euo pipefail
 
 # mini-pos LAN deployment setup for Linux (Nginx + PHP-FPM + MySQL/MariaDB)
 #  - detects the machine's LAN IP
-#  - installs Nginx, PHP-FPM, MySQL, Composer if missing
-#  - configures nginx vhost, creates database, runs Laravel setup
+#  - installs Nginx, PHP-FPM, MySQL/MariaDB, Node.js, Composer, pnpm
+#  - configures nginx vhost, dnsmasq, creates database, runs Laravel setup
 #  - reachable at http://<LAN_IP>:<APP_PORT>
 #
-# Extra modes:
-#   ./install.sh --build      - pull latest code, install deps, rebuild assets
-#   ./install.sh update-ip    - detect the LAN IP; if it changed, update .env
-#                               and reload nginx (used by the cron job)
-#   sudo ./install.sh setup-cron - install a cron job (default daily at 09:00) that
-#                                  runs "update-ip" to follow a dynamic LAN IP
-#
 # Usage:
-#   ./install.sh                 # default port 80
+#   ./install.sh                 # full setup (same as --setup)
+#   ./install.sh --setup         # full setup
+#   ./install.sh --build         # pull code, install deps, rebuild assets
+#   ./install.sh --restart       # restart all services
 #   APP_PORT=8080 ./install.sh   # custom port
 #   APP_IP=192.168.1.50 ./install.sh  # skip detection, use a fixed IP
 #   DB_PASSWORD=mysecret ./install.sh  # custom MySQL password
+#
+# Internal modes (used by cron):
+#   ./install.sh update-ip       - detect LAN IP; update .env if changed
+#   sudo ./install.sh setup-cron - install daily cron job for update-ip
 
 APP_NAME="${APP_NAME:-mini-pos}"
 APP_PORT="${APP_PORT:-80}"
 APP_IP="${APP_IP:-}"
 APP_PROTOCOL="http"
 
-# Database configuration
 DB_DATABASE="${DB_DATABASE:-minipos}"
 DB_USERNAME="${DB_USERNAME:-minipos}"
 DB_PASSWORD="${DB_PASSWORD:-secret}"
-DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-rootsecret}"
+DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-asdffdsa}"
 
-# Detect PHP version (check what's installed, fallback to 8.3)
 detect_php_version() {
-    # Try to find an installed php-fpm binary
     local ver
     ver=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
     if [ -n "$ver" ]; then
         echo "$ver"
         return 0
     fi
-    # Check available php*-fpm packages
     local available
     available=$(apt-cache search 'php[0-9]' 2>/dev/null | grep -oP 'php\K[0-9]+\.[0-9]+' | sort -V | tail -1 || true)
     if [ -n "$available" ]; then
@@ -51,23 +47,27 @@ detect_php_version() {
 }
 
 detect_mysql_package() {
-    # Fallback to generic mariadb-server
+    for ver in 10.11 10.6 10.5 10.4 10.3; do
+        if apt-cache show "mariadb-server-${ver}" >/dev/null 2>&1; then
+            echo "mariadb-server-${ver}"
+            return 0
+        fi
+    done
     if apt-cache show "mariadb-server" >/dev/null 2>&1; then
         echo "mariadb-server"
         return 0
     fi
-    # Last resort: MySQL
     for pkg in default-mysql-server mysql-server-8.0 mysql-server; do
         if apt-cache show "$pkg" >/dev/null 2>&1; then
             echo "$pkg"
             return 0
         fi
     done
-    echo "mariadb-server"
+    echo "mariadb-server-10.11"
 }
 
 PHP_VERSION="8.3"
-MYSQL_PACKAGE="mariadb-server"
+MYSQL_PACKAGE="mariadb-server-10.11"
 
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
@@ -77,7 +77,6 @@ ok()   { printf "[%sOK%s] %s\n" "$C_GREEN" "$C_RESET" "$*"; }
 warn() { printf "[%sWARN%s] %s\n" "$C_YELLOW" "$C_RESET" "$*"; }
 die()  { printf "[%sERROR%s] %s\n" "$C_RED" "$C_RESET" "$*" >&2; exit 1; }
 
-# Linux-only check
 if [ "$(uname -s)" != "Linux" ]; then
     die "This script is for Linux only. Current OS: $(uname -s)"
 fi
@@ -169,12 +168,10 @@ install_packages() {
     info "Updating package lists..."
     sudo apt-get update -qq
 
-    # Detect versions now that apt cache is populated
     PHP_VERSION="$(detect_php_version)"
     MYSQL_PACKAGE="$(detect_mysql_package)"
     export PHP_VERSION MYSQL_PACKAGE
 
-    # Check if PHP FPM package exists for our detected version
     if ! apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1; then
         info "PHP ${PHP_VERSION} not in default repos. Adding ondrej/php PPA..."
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq software-properties-common
@@ -182,7 +179,7 @@ install_packages() {
         sudo apt-get update -qq
     fi
 
-    info "Installing Nginx, PHP ${PHP_VERSION}-FPM, MySQL/MariaDB, and dependencies..."
+    info "Installing Nginx, PHP ${PHP_VERSION}-FPM, ${MYSQL_PACKAGE}, and dependencies..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
         nginx \
         dnsmasq \
@@ -199,7 +196,6 @@ install_packages() {
         unzip \
         curl
 
-    # exif may be bundled in core for newer PHP versions
     sudo apt-get install -y -qq "php${PHP_VERSION}-exif" 2>/dev/null || true
 
     ok "Packages installed (PHP ${PHP_VERSION}, ${MYSQL_PACKAGE})."
@@ -274,7 +270,6 @@ configure_hostname() {
     info "Setting hostname to pos..."
     sudo hostnamectl set-hostname pos 2>/dev/null || sudo hostname pos
 
-    # Update /etc/hosts
     if ! grep -q "127.0.1.1.*pos" /etc/hosts 2>/dev/null; then
         echo "127.0.1.1 pos" | sudo tee -a /etc/hosts >/dev/null
     fi
@@ -287,7 +282,6 @@ configure_dnsmasq() {
     info "Configuring dnsmasq for bee-kyal.lan -> ${lan_ip}..."
 
     sudo tee /etc/dnsmasq.d/bee-kyal.conf >/dev/null <<EOF
-# Resolve bee-kyal.lan to the local server
 address=/bee-kyal.lan/${lan_ip}
 EOF
 
@@ -303,13 +297,16 @@ configure_nginx() {
 
     sudo tee "$vhost" >/dev/null <<EOF
 server {
-    listen ${APP_PORT} default_server;
-    listen [::]:${APP_PORT} default_server;
-    server_name _ bee-kyal.lan ${lan_ip};
+    listen ${APP_PORT};
+    listen [::]:${APP_PORT};
+    server_name bee-kyal.lan ${lan_ip};
     root ${SCRIPT_DIR}/public;
     index index.php;
 
     charset utf-8;
+
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
 
     location / {
         try_files \$uri \$uri/ /index.php?\$query_string;
@@ -334,22 +331,14 @@ EOF
 
     sudo ln -sf "$vhost" "$enabled"
 
-    # Remove ALL default nginx configs
     sudo rm -f /etc/nginx/sites-enabled/default
     sudo rm -f /etc/nginx/sites-available/default
     sudo rm -f /etc/nginx/conf.d/default.conf
 
-    # Remove default server block from nginx.conf if it exists
     if grep -q "default_server" /etc/nginx/nginx.conf 2>/dev/null; then
-        sudo sed -i '/listen.*default_server/d; /server_name.*$/d' /etc/nginx/nginx.conf 2>/dev/null || true
+        sudo sed -i '/listen.*default_server/d' /etc/nginx/nginx.conf 2>/dev/null || true
     fi
 
-    # Disable the default server in nginx.conf main block if it has a root server block
-    if grep -q "root.*/usr/share/nginx" /etc/nginx/nginx.conf 2>/dev/null; then
-        sudo sed -i '/root.*\/usr\/share\/nginx/d' /etc/nginx/nginx.conf 2>/dev/null || true
-    fi
-
-    # Test nginx config
     if sudo nginx -t 2>/dev/null; then
         ok "Nginx configured."
     else
@@ -360,18 +349,16 @@ EOF
 setup_database() {
     info "Setting up MySQL/MariaDB database..."
 
-    # Start MySQL/MariaDB if not running (try both service names)
     if sudo systemctl is-active --quiet mysql 2>/dev/null; then
-        : # already running
+        :
     elif sudo systemctl is-active --quiet mariadb 2>/dev/null; then
-        : # already running
+        :
     elif sudo systemctl start mysql 2>/dev/null; then
-        : # started as mysql
+        :
     else
         sudo systemctl start mariadb 2>/dev/null || true
     fi
 
-    # Configure root user with full privileges and password
     info "Configuring MySQL root user..."
     sudo mysql -e "
         ALTER USER 'root'@'localhost' IDENTIFIED BY 'asdffdsa';
@@ -379,7 +366,6 @@ setup_database() {
         FLUSH PRIVILEGES;
     " 2>/dev/null || warn "Root user may already be configured."
 
-    # Create database and application user
     sudo mysql -e "
         CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
         CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
@@ -394,13 +380,13 @@ setup_database() {
 }
 
 wait_for_db() {
-    info "Waiting for MySQL to be ready..."
+    info "Waiting for MySQL/MariaDB to be ready..."
     local max_attempts=30
     local attempt=0
 
     while [ $attempt -lt $max_attempts ]; do
         if mysqladmin ping -h 127.0.0.1 --silent 2>/dev/null; then
-            ok "MySQL is ready!"
+            ok "MySQL/MariaDB is ready!"
             return 0
         fi
         attempt=$((attempt + 1))
@@ -409,7 +395,7 @@ wait_for_db() {
     done
 
     echo ""
-    warn "MySQL may not be ready. Continuing anyway..."
+    warn "MySQL/MariaDB may not be ready. Continuing anyway..."
     return 0
 }
 
@@ -452,7 +438,6 @@ setup_laravel() {
     php artisan route:cache 2>/dev/null || true
     php artisan view:cache 2>/dev/null || true
 
-    # Set permissions
     chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
     ok "Laravel setup complete."
@@ -520,7 +505,6 @@ update_ip() {
 
     update_env "$ip"
 
-    # Reload nginx to pick up any changes
     if sudo nginx -t 2>/dev/null; then
         sudo systemctl reload nginx 2>/dev/null || true
         ok "Nginx reloaded with new APP_URL=${APP_PROTOCOL}://${ip}:${APP_PORT}"
@@ -546,13 +530,103 @@ setup_cron() {
     printf '    %s\n' "$line"
 }
 
+restart_services() {
+    info "Restarting MySQL/MariaDB..."
+    sudo systemctl restart mysql 2>/dev/null || sudo systemctl restart mariadb 2>/dev/null || true
+    ok "MySQL/MariaDB restarted."
+
+    info "Restarting PHP-FPM..."
+    sudo systemctl restart "php${PHP_VERSION}-fpm" 2>/dev/null || true
+    ok "PHP-FPM restarted."
+
+    info "Restarting Nginx..."
+    sudo systemctl restart nginx
+    ok "Nginx restarted."
+
+    info "Restarting dnsmasq..."
+    sudo systemctl restart dnsmasq 2>/dev/null || true
+    ok "dnsmasq restarted."
+
+    ok "All services restarted."
+}
+
+run_setup() {
+    if [ "$(id -u)" -eq 0 ]; then
+        die "Run as a regular user (sudo is used internally when needed)."
+    fi
+
+    info "mini-pos setup (Nginx + PHP ${PHP_VERSION}-FPM + ${MYSQL_PACKAGE}) - $SCRIPT_DIR"
+
+    LAN_IP="$(detect_lan_ip)"
+    [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
+
+    ok "Detected LAN IP: $LAN_IP"
+    ok "Using port: $APP_PORT"
+
+    save_ip_state "$LAN_IP"
+
+    configure_hostname
+    install_packages
+    install_composer
+    install_nodejs
+    install_pnpm
+    ensure_php_extensions
+    configure_nginx "$LAN_IP"
+    configure_dnsmasq "$LAN_IP"
+
+    info "Starting MySQL/MariaDB..."
+    sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl enable --now mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || sudo systemctl start mariadb 2>/dev/null || true
+    ok "MySQL/MariaDB started."
+
+    info "Starting PHP-FPM..."
+    sudo systemctl enable --now "php${PHP_VERSION}-fpm" 2>/dev/null || sudo systemctl start "php${PHP_VERSION}-fpm"
+    ok "PHP-FPM started."
+
+    info "Starting Nginx..."
+    sudo systemctl enable --now nginx 2>/dev/null || sudo systemctl start nginx
+    ok "Nginx started."
+
+    wait_for_db
+    setup_database
+    update_env "$LAN_IP"
+    setup_laravel
+    configure_firewall
+
+    ok "Setup complete!"
+    info ""
+    info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    info "Access your app at: ${APP_PROTOCOL}://${LAN_IP}:${APP_PORT}"
+    info ""
+    info "Database credentials (keep this safe):"
+    info "  Database: ${DB_DATABASE}"
+    info "  Username: ${DB_USERNAME}"
+    info "  Password: ${DB_PASSWORD}"
+    info ""
+    info "To connect to MySQL from host:"
+    info "  mysql -h 127.0.0.1 -P 3306 -u ${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}"
+    info ""
+    info "To update IP automatically, run: sudo $0 setup-cron"
+    info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+}
+
 main() {
     case "${1:-}" in
+        --setup)
+            run_setup
+            ;;
         --build)
             if [ "$(id -u)" -eq 0 ]; then
                 die "Run as a regular user (sudo is used internally when needed)."
             fi
             build
+            ;;
+        --restart)
+            if [ "$(id -u)" -ne 0 ]; then
+                warn "Restarting services requires root privileges."
+                exec sudo "$0" --restart
+                exit $?
+            fi
+            restart_services
             ;;
         update-ip)
             if [ "$(id -u)" -ne 0 ]; then
@@ -566,83 +640,7 @@ main() {
             setup_cron
             ;;
         *)
-            if [ "$(id -u)" -eq 0 ]; then
-                die "Run as a regular user (sudo is used internally when needed)."
-            fi
-
-            info "mini-pos LAMP setup (Nginx + PHP ${PHP_VERSION}-FPM + MySQL/MariaDB) - $SCRIPT_DIR"
-
-            LAN_IP="$(detect_lan_ip)"
-            [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
-
-            ok "Detected LAN IP: $LAN_IP"
-            ok "Using port: $APP_PORT"
-
-            save_ip_state "$LAN_IP"
-
-            # Set hostname
-            configure_hostname
-
-            # Install system packages
-            install_packages
-
-            # Install Composer
-            install_composer
-
-            # Install Node.js and pnpm
-            install_nodejs
-            install_pnpm
-
-            # Verify PHP extensions
-            ensure_php_extensions
-
-            # Configure Nginx
-            configure_nginx "$LAN_IP"
-
-            # Configure dnsmasq
-            configure_dnsmasq "$LAN_IP"
-
-            # Start services
-            info "Starting MySQL/MariaDB..."
-            sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl enable --now mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || sudo systemctl start mariadb 2>/dev/null || true
-            ok "MySQL/MariaDB started."
-
-            info "Starting PHP-FPM..."
-            sudo systemctl enable --now "php${PHP_VERSION}-fpm" 2>/dev/null || sudo systemctl start "php${PHP_VERSION}-fpm"
-            ok "PHP-FPM started."
-
-            info "Starting Nginx..."
-            sudo systemctl enable --now nginx 2>/dev/null || sudo systemctl start nginx
-            ok "Nginx started."
-
-            # Setup database
-            wait_for_db
-            setup_database
-
-            # Write .env
-            update_env "$LAN_IP"
-
-            # Install app dependencies and configure Laravel
-            setup_laravel
-
-            # Configure firewall
-            configure_firewall
-
-            ok "Setup complete!"
-            info ""
-            info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-            info "Access your app at: ${APP_PROTOCOL}://${LAN_IP}:${APP_PORT}"
-            info ""
-            info "Database credentials (keep this safe):"
-            info "  Database: ${DB_DATABASE}"
-            info "  Username: ${DB_USERNAME}"
-            info "  Password: ${DB_PASSWORD}"
-            info ""
-            info "To connect to MySQL from host:"
-            info "  mysql -h 127.0.0.1 -P 3306 -u ${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}"
-            info ""
-            info "To update IP automatically, run: sudo $0 setup-cron"
-            info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            run_setup
             ;;
     esac
 }
