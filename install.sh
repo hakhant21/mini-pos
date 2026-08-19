@@ -57,7 +57,7 @@ detect_mysql_package() {
             echo "$pkg"
             return 0
         fi
-    fi
+    done
     echo "mysql-server"
 }
 
