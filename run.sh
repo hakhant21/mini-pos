@@ -52,15 +52,15 @@ docker compose up -d --build
 # Wait for backend container to be ready
 info "Waiting container to be ready..."
 
-info "5"
+info "Ready in 5..."
 sleep 1
-info "4"
+info "Ready in 4..."
 sleep 1
-info "5"
+info "Ready in 3..."
 sleep 1
-info "4"
+info "Ready in 2..."
 sleep 1
-info "1"
+info "Ready in 1..."
 sleep 1
 
 info "Done! App is up and running..."
