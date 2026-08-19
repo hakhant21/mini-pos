@@ -239,6 +239,26 @@ ensure_php_extensions() {
     fi
 }
 
+configure_hostname() {
+    local current_hostname
+    current_hostname=$(hostname 2>/dev/null || true)
+
+    if [ "$current_hostname" = "pos" ]; then
+        ok "Hostname already set to pos."
+        return 0
+    fi
+
+    info "Setting hostname to pos..."
+    sudo hostnamectl set-hostname pos 2>/dev/null || sudo hostname pos
+
+    # Update /etc/hosts
+    if ! grep -q "127.0.1.1.*pos" /etc/hosts 2>/dev/null; then
+        echo "127.0.1.1 pos" | sudo tee -a /etc/hosts >/dev/null
+    fi
+
+    ok "Hostname set to pos."
+}
+
 configure_dnsmasq() {
     local lan_ip="$1"
     info "Configuring dnsmasq for bee-kyal.lan -> ${lan_ip}..."
@@ -290,8 +310,10 @@ EOF
 
     sudo ln -sf "$vhost" "$enabled"
 
-    # Remove default site if it exists
+    # Remove default nginx config
     sudo rm -f /etc/nginx/sites-enabled/default
+    sudo rm -f /etc/nginx/sites-available/default
+    sudo rm -f /etc/nginx/conf.d/default.conf
 
     # Test nginx config
     if sudo nginx -t 2>/dev/null; then
@@ -517,6 +539,9 @@ main() {
             ok "Using port: $APP_PORT"
 
             save_ip_state "$LAN_IP"
+
+            # Set hostname
+            configure_hostname
 
             # Install system packages
             install_packages
