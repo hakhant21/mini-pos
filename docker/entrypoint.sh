@@ -1,6 +1,8 @@
 #!/bin/sh
 git config --global --add safe.directory /var/www
 
+npm install -g npm@latest
+
 npm install
 
 npm run build
