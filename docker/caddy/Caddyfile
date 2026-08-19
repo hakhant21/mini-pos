@@ -1,5 +1,5 @@
 pos.local {
-    tls internal
+    tls /etc/caddy/certs/cert.pem /etc/caddy/certs/key.pem
     root * /var/www/public
     encode gzip
     try_files {path} /index.php?{query}

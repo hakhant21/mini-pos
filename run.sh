@@ -45,6 +45,25 @@ else
     info ".env already exists."
 fi
 
+# ── TLS (mkcert) ───────────────────────────────────────
+if ! command -v mkcert &>/dev/null; then
+    warn "mkcert not found. Installing..."
+    if command -v brew &>/dev/null; then
+        brew install mkcert
+    elif command -v apt-get &>/dev/null; then
+        sudo apt-get update && sudo apt-get install -y mkcert
+    else
+        curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.6/mkcert-v1.4.6-$(uname -s)-$(uname -m)"
+        chmod +x mkcert-*
+        sudo mv mkcert-* /usr/local/bin/mkcert
+    fi
+fi
+
+mkcert -install
+
+mkdir -p docker/caddy/certs
+mkcert -key-file docker/caddy/certs/key.pem -cert-file docker/caddy/certs/cert.pem pos.local
+
 # ── Docker Compose up ───────────────────────────────────
 info "Starting Docker containers..."
 docker compose up -d --build

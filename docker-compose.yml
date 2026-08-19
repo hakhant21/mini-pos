@@ -34,6 +34,7 @@ services:
     volumes:
       - ./:/var/www
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./docker/caddy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
       - caddy_config:/config
     networks:
