@@ -280,7 +280,8 @@ configure_nginx() {
 
     sudo tee "$vhost" >/dev/null <<EOF
 server {
-    listen ${APP_PORT};
+    listen ${APP_PORT} default_server;
+    listen [::]:${APP_PORT} default_server;
     server_name _ bee-kyal.lan ${lan_ip};
     root ${SCRIPT_DIR}/public;
     index index.php;
@@ -298,7 +299,7 @@ server {
 
     location ~ \.php\$ {
         fastcgi_pass unix:/var/run/php/php${PHP_VERSION}-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME \$realpath_root\$fastcgi_script_name;
+        fastcgi_param SCRIPT_FILENAME \$document_root\$fastcgi_script_name;
         include fastcgi_params;
     }
 
@@ -310,10 +311,20 @@ EOF
 
     sudo ln -sf "$vhost" "$enabled"
 
-    # Remove default nginx config
+    # Remove ALL default nginx configs
     sudo rm -f /etc/nginx/sites-enabled/default
     sudo rm -f /etc/nginx/sites-available/default
     sudo rm -f /etc/nginx/conf.d/default.conf
+
+    # Remove default server block from nginx.conf if it exists
+    if grep -q "default_server" /etc/nginx/nginx.conf 2>/dev/null; then
+        sudo sed -i '/listen.*default_server/d; /server_name.*$/d' /etc/nginx/nginx.conf 2>/dev/null || true
+    fi
+
+    # Disable the default server in nginx.conf main block if it has a root server block
+    if grep -q "root.*/usr/share/nginx" /etc/nginx/nginx.conf 2>/dev/null; then
+        sudo sed -i '/root.*\/usr\/share\/nginx/d' /etc/nginx/nginx.conf 2>/dev/null || true
+    fi
 
     # Test nginx config
     if sudo nginx -t 2>/dev/null; then
