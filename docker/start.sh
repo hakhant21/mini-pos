@@ -7,8 +7,7 @@ if [ ! -f "$FLAG" ]; then
   npm run build
   chown -R www-data:www-data /var/www/storage/ /var/www/bootstrap/cache/
   composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs
-  php artisan key:generate
-  php artisan migrate:fresh --seed
+  php artisan migrate
   php artisan storage:link
   php artisan optimize:clear
   touch "$FLAG"
