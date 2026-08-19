@@ -1,8 +1,10 @@
-FROM php:8.4-fpm-alpine
+FROM php:8.4-fpm
 
 # Only essential dependencies
-RUN apk add --no-cache curl git unzip libzip-dev libpng-dev nodejs npm \
-    && docker-php-ext-install pdo_mysql gd zip bcmath
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl git unzip libzip-dev libpng-dev nodejs npm \
+    && docker-php-ext-install pdo_mysql gd zip bcmath \
+    && rm -rf /var/lib/apt/lists/*
 
 # pnpm via corepack
 RUN npm install -g pnpm
