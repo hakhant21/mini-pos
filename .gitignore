@@ -31,3 +31,4 @@ public/android-hot
 
 # Credential files (keystores, private keys, etc.)
 /credentials/
+/docker/caddy/certs/
