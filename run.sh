@@ -32,18 +32,26 @@ if ! docker compose version &>/dev/null 2>&1; then
     info "Docker Compose installed."
 fi
 
-# ── Node.js ─────────────────────────────────────────────
+# ── Node.js (via nvm) ───────────────────────────────────
+export NVM_DIR="$HOME/.nvm"
+if [ ! -d "$NVM_DIR" ]; then
+    warn "nvm not found. Installing..."
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
+    \. "$NVM_DIR/nvm.sh"
+fi
+
+\. "$NVM_DIR/nvm.sh"
+
 if ! command -v node &>/dev/null; then
     warn "Node.js not found. Installing..."
-    curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    nvm install 22
     info "Node.js installed."
 fi
 
-# ── pnpm ────────────────────────────────────────────────
+# ── pnpm (via corepack) ─────────────────────────────────
 if ! command -v pnpm &>/dev/null; then
     warn "pnpm not found. Installing..."
-    npm install -g pnpm
+    corepack enable pnpm
     info "pnpm installed."
 fi
 
