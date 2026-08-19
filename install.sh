@@ -220,6 +220,29 @@ install_composer() {
     ok "Composer installed."
 }
 
+install_nodejs() {
+    if command -v node >/dev/null 2>&1; then
+        info "Node.js found: $(node --version 2>/dev/null || true)"
+        return 0
+    fi
+
+    info "Installing Node.js from nodejs.org..."
+    curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+    sudo apt-get install -y -qq nodejs
+    ok "Node.js installed: $(node --version 2>/dev/null || true)."
+}
+
+install_pnpm() {
+    if command -v pnpm >/dev/null 2>&1; then
+        info "pnpm found: $(pnpm --version 2>/dev/null || true)"
+        return 0
+    fi
+
+    info "Installing pnpm..."
+    sudo npm install -g pnpm
+    ok "pnpm installed: $(pnpm --version 2>/dev/null || true)."
+}
+
 ensure_php_extensions() {
     info "Checking PHP extensions..."
     local required=(pdo_mysql mbstring exif bcmath gd zip xml curl intl)
@@ -440,16 +463,22 @@ build() {
     git pull
     ok "Code updated."
 
+    install_nodejs
+    install_pnpm
+
     info "Installing Composer dependencies..."
     composer install --no-dev --optimize-autoloader --no-interaction
     ok "Composer dependencies installed."
 
-    info "Installing npm dependencies..."
-    npm install
-    ok "npm dependencies installed."
+    info "Installing pnpm dependencies..."
+    pnpm install
+    ok "pnpm dependencies installed."
+
+    info "Approving all build scripts..."
+    pnpm approve-builds --all 2>/dev/null || true
 
     info "Building frontend assets..."
-    npm run build
+    pnpm run build
     ok "Frontend assets built."
 
     info "Clearing and rebuilding Laravel caches..."
@@ -559,6 +588,10 @@ main() {
 
             # Install Composer
             install_composer
+
+            # Install Node.js and pnpm
+            install_nodejs
+            install_pnpm
 
             # Verify PHP extensions
             ensure_php_extensions
