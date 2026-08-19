@@ -1,4 +1,4 @@
-FROM php:8.4-fpm-alpine
+FROM php:8.3-fpm-alpine
 
 # Only essential dependencies
 RUN apk add --no-cache curl git unzip libzip-dev libpng-dev \
