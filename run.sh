@@ -32,28 +32,12 @@ if ! docker compose version &>/dev/null 2>&1; then
     info "Docker Compose installed."
 fi
 
-# ── Node.js (via nvm) ───────────────────────────────────
+# ── Node.js & pnpm ──────────────────────────────────────
 export NVM_DIR="$HOME/.nvm"
-if [ ! -d "$NVM_DIR" ]; then
-    warn "nvm not found. Installing..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
-    \. "$NVM_DIR/nvm.sh"
-fi
-
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
 \. "$NVM_DIR/nvm.sh"
-
-if ! command -v node &>/dev/null; then
-    warn "Node.js not found. Installing..."
-    nvm install 22
-    info "Node.js installed."
-fi
-
-# ── pnpm (via corepack) ─────────────────────────────────
-if ! command -v pnpm &>/dev/null; then
-    warn "pnpm not found. Installing..."
-    corepack enable pnpm
-    info "pnpm installed."
-fi
+nvm install 22
+corepack enable pnpm
 
 # ── .env ────────────────────────────────────────────────
 if [ ! -f .env ]; then
