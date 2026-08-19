@@ -1,10 +1,14 @@
 FROM php:8.4-fpm-alpine
 
-# Install dependencies
-RUN apk add --no-cache \
+# Fix DNS and update repository
+RUN echo "http://dl-cdn.alpinelinux.org/alpine/v3.20/main" > /etc/apk/repositories && \
+    echo "http://dl-cdn.alpinelinux.org/alpine/v3.20/community" >> /etc/apk/repositories
+
+# Install dependencies with correct package names
+RUN apk update && apk add --no-cache \
     git \
     curl \
-    cron \
+    dcron \
     nano \
     bash \
     build-base \
@@ -21,7 +25,8 @@ RUN apk add --no-cache \
     nodejs \
     npm \
     zip \
-    unzip
+    unzip \
+    tzdata
 
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -40,8 +45,7 @@ RUN pecl install redis && docker-php-ext-enable redis
 
 # Set timezone
 ENV TZ='Asia/Yangon'
-RUN apk add --no-cache tzdata && \
-    cp /usr/share/zoneinfo/$TZ /etc/localtime && \
+RUN cp /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone
 
 # Install Composer
