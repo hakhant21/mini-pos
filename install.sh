@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# mini-pos LAN deployment setup for Linux (Nginx + PHP-FPM + MySQL/MariaDB)
+# mini-pos LAN deployment setup for Linux (Nginx + PHP-FPM + MySQL)
 #  - detects the machine's LAN IP
-#  - installs Nginx, PHP-FPM, MySQL/MariaDB, Node.js, Composer, pnpm
+#  - installs Nginx, PHP-FPM, MySQL (via .deb), Node.js, Composer, pnpm
 #  - configures nginx vhost, dnsmasq, creates database, runs Laravel setup
 #  - reachable at http://<LAN_IP>:<APP_PORT>
 #
@@ -14,7 +14,6 @@ set -euo pipefail
 #   ./install.sh --restart       # restart all services
 #   APP_PORT=8080 ./install.sh   # custom port
 #   APP_IP=192.168.1.50 ./install.sh  # skip detection, use a fixed IP
-#   DB_PASSWORD=mysecret ./install.sh  # custom MySQL password
 #
 # Internal modes (used by cron):
 #   ./install.sh update-ip       - detect LAN IP; update .env if changed
@@ -26,9 +25,11 @@ APP_IP="${APP_IP:-}"
 APP_PROTOCOL="http"
 
 DB_DATABASE="${DB_DATABASE:-minipos}"
-DB_USERNAME="${DB_USERNAME:-minipos}"
-DB_PASSWORD="${DB_PASSWORD:-secret}"
-DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-asdffdsa}"
+DB_USERNAME="${DB_USERNAME:-pos}"
+DB_PASSWORD="${DB_PASSWORD:-asdffdsa}"
+
+MYSQL_DEB_URL="https://dev.mysql.com/get/mysql-apt-config_0.8.30-1_all.deb"
+MYSQL_DEB_FILE="/tmp/mysql-apt-config.deb"
 
 detect_php_version() {
     local ver
@@ -46,28 +47,7 @@ detect_php_version() {
     echo "8.3"
 }
 
-detect_mysql_package() {
-    for ver in 10.11 10.6 10.5 10.4 10.3; do
-        if apt-cache show "mariadb-server-${ver}" >/dev/null 2>&1; then
-            echo "mariadb-server-${ver}"
-            return 0
-        fi
-    done
-    if apt-cache show "mariadb-server" >/dev/null 2>&1; then
-        echo "mariadb-server"
-        return 0
-    fi
-    for pkg in default-mysql-server mysql-server-8.0 mysql-server; do
-        if apt-cache show "$pkg" >/dev/null 2>&1; then
-            echo "$pkg"
-            return 0
-        fi
-    done
-    echo "mariadb-server-10.11"
-}
-
 PHP_VERSION="8.3"
-MYSQL_PACKAGE="mariadb-server-10.11"
 
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
@@ -169,8 +149,7 @@ install_packages() {
     sudo apt-get update -qq
 
     PHP_VERSION="$(detect_php_version)"
-    MYSQL_PACKAGE="$(detect_mysql_package)"
-    export PHP_VERSION MYSQL_PACKAGE
+    export PHP_VERSION
 
     if ! apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1; then
         info "PHP ${PHP_VERSION} not in default repos. Adding ondrej/php PPA..."
@@ -179,11 +158,10 @@ install_packages() {
         sudo apt-get update -qq
     fi
 
-    info "Installing Nginx, PHP ${PHP_VERSION}-FPM, ${MYSQL_PACKAGE}, and dependencies..."
+    info "Installing Nginx, PHP ${PHP_VERSION}-FPM, and dependencies..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
         nginx \
         dnsmasq \
-        "${MYSQL_PACKAGE}" \
         "php${PHP_VERSION}-fpm" \
         "php${PHP_VERSION}-mysql" \
         "php${PHP_VERSION}-mbstring" \
@@ -198,7 +176,29 @@ install_packages() {
 
     sudo apt-get install -y -qq "php${PHP_VERSION}-exif" 2>/dev/null || true
 
-    ok "Packages installed (PHP ${PHP_VERSION}, ${MYSQL_PACKAGE})."
+    ok "Packages installed (PHP ${PHP_VERSION})."
+}
+
+install_mysql() {
+    if command -v mysql >/dev/null 2>&1 && mysql --version 2>/dev/null | grep -qi "mysql"; then
+        info "MySQL found: $(mysql --version 2>/dev/null || true)"
+        return 0
+    fi
+
+    info "Downloading MySQL APT config .deb..."
+    curl -fsSL "$MYSQL_DEB_URL" -o "$MYSQL_DEB_FILE"
+
+    info "Installing MySQL APT config via dpkg..."
+    sudo dpkg -i "$MYSQL_DEB_FILE"
+    rm -f "$MYSQL_DEB_FILE"
+
+    info "Updating package lists for MySQL repo..."
+    sudo apt-get update -qq
+
+    info "Installing MySQL Server..."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq mysql-server
+
+    ok "MySQL installed: $(mysql --version 2>/dev/null || true)"
 }
 
 install_composer() {
@@ -347,26 +347,25 @@ EOF
 }
 
 setup_database() {
-    info "Setting up MySQL/MariaDB database..."
+    info "Setting up MySQL database..."
 
-    if sudo systemctl is-active --quiet mysql 2>/dev/null; then
-        :
-    elif sudo systemctl is-active --quiet mariadb 2>/dev/null; then
-        :
-    elif sudo systemctl start mysql 2>/dev/null; then
-        :
-    else
-        sudo systemctl start mariadb 2>/dev/null || true
-    fi
+    # Ensure MySQL is running
+    sudo systemctl start mysql 2>/dev/null || true
 
-    info "Configuring MySQL root user..."
+    # Set root password and secure installation
+    info "Configuring MySQL root user and securing installation..."
     sudo mysql -e "
         ALTER USER 'root'@'localhost' IDENTIFIED BY 'asdffdsa';
-        GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
+        DELETE FROM mysql.user WHERE User='';
+        DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+        DROP DATABASE IF EXISTS test;
+        DELETE FROM mysql.db WHERE Db='test' OR Db='test\\_%';
         FLUSH PRIVILEGES;
     " 2>/dev/null || warn "Root user may already be configured."
 
-    sudo mysql -e "
+    # Create database and user
+    info "Creating database '${DB_DATABASE}' and user '${DB_USERNAME}'..."
+    sudo mysql -u root -p'asdffdsa' -e "
         CREATE DATABASE IF NOT EXISTS \`${DB_DATABASE}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
         CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
         CREATE USER IF NOT EXISTS '${DB_USERNAME}'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
@@ -375,18 +374,18 @@ setup_database() {
         FLUSH PRIVILEGES;
     " 2>/dev/null || warn "Database/user may already exist."
 
-    ok "Database '${DB_DATABASE}' ready. Root user has full privileges."
-    info "Connect as root: sudo mysql"
+    ok "Database '${DB_DATABASE}' ready. User '${DB_USERNAME}'@'localhost'."
+    info "Connect: mysql -u ${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}"
 }
 
 wait_for_db() {
-    info "Waiting for MySQL/MariaDB to be ready..."
+    info "Waiting for MySQL to be ready..."
     local max_attempts=30
     local attempt=0
 
     while [ $attempt -lt $max_attempts ]; do
         if mysqladmin ping -h 127.0.0.1 --silent 2>/dev/null; then
-            ok "MySQL/MariaDB is ready!"
+            ok "MySQL is ready!"
             return 0
         fi
         attempt=$((attempt + 1))
@@ -395,7 +394,7 @@ wait_for_db() {
     done
 
     echo ""
-    warn "MySQL/MariaDB may not be ready. Continuing anyway..."
+    warn "MySQL may not be ready. Continuing anyway..."
     return 0
 }
 
@@ -531,9 +530,9 @@ setup_cron() {
 }
 
 restart_services() {
-    info "Restarting MySQL/MariaDB..."
-    sudo systemctl restart mysql 2>/dev/null || sudo systemctl restart mariadb 2>/dev/null || true
-    ok "MySQL/MariaDB restarted."
+    info "Restarting MySQL..."
+    sudo systemctl restart mysql 2>/dev/null || true
+    ok "MySQL restarted."
 
     info "Restarting PHP-FPM..."
     sudo systemctl restart "php${PHP_VERSION}-fpm" 2>/dev/null || true
@@ -555,7 +554,7 @@ run_setup() {
         die "Run as a regular user (sudo is used internally when needed)."
     fi
 
-    info "mini-pos setup (Nginx + PHP ${PHP_VERSION}-FPM + ${MYSQL_PACKAGE}) - $SCRIPT_DIR"
+    info "mini-pos setup (Nginx + PHP ${PHP_VERSION}-FPM + MySQL) - $SCRIPT_DIR"
 
     LAN_IP="$(detect_lan_ip)"
     [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
@@ -567,6 +566,7 @@ run_setup() {
 
     configure_hostname
     install_packages
+    install_mysql
     install_composer
     install_nodejs
     install_pnpm
@@ -574,9 +574,9 @@ run_setup() {
     configure_nginx "$LAN_IP"
     configure_dnsmasq "$LAN_IP"
 
-    info "Starting MySQL/MariaDB..."
-    sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl enable --now mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || sudo systemctl start mariadb 2>/dev/null || true
-    ok "MySQL/MariaDB started."
+    info "Starting MySQL..."
+    sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl start mysql 2>/dev/null || true
+    ok "MySQL started."
 
     info "Starting PHP-FPM..."
     sudo systemctl enable --now "php${PHP_VERSION}-fpm" 2>/dev/null || sudo systemctl start "php${PHP_VERSION}-fpm"
@@ -601,9 +601,11 @@ run_setup() {
     info "  Database: ${DB_DATABASE}"
     info "  Username: ${DB_USERNAME}"
     info "  Password: ${DB_PASSWORD}"
+    info "  Root password: asdffdsa"
     info ""
-    info "To connect to MySQL from host:"
-    info "  mysql -h 127.0.0.1 -P 3306 -u ${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}"
+    info "To connect to MySQL:"
+    info "  mysql -u ${DB_USERNAME} -p${DB_PASSWORD} ${DB_DATABASE}"
+    info "  sudo mysql -p'asdffdsa'  (as root)"
     info ""
     info "To update IP automatically, run: sudo $0 setup-cron"
     info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
