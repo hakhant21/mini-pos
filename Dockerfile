@@ -24,6 +24,8 @@ WORKDIR /var/www
 
 COPY . .
 
+RUN chmod +x docker/start.sh
+
 EXPOSE 9000
 
-CMD ["php-fpm", "--nodaemonize"]
+CMD ["sh", "-c", "docker/start.sh"]
