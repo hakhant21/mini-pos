@@ -61,9 +61,6 @@ detect_mysql_package() {
     echo "mysql-server"
 }
 
-PHP_VERSION="$(detect_php_version)"
-MYSQL_PACKAGE="$(detect_mysql_package)"
-
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
 
@@ -163,6 +160,11 @@ EOF
 install_packages() {
     info "Updating package lists..."
     sudo apt-get update -qq
+
+    # Detect versions now that apt cache is populated
+    PHP_VERSION="$(detect_php_version)"
+    MYSQL_PACKAGE="$(detect_mysql_package)"
+    export PHP_VERSION MYSQL_PACKAGE
 
     # Check if PHP FPM package exists for our detected version
     if ! apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1; then
