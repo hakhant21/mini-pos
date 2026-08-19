@@ -2,7 +2,7 @@ FROM php:8.4-fpm
 
 # Only essential dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl git unzip libzip-dev libpng-dev \
+    curl unzip libzip-dev libpng-dev \
     && docker-php-ext-install pdo_mysql gd zip bcmath \
     && rm -rf /var/lib/apt/lists/*
 
