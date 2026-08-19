@@ -280,14 +280,14 @@ configure_hostname() {
 
 configure_dnsmasq() {
     local lan_ip="$1"
-    info "Configuring dnsmasq for bee-kyal.lan -> ${lan_ip}..."
+    info "Configuring dnsmasq..."
 
-    sudo tee /etc/dnsmasq.d/bee-kyal.conf >/dev/null <<EOF
-address=/bee-kyal.lan/${lan_ip}
+    sudo tee /etc/dnsmasq.d/mini-pos.conf >/dev/null <<EOF
+address=/pos.lan/${lan_ip}
 EOF
 
     sudo systemctl enable --now dnsmasq 2>/dev/null || sudo systemctl restart dnsmasq
-    ok "dnsmasq configured: bee-kyal.lan -> ${lan_ip}"
+    ok "dnsmasq configured: pos.lan -> ${lan_ip}"
 }
 
 configure_nginx() {
@@ -300,7 +300,7 @@ configure_nginx() {
 server {
     listen ${APP_PORT};
     listen [::]:${APP_PORT};
-    server_name bee-kyal.lan ${lan_ip};
+    server_name _ ${lan_ip};
     root ${SCRIPT_DIR}/public;
     index index.php;
 
@@ -479,7 +479,7 @@ build() {
     ok "Build complete!"
 }
 
-IP_STATE="/tmp/bee-kyal-lan-ip"
+IP_STATE="/tmp/mini-pos-lan-ip"
 
 save_ip_state() {
     local ip="$1"
@@ -514,11 +514,11 @@ update_ip() {
 setup_cron() {
     local interval="${CRON_INTERVAL:-0 9}"
     local script="$SCRIPT_DIR/install.sh"
-    local logfile="/var/log/bee-kyal-ip.log"
+    local logfile="/var/log/mini-pos-ip.log"
 
     [ "$(id -u)" -eq 0 ] || die "setup-cron must run as root (use: sudo $0 setup-cron)"
 
-    local cronfile="/etc/cron.d/bee-kyal-ip" tmp line
+    local cronfile="/etc/cron.d/mini-pos-ip" tmp line
     line="$interval * * * * root $script update-ip >> $logfile 2>&1"
     tmp="$(mktemp)"
     grep -v "$script update-ip" "$cronfile" 2>/dev/null > "$tmp" || true
