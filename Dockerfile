@@ -3,7 +3,6 @@ FROM php:8.4-fpm
 # Install only essential packages
 RUN apt-get update && apt-get install -y \
     curl \
-    git \
     unzip \
     zip \
     libpng-dev \
