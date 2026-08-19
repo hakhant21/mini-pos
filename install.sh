@@ -421,7 +421,7 @@ configure_firewall() {
 
 setup_laravel() {
     info "Running Composer install..."
-    composer install --no-dev --optimize-autoloader --no-interaction
+    composer update
     ok "Composer dependencies installed."
 
     info "Generating application key..."
