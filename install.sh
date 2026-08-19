@@ -452,7 +452,7 @@ build() {
     install_pnpm
 
     info "Installing Composer dependencies..."
-    composer install --no-dev --optimize-autoloader --no-interaction
+    composer update
     ok "Composer dependencies installed."
 
     info "Installing pnpm dependencies..."
