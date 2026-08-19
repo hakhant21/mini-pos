@@ -32,13 +32,6 @@ if ! docker compose version &>/dev/null 2>&1; then
     info "Docker Compose installed."
 fi
 
-# ── Node.js & pnpm ──────────────────────────────────────
-export NVM_DIR="$HOME/.nvm"
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
-\. "$NVM_DIR/nvm.sh"
-nvm install 22
-corepack enable pnpm
-
 # ── .env ────────────────────────────────────────────────
 if [ ! -f .env ]; then
     if [ -f .env.example ]; then
@@ -51,27 +44,20 @@ else
     info ".env already exists."
 fi
 
-# ── Frontend build ──────────────────────────────────────
-info "Installing frontend dependencies..."
-pnpm install
-
-info "Building frontend assets..."
-pnpm run build
-
 # ── Docker Compose up ───────────────────────────────────
 info "Starting Docker containers..."
 docker compose up -d --build
 
 # Wait for backend container to be ready
 info "Waiting for backend container..."
-until docker compose ps --format json 2>/dev/null | grep -q "running" || docker compose ps 2>/dev/null | grep -q "running"; do
-    sleep 2
-done
-sleep 3
+sleep 5
 
 # ── Backend setup inside container ──────────────────────
 info "Running composer install..."
 docker compose exec backend composer install --no-dev --optimize-autoloader --no-interaction
+
+info "Running pnpm install && pnpm run build..."
+docker compose exec backend sh -c "pnpm install && pnpm run build"
 
 info "Running migrate:fresh --seed..."
 docker compose exec backend php artisan migrate:fresh --seed
