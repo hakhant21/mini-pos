@@ -1,8 +1,6 @@
 pos.local {
     root * /var/www/public
     php_fastcgi backend:9000
-    rewrite {
-        to {path} {path}/ /index.php?{query}
-    }
+    try_files {path} {path}/ /index.php?{query}
     tls internal  # Force self-signed
 }
