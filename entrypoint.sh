@@ -33,7 +33,7 @@ check_docker() {
 # Function to check if Docker Compose is installed
 check_docker_compose() {
     print_color "Checking Docker Compose installation..." "$BLUE"
-    if ! command_exists docker-compose && ! docker compose version >/dev/null 2>&1; then
+    if ! command_exists docker compose && ! docker compose version >/dev/null 2>&1; then
         print_color "❌ Docker Compose is not installed. Please install Docker Compose first." "$RED"
         print_color "Visit: https://docs.docker.com/compose/install/" "$YELLOW"
         exit 1
@@ -151,13 +151,13 @@ start_docker() {
     print_color "Starting Docker containers..." "$BLUE"
 
     # Check if containers are already running
-    if docker-compose ps | grep -q "Up"; then
+    if docker compose ps | grep -q "Up"; then
         print_color "⚠️ Containers are already running. Restarting..." "$YELLOW"
-        docker-compose down
+        docker compose down
     fi
 
     # Start containers in detached mode
-    docker-compose up -d
+    docker compose up -d
 
     print_color "✅ Docker containers started" "$GREEN"
 }
@@ -168,7 +168,7 @@ wait_for_containers() {
 
     # Wait for MySQL
     print_color "Waiting for MySQL..." "$YELLOW"
-    until docker-compose exec -T mysql mysqladmin ping -h"localhost" --silent 2>/dev/null; do
+    until docker compose exec -T mysql mysqladmin ping -h"localhost" --silent 2>/dev/null; do
         echo -n "."
         sleep 2
     done
@@ -176,7 +176,7 @@ wait_for_containers() {
 
     # Wait for Redis
     print_color "Waiting for Redis..." "$YELLOW"
-    until docker-compose exec -T redis redis-cli ping 2>/dev/null | grep -q "PONG"; do
+    until docker compose exec -T redis redis-cli ping 2>/dev/null | grep -q "PONG"; do
         echo -n "."
         sleep 2
     done
@@ -184,7 +184,7 @@ wait_for_containers() {
 
     # Wait for Backend
     print_color "Waiting for Backend..." "$YELLOW"
-    until docker-compose exec -T backend curl -f http://localhost:9000/ >/dev/null 2>&1; do
+    until docker compose exec -T backend curl -f http://localhost:9000/ >/dev/null 2>&1; do
         echo -n "."
         sleep 2
     done
@@ -194,7 +194,7 @@ wait_for_containers() {
 # Function to install PHP dependencies
 install_php_deps() {
     print_color "Installing PHP dependencies..." "$BLUE"
-    docker-compose exec -T backend composer install --no-interaction --prefer-dist
+    docker compose exec -T backend composer install --no-interaction --prefer-dist
     print_color "✅ PHP dependencies installed" "$GREEN"
 }
 
@@ -203,10 +203,10 @@ install_node_deps() {
     print_color "Installing Node.js dependencies..." "$BLUE"
     if [ "$USE_DOCKER_NODE" = true ]; then
         # Use Docker's Node
-        docker-compose exec -T backend npm install
+        docker compose exec -T backend npm install
     else
         # Use host's Node (if you want to run npm on host, but we'll use Docker for consistency)
-        docker-compose exec -T backend npm install
+        docker compose exec -T backend npm install
     fi
     print_color "✅ Node.js dependencies installed" "$GREEN"
 }
@@ -214,9 +214,9 @@ install_node_deps() {
 # Function to build frontend assets
 build_frontend() {
     print_color "Building frontend assets..." "$BLUE"
-    docker-compose exec -T backend npm run build || {
+    docker compose exec -T backend npm run build || {
         print_color "⚠️ npm run build failed. Trying npm run production..." "$YELLOW"
-        docker-compose exec -T backend npm run production
+        docker compose exec -T backend npm run production
     }
     print_color "✅ Frontend assets built" "$GREEN"
 }
@@ -226,19 +226,19 @@ run_laravel_commands() {
     print_color "Running Laravel setup commands..." "$BLUE"
 
     # Generate key
-    docker-compose exec -T backend php artisan key:generate --no-interaction
+    docker compose exec -T backend php artisan key:generate --no-interaction
 
     # Clear caches
-    docker-compose exec -T backend php artisan optimize:clear
+    docker compose exec -T backend php artisan optimize:clear
 
     # Run migrations
-    docker-compose exec -T backend php artisan migrate --no-interaction
+    docker compose exec -T backend php artisan migrate --no-interaction
 
     # Create storage link
-    docker-compose exec -T backend php artisan storage:link --no-interaction
+    docker compose exec -T backend php artisan storage:link --no-interaction
 
     # If needed, run seeders
-    # docker-compose exec -T backend php artisan db:seed --no-interaction
+    # docker compose exec -T backend php artisan db:seed --no-interaction
 
     print_color "✅ Laravel setup completed" "$GREEN"
 }
@@ -247,7 +247,7 @@ run_laravel_commands() {
 run_custom_artisan() {
     if [ -n "$1" ]; then
         print_color "Running custom artisan command: $1" "$BLUE"
-        docker-compose exec -T backend php artisan $1
+        docker compose exec -T backend php artisan $1
     fi
 }
 
@@ -291,36 +291,36 @@ main_install() {
 # Function for development mode
 dev_mode() {
     print_color "🔄 Starting development mode..." "$BLUE"
-    docker-compose up -d
-    docker-compose logs -f
+    docker compose up -d
+    docker compose logs -f
 }
 
 # Function for quick commands
 quick_command() {
     case "$1" in
         "migrate")
-            docker-compose exec backend php artisan migrate
+            docker compose exec backend php artisan migrate
             ;;
         "fresh")
-            docker-compose exec backend php artisan migrate:fresh --seed
+            docker compose exec backend php artisan migrate:fresh --seed
             ;;
         "optimize")
-            docker-compose exec backend php artisan optimize:clear
+            docker compose exec backend php artisan optimize:clear
             ;;
         "test")
-            docker-compose exec backend php artisan test
+            docker compose exec backend php artisan test
             ;;
         "shell")
             docker exec -it backend bash
             ;;
         "logs")
-            docker-compose logs -f
+            docker compose logs -f
             ;;
         "down")
-            docker-compose down
+            docker compose down
             ;;
         "restart")
-            docker-compose restart
+            docker compose restart
             ;;
         *)
             print_color "Available commands: migrate, fresh, optimize, test, shell, logs, down, restart" "$YELLOW"
