@@ -17,13 +17,10 @@ services:
       DB_DATABASE: ${DB_DATABASE:-minipos}
       DB_USERNAME: ${DB_USERNAME:-root}
       DB_PASSWORD: ${DB_PASSWORD:-asdffdsa}
-      REDIS_HOST: ${REDIS_HOST:-redis}
-      REDIS_PORT: ${REDIS_PORT:-6379}
     networks:
       - laravel-net
     depends_on:
       - mysql
-      - redis
 
   # REPLACE nginx with Caddy!
   caddy:
@@ -61,23 +58,11 @@ services:
       - laravel-net
     command: --innodb_use_native_aio=0
 
-  redis:
-    image: redis:alpine
-    container_name: laravel-redis
-    restart: unless-stopped
-    ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - laravel-net
-
 networks:
   laravel-net:
     driver: bridge
 
 volumes:
   db_data:
-  redis_data:
   caddy_data:
   caddy_config:
