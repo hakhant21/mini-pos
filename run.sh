@@ -49,21 +49,13 @@ fi
 info "Starting Docker containers..."
 docker compose up -d --build
 
-# Wait for backend container to be ready
-info "Waiting docker container to be ready..."
+info "Waiting for setup to complete..."
+docker compose logs -f backend 2>&1 | while IFS= read -r line; do
+    echo "$line"
+    if echo "$line" | grep -q "php-fpm"; then
+        break
+    fi
+done
 
-info "Ready in 5..."
-sleep 1
-info "Ready in 4..."
-sleep 1
-info "Ready in 3..."
-sleep 1
-info "Ready in 2..."
-sleep 1
-info "Ready in 1..."
-sleep 1
-
-info "Waiting application and services to be ready..."
-sleep 5
-
-info "Done! App is up and running..."
+echo ""
+info "Done! App is up and running at https://pos.local"
