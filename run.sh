@@ -9,6 +9,7 @@ NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+run_in_container() { docker compose exec backend sh -c "$1"; }
 
 # ── Docker ──────────────────────────────────────────────
 if ! command -v docker &>/dev/null; then
@@ -54,15 +55,15 @@ sleep 5
 
 # ── Backend setup inside container ──────────────────────
 info "Running composer install..."
-docker compose exec backend composer install --no-dev --optimize-autoloader --no-interaction
+run_in_container "composer install --no-dev --optimize-autoloader --no-interaction"
 
 info "Running pnpm install && pnpm run build..."
-docker compose exec backend sh -c "pnpm install && pnpm run build"
+run_in_container "pnpm install && pnpm run build"
 
 info "Running migrate:fresh --seed..."
-docker compose exec backend php artisan migrate:fresh --seed
+run_in_container "php artisan migrate:fresh --seed"
 
 info "Running optimize:clear..."
-docker compose exec backend php artisan optimize:clear
+run_in_container "php artisan optimize:clear"
 
 info "Done! App is running at http://localhost:80"
