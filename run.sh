@@ -60,10 +60,16 @@ run_in_container "composer install --no-dev --optimize-autoloader --no-interacti
 info "Running pnpm install && pnpm run build..."
 run_in_container "pnpm install && pnpm run build"
 
+info "Generating application key"
+run_in_container "php artisan key:generate"
+
 info "Running migrate:fresh --seed..."
 run_in_container "php artisan migrate:fresh --seed"
+
+info "Linking storage"
+run_in_container "php artisan storage:link"
 
 info "Running optimize:clear..."
 run_in_container "php artisan optimize:clear"
 
-info "Done! App is running at http://localhost:80"
+info "Done! App is up and running..."
