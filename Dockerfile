@@ -20,7 +20,7 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-RUN mkdir -p storage bootstrap/cache \
+RUN chown -R www-data:www-data storage/* \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
