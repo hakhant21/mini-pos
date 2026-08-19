@@ -112,7 +112,7 @@ update_env() {
 # Application
 APP_NAME=${APP_NAME}
 APP_URL=${protocol}://${ip}:${APP_PORT}
-APP_ENV=production
+APP_ENV=local
 APP_DEBUG=false
 
 # Database
@@ -185,6 +185,7 @@ install_packages() {
     info "Installing Nginx, PHP ${PHP_VERSION}-FPM, MySQL/MariaDB, and dependencies..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
         nginx \
+        dnsmasq \
         "${MYSQL_PACKAGE}" \
         "php${PHP_VERSION}-fpm" \
         "php${PHP_VERSION}-mysql" \
@@ -238,7 +239,21 @@ ensure_php_extensions() {
     fi
 }
 
+configure_dnsmasq() {
+    local lan_ip="$1"
+    info "Configuring dnsmasq for bee-kyal.lan -> ${lan_ip}..."
+
+    sudo tee /etc/dnsmasq.d/bee-kyal.conf >/dev/null <<EOF
+# Resolve bee-kyal.lan to the local server
+address=/bee-kyal.lan/${lan_ip}
+EOF
+
+    sudo systemctl enable --now dnsmasq 2>/dev/null || sudo systemctl restart dnsmasq
+    ok "dnsmasq configured: bee-kyal.lan -> ${lan_ip}"
+}
+
 configure_nginx() {
+    local lan_ip="$1"
     info "Configuring Nginx..."
     local vhost="/etc/nginx/sites-available/${APP_NAME}"
     local enabled="/etc/nginx/sites-enabled/${APP_NAME}"
@@ -246,7 +261,7 @@ configure_nginx() {
     sudo tee "$vhost" >/dev/null <<EOF
 server {
     listen ${APP_PORT};
-    server_name _;
+    server_name _ bee-kyal.lan ${lan_ip};
     root ${SCRIPT_DIR}/public;
     index index.php;
 
@@ -300,12 +315,13 @@ setup_database() {
         sudo systemctl start mariadb 2>/dev/null || true
     fi
 
-    # Configure root user with full privileges via sudo
+    # Configure root user with full privileges and password
     info "Configuring MySQL root user..."
     sudo mysql -e "
+        ALTER USER 'root'@'localhost' IDENTIFIED BY 'asdffdsa';
         GRANT ALL PRIVILEGES ON *.* TO 'root'@'localhost' WITH GRANT OPTION;
         FLUSH PRIVILEGES;
-    " 2>/dev/null || warn "Root privileges may already be set."
+    " 2>/dev/null || warn "Root user may already be configured."
 
     # Create database and application user
     sudo mysql -e "
@@ -512,7 +528,10 @@ main() {
             ensure_php_extensions
 
             # Configure Nginx
-            configure_nginx
+            configure_nginx "$LAN_IP"
+
+            # Configure dnsmasq
+            configure_dnsmasq "$LAN_IP"
 
             # Start services
             info "Starting MySQL/MariaDB..."
