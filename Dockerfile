@@ -12,7 +12,6 @@ COPY --from=node:22-bookworm /usr/local/include/node /usr/local/include/node
 COPY --from=node:22-bookworm /usr/local/lib/node_modules /usr/local/lib/node_modules
 RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
     && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
-RUN npm install -g pnpm
 
 # Set timezone
 ENV TZ='Asia/Yangon'

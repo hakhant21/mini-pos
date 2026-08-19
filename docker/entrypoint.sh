@@ -1,9 +1,9 @@
 #!/bin/sh
 git config --global --add safe.directory /var/www
 
-pnpm install
+npm install
 
-pnpm run build
+npm run build
 
 chown -R www-data:www-data /var/www/storage/ /var/www/bootstrap/cache/
 
