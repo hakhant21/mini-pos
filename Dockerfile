@@ -1,8 +1,5 @@
 FROM php:8.4-fpm
 
-# Fix DNS resolution
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 1.1.1.1" >> /etc/resolv.conf
 
 # Update package lists and install dependencies
 RUN apt-get update -o Acquire::Retries=5 && apt-get install -y --no-install-recommends \
