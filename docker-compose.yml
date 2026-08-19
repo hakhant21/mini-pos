@@ -45,7 +45,7 @@ services:
       - app
 
   mysql:
-    image: mariadb:latest
+    image: mariadb:10.11
     container_name: mysql
     restart: unless-stopped
     ports:
