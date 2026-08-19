@@ -55,6 +55,9 @@ until docker compose exec app php -v &>/dev/null 2>&1; do
 done
 
 # ── Backend setup ───────────────────────────────────────
+info "Upgrading npm to latest version"
+run_in_container "npm install -g npm@12.0.2"
+
 info "Installing npm packages..."
 run_in_container "npm install"
 
