@@ -61,6 +61,9 @@ detect_mysql_package() {
     echo "mysql-server"
 }
 
+PHP_VERSION="8.3"
+MYSQL_PACKAGE="mysql-server"
+
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
 
