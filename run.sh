@@ -9,7 +9,7 @@ NC='\033[0m'
 info()  { echo -e "${GREEN}[INFO]${NC} $1"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
 error() { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
-run_in_container() { docker compose exec backend sh -c "$1"; }
+run_in_container() { docker compose exec app sh -c "$1"; }
 
 # ── Docker ──────────────────────────────────────────────
 if ! command -v docker &>/dev/null; then
@@ -69,7 +69,7 @@ info "Starting Docker containers..."
 docker compose up -d --build
 
 info "Waiting for setup to complete..."
-docker compose logs -f backend 2>&1 | while IFS= read -r line; do
+docker compose logs -f app 2>&1 | while IFS= read -r line; do
     echo "$line"
     if echo "$line" | grep -q "php-fpm"; then
         break
