@@ -1,4 +1,6 @@
 #!/bin/sh
+git config --global --add safe.directory /var/www
+
 pnpm install
 
 pnpm run build
