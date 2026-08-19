@@ -1,4 +1,4 @@
-pos.local {
+http://pos.local {
     root * /var/www/public
     encode gzip
     try_files {path} /index.php?{query}
