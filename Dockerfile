@@ -5,7 +5,7 @@ RUN apk add --no-cache curl git unzip libzip-dev libpng-dev nodejs npm \
     && docker-php-ext-install pdo_mysql gd zip bcmath
 
 # pnpm via corepack
-RUN corepack enable pnpm
+RUN npm install -g pnpm
 
 # Set timezone
 ENV TZ='Asia/Yangon'
@@ -25,9 +25,11 @@ RUN mkdir -p storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
 EXPOSE 9000
 
 ENTRYPOINT ["entrypoint.sh"]
+
 CMD ["php-fpm", "--nodaemonize"]
