@@ -12,6 +12,7 @@ set -euo pipefail
 #   ./install.sh --setup         # full setup
 #   ./install.sh --build         # pull code, install deps, rebuild assets
 #   ./install.sh --restart       # restart all services
+#   ./install.sh --remove        # stop, disable, and remove all installed packages/configs
 #   APP_PORT=8080 ./install.sh   # custom port
 #   APP_IP=192.168.1.50 ./install.sh  # skip detection, use a fixed IP
 #
@@ -530,6 +531,98 @@ setup_cron() {
     printf '    %s\n' "$line"
 }
 
+remove() {
+    if [ "$(id -u)" -ne 0 ]; then
+        warn "Remove requires root privileges."
+        exec sudo "$0" --remove
+        exit $?
+    fi
+
+    info "Removing mini-pos installation..."
+    warn "This will stop services, remove configs, and uninstall packages."
+    warn "It will NOT remove the application source code in $SCRIPT_DIR."
+    echo ""
+    read -r -p "Are you sure? (y/N): " confirm
+    [ "$confirm" = "y" ] || [ "$confirm" = "Y" ] || { info "Aborted."; return 0; }
+
+    # Stop and disable services
+    info "Stopping and disabling services..."
+    for svc in nginx mysql php${PHP_VERSION}-fpm dnsmasq; do
+        if systemctl is-active --quiet "$svc" 2>/dev/null; then
+            sudo systemctl stop "$svc" 2>/dev/null || true
+        fi
+        if systemctl is-enabled --quiet "$svc" 2>/dev/null; then
+            sudo systemctl disable "$svc" 2>/dev/null || true
+        fi
+    done
+    ok "Services stopped and disabled."
+
+    # Remove nginx config
+    info "Removing Nginx configuration..."
+    sudo rm -f /etc/nginx/sites-available/mini-pos
+    sudo rm -f /etc/nginx/sites-enabled/mini-pos
+
+    # Remove dnsmasq config
+    info "Removing dnsmasq configuration..."
+    sudo rm -f /etc/dnsmasq.d/mini-pos.conf
+    sudo systemctl restart dnsmasq 2>/dev/null || true
+
+    # Remove cron job
+    info "Removing cron job..."
+    sudo rm -f /etc/cron.d/mini-pos-ip
+
+    # Remove IP state and log files
+    info "Removing temp files..."
+    sudo rm -f /tmp/mini-pos-lan-ip
+    sudo rm -f /var/log/mini-pos-ip.log
+
+    # Remove MySQL database and user
+    info "Removing MySQL database and user..."
+    sudo mysql -u root -p'asdffdsa' -e "
+        DROP DATABASE IF EXISTS \`${DB_DATABASE}\`;
+        DROP USER IF EXISTS '${DB_USERNAME}'@'127.0.0.1';
+        DROP USER IF EXISTS '${DB_USERNAME}'@'localhost';
+        FLUSH PRIVILEGES;
+    " 2>/dev/null || warn "Database/user may not exist."
+
+    # Remove packages
+    info "Removing packages..."
+    sudo DEBIAN_FRONTEND=noninteractive apt-get remove -y -qq \
+        nginx \
+        dnsmasq \
+        mysql-server \
+        mysql-client \
+        "php${PHP_VERSION}-fpm" \
+        "php${PHP_VERSION}-mysql" \
+        "php${PHP_VERSION}-mbstring" \
+        "php${PHP_VERSION}-xml" \
+        "php${PHP_VERSION}-curl" \
+        "php${PHP_VERSION}-gd" \
+        "php${PHP_VERSION}-zip" \
+        "php${PHP_VERSION}-bcmath" \
+        "php${PHP_VERSION}-intl" \
+        "php${PHP_VERSION}-exif" \
+        nodejs \
+        2>/dev/null || true
+
+    # Remove MySQL APT config
+    info "Removing MySQL APT config..."
+    sudo dpkg --purge mysql-apt-config 2>/dev/null || true
+
+    # Remove Composer and pnpm
+    info "Removing Composer and pnpm..."
+    sudo rm -f /usr/local/bin/composer
+    sudo npm uninstall -g pnpm 2>/dev/null || true
+
+    # Autoremove orphaned dependencies
+    info "Cleaning up orphaned packages..."
+    sudo apt-get autoremove -y -qq 2>/dev/null || true
+    sudo apt-get autoclean -qq 2>/dev/null || true
+
+    ok "mini-pos installation removed."
+    info "Application source code in $SCRIPT_DIR was NOT removed."
+}
+
 restart_services() {
     info "Restarting MySQL..."
     sudo systemctl restart mysql 2>/dev/null || true
@@ -630,6 +723,9 @@ main() {
                 exit $?
             fi
             restart_services
+            ;;
+        --remove)
+            remove
             ;;
         update-ip)
             if [ "$(id -u)" -ne 0 ]; then
