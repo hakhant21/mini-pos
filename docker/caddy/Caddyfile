@@ -1,6 +1,8 @@
 pos.local {
+    tls internal
     root * /var/www/public
+    encode gzip
+    try_files {path} /index.php?{query}
     php_fastcgi backend:9000
-    try_files {path} {path}/ /index.php?{query}
-    tls internal  # Force self-signed
+    file_server
 }
