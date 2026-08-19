@@ -66,20 +66,6 @@ mkcert -key-file docker/caddy/certs/key.pem -cert-file docker/caddy/certs/cert.p
 
 # ── Docker Compose up ───────────────────────────────────
 info "Starting Docker containers..."
-docker compose up -d --build
+docker compose up -d --verbose
 
-info "Waiting for setup to complete..."
-DOCKER_LOGS_PID=""
-docker compose logs -f --tail=0 app &
-DOCKER_LOGS_PID=$!
-
-while kill -0 "$DOCKER_LOGS_PID" 2>/dev/null; do
-    if docker compose logs app 2>&1 | grep -q "APP_READY"; then
-        kill "$DOCKER_LOGS_PID" 2>/dev/null
-        break
-    fi
-    sleep 2
-done
-
-echo ""
 info "Done! App is up and running at https://pos.local"
