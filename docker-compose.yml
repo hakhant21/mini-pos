@@ -53,9 +53,9 @@ services:
       - "${DB_PORT:-3306}:3306"
     environment:
       TZ: "Asia/Yangon"
-      MYSQL_DATABASE: ${DB_DATABASE:-fms}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-fms}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-fms}
+      MYSQL_DATABASE: ${DB_DATABASE:-minipos}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-asdffdsa}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-asdffdsa}
     volumes:
       - db_data:/var/lib/mysql
     networks:
