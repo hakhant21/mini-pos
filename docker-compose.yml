@@ -45,7 +45,7 @@ services:
       - app
 
   mysql:
-    image: mariadb:10.11
+    image: jsurf/rpi-mariadb:latest
     container_name: mysql
     restart: unless-stopped
     ports:
