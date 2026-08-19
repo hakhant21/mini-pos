@@ -51,13 +51,6 @@ detect_php_version() {
 }
 
 detect_mysql_package() {
-    # Prefer MariaDB 10.x
-    for ver in 10.11 10.6 10.5 10.4 10.3; do
-        if apt-cache show "mariadb-server-${ver}" >/dev/null 2>&1; then
-            echo "mariadb-server-${ver}"
-            return 0
-        fi
-    done
     # Fallback to generic mariadb-server
     if apt-cache show "mariadb-server" >/dev/null 2>&1; then
         echo "mariadb-server"
@@ -70,11 +63,11 @@ detect_mysql_package() {
             return 0
         fi
     done
-    echo "mariadb-server-10.11"
+    echo "mariadb-server"
 }
 
 PHP_VERSION="8.3"
-MYSQL_PACKAGE="mariadb-server-10.11"
+MYSQL_PACKAGE="mariadb-server"
 
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
