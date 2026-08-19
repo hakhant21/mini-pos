@@ -27,7 +27,6 @@ if [ ! -f "$FLAG" ]; then
   php artisan optimize:clear
   info "Creating setup done flag..."
   touch "$FLAG"
-  exit 0
 fi
 
 exec php-fpm --nodaemonize

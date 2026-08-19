@@ -69,11 +69,16 @@ info "Starting Docker containers..."
 docker compose up -d --build
 
 info "Waiting for setup to complete..."
-docker compose logs -f app 2>&1 | while IFS= read -r line; do
-    echo "$line"
-    if echo "$line" | grep -q "php-fpm"; then
+DOCKER_LOGS_PID=""
+docker compose logs -f --tail=0 app &
+DOCKER_LOGS_PID=$!
+
+while kill -0 "$DOCKER_LOGS_PID" 2>/dev/null; do
+    if docker compose logs app 2>&1 | grep -q "APP_READY"; then
+        kill "$DOCKER_LOGS_PID" 2>/dev/null
         break
     fi
+    sleep 2
 done
 
 echo ""
