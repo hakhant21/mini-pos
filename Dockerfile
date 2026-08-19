@@ -1,26 +1,5 @@
 FROM php:8.4-fpm
 
-# Update package lists and install dependencies
-RUN apt-get update -o Acquire::Retries=5 && apt-get install -y --no-install-recommends \
-    git \
-    curl \
-    cron \
-    nano \
-    bash \
-    build-essential \
-    pkg-config \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    zlib1g-dev \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    mariadb-client \
-    unzip \
-    zip \
-    && rm -rf /var/lib/apt/lists/*
-
 # Install Node.js 20 LTS
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
