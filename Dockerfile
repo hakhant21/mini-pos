@@ -1,10 +1,6 @@
 FROM php:8.4-fpm
 
-# Change to Singapore mirror for faster apt downloads
-RUN sed -i 's|deb.debian.org|mirror.sg.gs|g' /etc/apt/sources.list.d/debian.sources && \
-    sed -i 's|security.debian.org|mirror.sg.gs|g' /etc/apt/sources.list.d/debian.sources
-
-# Install dependencies
+# Update package lists and install dependencies
 RUN apt-get update -o Acquire::Retries=5 && apt-get install -y --no-install-recommends \
     git \
     curl \
@@ -20,7 +16,9 @@ RUN apt-get update -o Acquire::Retries=5 && apt-get install -y --no-install-reco
     libzip-dev \
     libonig-dev \
     libxml2-dev \
-    default-mysql-client \
+    mariadb-client \
+    unzip \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20 LTS
@@ -30,7 +28,15 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 
 # Configure and install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql pcntl zip bcmath exif
+    && docker-php-ext-install -j$(nproc) \
+    gd \
+    pdo \
+    pdo_mysql \
+    pcntl \
+    zip \
+    bcmath \
+    exif \
+    intl
 
 # Install and enable Redis extension
 RUN pecl install redis \
