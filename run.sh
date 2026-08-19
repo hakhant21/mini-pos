@@ -66,6 +66,6 @@ mkcert -key-file docker/caddy/certs/key.pem -cert-file docker/caddy/certs/cert.p
 
 # ── Docker Compose up ───────────────────────────────────
 info "Starting Docker containers..."
-docker compose up -d --verbose
+docker compose up -d --logs app
 
 info "Done! App is up and running at https://pos.local"
