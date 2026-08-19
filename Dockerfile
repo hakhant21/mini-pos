@@ -1,8 +1,7 @@
 FROM php:8.4-fpm
 
 # Configure and install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+RUN docker-php-ext-install -j$(nproc) \
     gd \
     pdo \
     pdo_mysql \
