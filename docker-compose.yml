@@ -3,7 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: minipos
     container_name: backend
     restart: unless-stopped
     working_dir: /var/www
