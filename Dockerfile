@@ -1,8 +1,11 @@
 FROM php:8.4-fpm-alpine
 
 # Only essential dependencies
-RUN apk add --no-cache curl git unzip libzip-dev libpng-dev \
+RUN apk add --no-cache curl git unzip libzip-dev libpng-dev nodejs npm \
     && docker-php-ext-install pdo_mysql gd zip bcmath
+
+# pnpm via corepack
+RUN corepack enable pnpm
 
 # Set timezone
 ENV TZ='Asia/Yangon'
