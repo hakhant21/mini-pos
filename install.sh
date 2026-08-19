@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# mini-pos LAN deployment setup for Linux (Nginx + PHP-FPM + MySQL)
+# mini-pos LAN deployment setup for Linux (Nginx + PHP-FPM + MySQL/MariaDB)
 #  - detects the machine's LAN IP
 #  - installs Nginx, PHP-FPM, MySQL, Composer if missing
 #  - configures nginx vhost, creates database, runs Laravel setup
 #  - reachable at http://<LAN_IP>:<APP_PORT>
 #
 # Extra modes:
+#   ./install.sh --build      - pull latest code, install deps, rebuild assets
 #   ./install.sh update-ip    - detect the LAN IP; if it changed, update .env
 #                               and reload nginx (used by the cron job)
 #   sudo ./install.sh setup-cron - install a cron job (default daily at 09:00) that
@@ -30,8 +31,38 @@ DB_USERNAME="${DB_USERNAME:-minipos}"
 DB_PASSWORD="${DB_PASSWORD:-secret}"
 DB_ROOT_PASSWORD="${DB_ROOT_PASSWORD:-rootsecret}"
 
-# Detect PHP version
-PHP_VERSION=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || echo "8.3")
+# Detect PHP version (check what's installed, fallback to 8.3)
+detect_php_version() {
+    # Try to find an installed php-fpm binary
+    local ver
+    ver=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;' 2>/dev/null || true)
+    if [ -n "$ver" ]; then
+        echo "$ver"
+        return 0
+    fi
+    # Check available php*-fpm packages
+    local available
+    available=$(apt-cache search 'php[0-9]' 2>/dev/null | grep -oP 'php\K[0-9]+\.[0-9]+' | sort -V | tail -1 || true)
+    if [ -n "$available" ]; then
+        echo "$available"
+        return 0
+    fi
+    echo "8.3"
+}
+
+detect_mysql_package() {
+    # Try common MySQL/MariaDB package names
+    for pkg in mysql-server mysql-server-8.0 default-mysql-server mariadb-server; do
+        if apt-cache show "$pkg" >/dev/null 2>&1; then
+            echo "$pkg"
+            return 0
+        fi
+    fi
+    echo "mysql-server"
+}
+
+PHP_VERSION="$(detect_php_version)"
+MYSQL_PACKAGE="$(detect_mysql_package)"
 
 C_RED=$'\033[31m'; C_GREEN=$'\033[32m'; C_YELLOW=$'\033[33m'
 C_CYAN=$'\033[36m'; C_RESET=$'\033[0m'
@@ -133,10 +164,18 @@ install_packages() {
     info "Updating package lists..."
     sudo apt-get update -qq
 
-    info "Installing Nginx, PHP-FPM, MySQL, and dependencies..."
+    # Check if PHP FPM package exists for our detected version
+    if ! apt-cache show "php${PHP_VERSION}-fpm" >/dev/null 2>&1; then
+        info "PHP ${PHP_VERSION} not in default repos. Adding ondrej/php PPA..."
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq software-properties-common
+        sudo add-apt-repository -y ppa:ondrej/php
+        sudo apt-get update -qq
+    fi
+
+    info "Installing Nginx, PHP ${PHP_VERSION}-FPM, MySQL/MariaDB, and dependencies..."
     sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
         nginx \
-        mysql-server \
+        "${MYSQL_PACKAGE}" \
         "php${PHP_VERSION}-fpm" \
         "php${PHP_VERSION}-mysql" \
         "php${PHP_VERSION}-mbstring" \
@@ -146,11 +185,13 @@ install_packages() {
         "php${PHP_VERSION}-zip" \
         "php${PHP_VERSION}-bcmath" \
         "php${PHP_VERSION}-intl" \
-        "php${PHP_VERSION}-exif" \
         unzip \
         curl
 
-    ok "Packages installed."
+    # exif may be bundled in core for newer PHP versions
+    sudo apt-get install -y -qq "php${PHP_VERSION}-exif" 2>/dev/null || true
+
+    ok "Packages installed (PHP ${PHP_VERSION}, ${MYSQL_PACKAGE})."
 }
 
 install_composer() {
@@ -236,11 +277,17 @@ EOF
 }
 
 setup_database() {
-    info "Setting up MySQL database..."
+    info "Setting up MySQL/MariaDB database..."
 
-    # Start MySQL if not running
-    if ! sudo systemctl is-active --quiet mysql 2>/dev/null; then
-        sudo systemctl start mysql
+    # Start MySQL/MariaDB if not running (try both service names)
+    if sudo systemctl is-active --quiet mysql 2>/dev/null; then
+        : # already running
+    elif sudo systemctl is-active --quiet mariadb 2>/dev/null; then
+        : # already running
+    elif sudo systemctl start mysql 2>/dev/null; then
+        : # started as mysql
+    else
+        sudo systemctl start mariadb 2>/dev/null || true
     fi
 
     # Create database and user
@@ -321,6 +368,36 @@ setup_laravel() {
     ok "Laravel setup complete."
 }
 
+build() {
+    info "Pulling latest code..."
+    git pull
+    ok "Code updated."
+
+    info "Installing Composer dependencies..."
+    composer install --no-dev --optimize-autoloader --no-interaction
+    ok "Composer dependencies installed."
+
+    info "Installing npm dependencies..."
+    npm install
+    ok "npm dependencies installed."
+
+    info "Building frontend assets..."
+    npm run build
+    ok "Frontend assets built."
+
+    info "Clearing and rebuilding Laravel caches..."
+    php artisan optimize:clear
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+    ok "Laravel caches rebuilt."
+
+    info "Running migrations..."
+    php artisan migrate --force 2>/dev/null || warn "Migrations may need manual attention."
+
+    ok "Build complete!"
+}
+
 IP_STATE="/tmp/bee-kyal-lan-ip"
 
 save_ip_state() {
@@ -375,6 +452,12 @@ setup_cron() {
 
 main() {
     case "${1:-}" in
+        --build)
+            if [ "$(id -u)" -eq 0 ]; then
+                die "Run as a regular user (sudo is used internally when needed)."
+            fi
+            build
+            ;;
         update-ip)
             if [ "$(id -u)" -ne 0 ]; then
                 warn "Updating IP requires root privileges."
@@ -391,7 +474,7 @@ main() {
                 die "Run as a regular user (sudo is used internally when needed)."
             fi
 
-            info "mini-pos LAMP setup (Nginx + PHP-FPM + MySQL) - $SCRIPT_DIR"
+            info "mini-pos LAMP setup (Nginx + PHP ${PHP_VERSION}-FPM + MySQL/MariaDB) - $SCRIPT_DIR"
 
             LAN_IP="$(detect_lan_ip)"
             [ -z "$LAN_IP" ] && die "Could not detect the LAN IP. Set APP_IP=<ip> and re-run."
@@ -414,9 +497,9 @@ main() {
             configure_nginx
 
             # Start services
-            info "Starting MySQL..."
-            sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl start mysql
-            ok "MySQL started."
+            info "Starting MySQL/MariaDB..."
+            sudo systemctl enable --now mysql 2>/dev/null || sudo systemctl enable --now mariadb 2>/dev/null || sudo systemctl start mysql 2>/dev/null || sudo systemctl start mariadb 2>/dev/null || true
+            ok "MySQL/MariaDB started."
 
             info "Starting PHP-FPM..."
             sudo systemctl enable --now "php${PHP_VERSION}-fpm" 2>/dev/null || sudo systemctl start "php${PHP_VERSION}-fpm"
