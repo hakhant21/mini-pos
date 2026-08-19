@@ -92,7 +92,8 @@ update_env() {
 APP_NAME=${APP_NAME}
 APP_URL=${protocol}://${ip}:${APP_PORT}
 APP_ENV=local
-APP_DEBUG=false
+APP_DEBUG=true
+APP_KEY=
 
 # Database
 DB_CONNECTION=mysql
