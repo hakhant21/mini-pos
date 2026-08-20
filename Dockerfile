@@ -1,7 +1,7 @@
 FROM php:8.4-cli
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl unzip libzip-dev libpng-dev supervisor \
+    curl unzip libzip-dev libpng-dev supervisor nodejs npm \
     && docker-php-ext-install pdo_mysql gd zip bcmath \
     && rm -rf /var/lib/apt/lists/*
 
