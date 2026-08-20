@@ -93,8 +93,7 @@ apt install -y \
     php${PHP_VERSION}-mysql \
     php${PHP_VERSION}-cli \
     php${PHP_VERSION}-common \
-    php${PHP_VERSION}-cli
-    php${PHP_VERSION}-opcache \
+    php${PHP_VERSION}-cli \
     php${PHP_VERSION}-mbstring \
     php${PHP_VERSION}-xml \
     php${PHP_VERSION}-zip \
