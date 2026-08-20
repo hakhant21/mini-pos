@@ -88,12 +88,12 @@ fi
 log "Installing required packages..."
 apt install -y \
     nginx \
-    mysql-server \
+    mariadb-server \
     php${PHP_VERSION}-fpm \
     php${PHP_VERSION}-mysql \
     php${PHP_VERSION}-cli \
     php${PHP_VERSION}-common \
-    php${PHP_VERSION}-json \
+    php${PHP_VERSION}-cli
     php${PHP_VERSION}-opcache \
     php${PHP_VERSION}-mbstring \
     php${PHP_VERSION}-xml \
