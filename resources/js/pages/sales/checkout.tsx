@@ -120,13 +120,18 @@ export default function SalesCheckout({ products, sale = null }: Props) {
 
     const totalUnitsForVariant = (variantId: number): number =>
         cart.reduce(
-            (sum, item) =>
-                item.variant_id === variantId
-                    ? sum +
-                      (item.pricing_mode === 'package'
-                          ? item.quantity * item.units_per_package
-                          : item.quantity)
-                    : sum,
+            (sum, item) => {
+                if (item.variant_id !== variantId) {
+return sum;
+}
+
+                return sum +
+                    (item.pricing_mode === 'package'
+                        ? item.quantity * item.units_per_package
+                        : item.pricing_mode === 'pack'
+                          ? item.quantity * item.units_per_pack
+                          : item.quantity);
+            },
             0,
         );
 
@@ -135,7 +140,12 @@ export default function SalesCheckout({ products, sale = null }: Props) {
         mode: CartItem['pricing_mode'],
     ): boolean => {
         const reserved = totalUnitsForVariant(variant.id);
-        const needed = mode === 'package' ? num(variant.units_per_package) : 1;
+        const needed =
+            mode === 'package'
+                ? num(variant.units_per_package)
+                : mode === 'pack'
+                  ? num(variant.units_per_pack)
+                  : 1;
 
         return num(variant.stock_quantity) - reserved >= needed;
     };
@@ -163,10 +173,13 @@ export default function SalesCheckout({ products, sale = null }: Props) {
         }
 
         const unitsPerPackage = num(variant.units_per_package);
+        const unitsPerPack = num(variant.units_per_pack);
         const unitPrice =
             pricing_mode === 'package'
                 ? num(variant.cost_price)
-                : num(variant.per_unit_price);
+                : pricing_mode === 'pack'
+                  ? num(variant.pack_price)
+                  : num(variant.per_unit_price);
 
         setCart((prev) => {
             const reserved = prev
@@ -176,10 +189,17 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                         sum +
                         (item.pricing_mode === 'package'
                             ? item.quantity * item.units_per_package
-                            : item.quantity),
+                            : item.pricing_mode === 'pack'
+                              ? item.quantity * item.units_per_pack
+                              : item.quantity),
                     0,
                 );
-            const needed = pricing_mode === 'package' ? unitsPerPackage : 1;
+            const needed =
+                pricing_mode === 'package'
+                    ? unitsPerPackage
+                    : pricing_mode === 'pack'
+                      ? unitsPerPack
+                      : 1;
 
             if (reserved + needed > num(variant.stock_quantity)) {
                 return prev;
@@ -211,9 +231,11 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                     variant_name: variant.name,
                     unit_name: variant.unit?.abbreviation ?? null,
                     units_per_package: unitsPerPackage,
+                    units_per_pack: unitsPerPack,
                     unit_price: unitPrice,
                     cost_price: num(variant.cost_price),
                     per_unit_price: num(variant.per_unit_price),
+                    pack_price: num(variant.pack_price),
                     quantity: 1,
                     stock_quantity: num(variant.stock_quantity),
                 },
@@ -247,13 +269,17 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                     sum +
                                     (i.pricing_mode === 'package'
                                         ? i.quantity * i.units_per_package
-                                        : i.quantity),
+                                        : i.pricing_mode === 'pack'
+                                          ? i.quantity * i.units_per_pack
+                                          : i.quantity),
                                 0,
                             );
                         const newUnits =
                             item.pricing_mode === 'package'
                                 ? newQty * item.units_per_package
-                                : newQty;
+                                : item.pricing_mode === 'pack'
+                                  ? newQty * item.units_per_pack
+                                  : newQty;
 
                         if (otherUnits + newUnits > item.stock_quantity) {
                             return item;
@@ -589,7 +615,10 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             {item.pricing_mode ===
                                                             'package'
                                                                 ? `${t('Pkg')} x${num(item.units_per_package)}`
-                                                                : t('Single')}
+                                                                : item.pricing_mode ===
+                                                                  'pack'
+                                                                  ? `${t('Pack')} x${num(item.units_per_pack)}`
+                                                                  : t('Single')}
                                                         </Badge>
                                                     </div>
                                                     <div className="mt-1 flex items-center justify-between gap-1.5">

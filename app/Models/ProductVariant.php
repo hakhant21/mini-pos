@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 #[Fillable([
     'product_id', 'unit_id', 'name', 'pricing_mode', 'image', 'sku',
     'units_per_package', 'cost_price', 'selling_price', 'per_unit_price',
+    'pack_price', 'units_per_pack',
     'stock_quantity', 'min_stock_level', 'max_stock_level', 'is_active',
 ])]
 class ProductVariant extends Model
@@ -27,6 +28,8 @@ class ProductVariant extends Model
             'cost_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
             'per_unit_price' => 'decimal:2',
+            'pack_price' => 'decimal:2',
+            'units_per_pack' => 'decimal:2',
             'stock_quantity' => 'decimal:2',
             'min_stock_level' => 'decimal:2',
             'max_stock_level' => 'decimal:2',

@@ -33,16 +33,27 @@ export function VariantPriceBlock({
 }: VariantPriceBlockProps) {
     const { t } = useTranslation();
 
-    const qtyPackage = getQuantity(variant.id, 'package');
     const qtySingle = getQuantity(variant.id, 'single');
+    const qtyPack = getQuantity(variant.id, 'pack');
+    const qtyPackage = getQuantity(variant.id, 'package');
     const reservedUnits = totalUnits(variant.id);
     const availableStock = num(variant.stock_quantity) - reservedUnits;
     const isOutOfStock = availableStock <= 0;
     const isLowStock =
         availableStock > 0 && availableStock <= variant.min_stock_level;
 
-    const showSingle = variant.pricing_mode === 'single' || variant.pricing_mode === 'both';
-    const showPackage = variant.pricing_mode === 'package' || variant.pricing_mode === 'both';
+    const showSingle =
+        variant.pricing_mode === 'single' ||
+        variant.pricing_mode === 'both' ||
+        variant.pricing_mode === 'single_pack';
+    const showPack =
+        variant.pricing_mode === 'pack' ||
+        variant.pricing_mode === 'both' ||
+        variant.pricing_mode === 'single_pack';
+    const showPackage =
+        variant.pricing_mode === 'package' || variant.pricing_mode === 'both';
+
+    const hasBorderTop = (showPrev: boolean) => (showPrev ? 'border-t' : '');
 
     return (
         <div>
@@ -114,11 +125,53 @@ export function VariantPriceBlock({
                         )}
                     </div>
                 )}
+                {showPack && (
+                    <div
+                        className={`flex items-stretch ${hasBorderTop(showSingle)}`}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => onAdd(variant, productName, 'pack')}
+                            disabled={
+                                isOutOfStock || !canAddMode(variant, 'pack')
+                            }
+                            className={`flex min-h-9 flex-1 items-center justify-between gap-1 px-1.5 py-1 text-left ${
+                                isOutOfStock
+                                    ? 'cursor-not-allowed'
+                                    : 'cursor-pointer hover:bg-accent/50'
+                            }`}
+                        >
+                            <p className="text-[11px] font-semibold text-primary">
+                                Ks {ks(variant.pack_price)}
+                                <span className="text-[10px] font-normal text-muted-foreground">
+                                    {' '}
+                                    / {t('Pack')}
+                                </span>
+                            </p>
+                            {qtyPack > 0 ? (
+                                <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-[9px] font-semibold">
+                                    x{qtyPack}
+                                </span>
+                            ) : (
+                                <PlusIcon className="h-3 w-3 text-muted-foreground" />
+                            )}
+                        </button>
+                        {qtyPack > 0 && (
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    onDecrement(variant.id, 'pack')
+                                }
+                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                            >
+                                <MinusIcon className="h-3 w-3" />
+                            </button>
+                        )}
+                    </div>
+                )}
                 {showPackage && (
                     <div
-                        className={`flex items-stretch ${
-                            showSingle ? 'border-t' : ''
-                        }`}
+                        className={`flex items-stretch ${hasBorderTop(showSingle || showPack)}`}
                     >
                         <button
                             type="button"

@@ -104,10 +104,13 @@ export default function ProductsShow({ product }: Props) {
                                     <TableHead>{t('Name')}</TableHead>
                                     <TableHead>{t('SKU')}</TableHead>
                                     <TableHead>{t('Unit')}</TableHead>
+                                    <TableHead>{t('Pricing')}</TableHead>
                                     <TableHead>{t('Units/Pkg')}</TableHead>
                                     <TableHead>{t('Cost Price')}</TableHead>
                                     <TableHead>{t('Selling Price')}</TableHead>
                                     <TableHead>{t('Per Unit')}</TableHead>
+                                    <TableHead>{t('Pack Price')}</TableHead>
+                                    <TableHead>{t('Units/Pack')}</TableHead>
                                     <TableHead>{t('Stock')}</TableHead>
                                     <TableHead>{t('Status')}</TableHead>
                                 </TableRow>
@@ -125,6 +128,17 @@ export default function ProductsShow({ product }: Props) {
                                             {variant.unit?.abbreviation || '—'}
                                         </TableCell>
                                         <TableCell>
+                                            {variant.pricing_mode === 'both'
+                                                ? t('single + pack + package')
+                                                : variant.pricing_mode === 'single_pack'
+                                                  ? t('single + pack')
+                                                  : variant.pricing_mode === 'single'
+                                                    ? t('single mode')
+                                                    : variant.pricing_mode === 'pack'
+                                                      ? t('pack mode')
+                                                      : t('package mode')}
+                                        </TableCell>
+                                        <TableCell>
                                             {Number(variant.units_per_package)}
                                         </TableCell>
                                         <TableCell>
@@ -135,6 +149,12 @@ export default function ProductsShow({ product }: Props) {
                                         </TableCell>
                                         <TableCell>
                                             Ks {ks(variant.per_unit_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            Ks {ks(variant.pack_price)}
+                                        </TableCell>
+                                        <TableCell>
+                                            {Number(variant.units_per_pack)}
                                         </TableCell>
                                         <TableCell>
                                             {Number(variant.stock_quantity)}

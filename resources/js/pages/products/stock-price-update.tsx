@@ -40,6 +40,7 @@ type VariantRow = {
     cost_price: string;
     selling_price: string;
     per_unit_price: string;
+    pack_price: string;
 };
 
 const PAGE_SIZE = 20;
@@ -101,6 +102,7 @@ export default function StockPriceUpdate({ products }: Props) {
                 cost_price: String(Number(variant.cost_price)),
                 selling_price: String(Number(variant.selling_price)),
                 per_unit_price: String(Number(variant.per_unit_price)),
+                pack_price: String(Number(variant.pack_price)),
             });
         }
     }
@@ -202,6 +204,7 @@ export default function StockPriceUpdate({ products }: Props) {
                 cost_price: parseFloat(row.cost_price),
                 selling_price: parseFloat(row.selling_price),
                 per_unit_price: parseFloat(row.per_unit_price) || 0,
+                pack_price: parseFloat(row.pack_price) || 0,
             },
             {
                 preserveScroll: true,
@@ -222,7 +225,8 @@ export default function StockPriceUpdate({ products }: Props) {
             original.stock_quantity !== current.stock_quantity ||
             original.cost_price !== current.cost_price ||
             original.selling_price !== current.selling_price ||
-            original.per_unit_price !== current.per_unit_price
+            original.per_unit_price !== current.per_unit_price ||
+            original.pack_price !== current.pack_price
         );
     };
 
@@ -302,6 +306,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                     <TableHead>{t('Cost Price')}</TableHead>
                                     <TableHead>{t('Selling Price')}</TableHead>
                                     <TableHead>{t('Per Unit Price')}</TableHead>
+                                    <TableHead>{t('Pack Price')}</TableHead>
                                     <TableHead className="text-right">
                                         {t('Action')}
                                     </TableHead>
@@ -392,6 +397,21 @@ export default function StockPriceUpdate({ products }: Props) {
                                                     updateRow(
                                                         row.variant_id,
                                                         'per_unit_price',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <Input
+                                                type="number"
+                                                step="1"
+                                                className="h-8 w-28"
+                                                value={row.pack_price}
+                                                onChange={(e) =>
+                                                    updateRow(
+                                                        row.variant_id,
+                                                        'pack_price',
                                                         e.target.value,
                                                     )
                                                 }

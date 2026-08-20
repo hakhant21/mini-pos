@@ -20,7 +20,7 @@ export type ProductVariant = {
     product_id: number;
     unit_id: number;
     name: string | null;
-    pricing_mode: 'single' | 'package' | 'both';
+    pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     image: string | null;
     image_url: string | null;
     sku: string;
@@ -28,6 +28,8 @@ export type ProductVariant = {
     cost_price: number;
     selling_price: number;
     per_unit_price: number;
+    pack_price: number;
+    units_per_pack: number;
     stock_quantity: number;
     min_stock_level: number;
     max_stock_level: number | null;
@@ -50,12 +52,14 @@ export type ProductForm = {
 export type ProductVariantForm = {
     unit_id: number;
     name?: string;
-    pricing_mode?: 'single' | 'package' | 'both';
+    pricing_mode?: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     image?: File | string | null;
     sku: string;
     units_per_package: number;
     cost_price: number;
     selling_price: number;
+    pack_price?: number;
+    units_per_pack?: number;
     min_stock_level: number;
     max_stock_level?: number;
     is_active?: boolean;

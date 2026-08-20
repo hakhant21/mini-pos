@@ -1,14 +1,16 @@
 export type CartItem = {
     id: string;
     variant_id: number;
-    pricing_mode: 'package' | 'single';
+    pricing_mode: 'package' | 'single' | 'pack' | 'single_pack';
     product_name: string;
     variant_name: string | null;
     unit_name: string | null;
     units_per_package: number;
+    units_per_pack: number;
     unit_price: number;
     cost_price: number;
     per_unit_price: number;
+    pack_price: number;
     quantity: number;
     stock_quantity: number;
 };

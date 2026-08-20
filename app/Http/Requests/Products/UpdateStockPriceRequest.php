@@ -19,6 +19,7 @@ class UpdateStockPriceRequest extends FormRequest
             'cost_price' => ['required', 'numeric', 'min:0'],
             'selling_price' => ['required', 'numeric', 'min:0'],
             'per_unit_price' => ['nullable', 'numeric', 'min:0'],
+            'pack_price' => ['nullable', 'numeric', 'min:0'],
         ];
     }
 }

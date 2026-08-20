@@ -87,11 +87,17 @@ class SaleController extends Controller
             foreach ($data['items'] as $item) {
                 $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
 
-                $isPackage = $item['pricing_mode'] === 'package';
-                $unitPrice = $isPackage ? (float) $variant->cost_price : (float) $variant->per_unit_price;
-                $unitsConsumed = $isPackage
-                    ? (float) $item['quantity'] * (float) $variant->units_per_package
-                    : (float) $item['quantity'];
+                $pricingMode = $item['pricing_mode'];
+                $unitPrice = match ($pricingMode) {
+                    'package' => (float) $variant->cost_price,
+                    'pack' => (float) $variant->pack_price,
+                    default => (float) $variant->per_unit_price,
+                };
+                $unitsConsumed = match ($pricingMode) {
+                    'package' => (float) $item['quantity'] * (float) $variant->units_per_package,
+                    'pack' => (float) $item['quantity'] * (float) $variant->units_per_pack,
+                    default => (float) $item['quantity'],
+                };
 
                 if ($variant->stock_quantity < $unitsConsumed) {
                     throw ValidationException::withMessages([
@@ -152,11 +158,17 @@ class SaleController extends Controller
             foreach ($data['items'] as $item) {
                 $variant = ProductVariant::with(['product', 'unit'])->lockForUpdate()->findOrFail($item['variant_id']);
 
-                $isPackage = $item['pricing_mode'] === 'package';
-                $unitPrice = $isPackage ? (float) $variant->cost_price : (float) $variant->per_unit_price;
-                $unitsConsumed = $isPackage
-                    ? (float) $item['quantity'] * (float) $variant->units_per_package
-                    : (float) $item['quantity'];
+                $pricingMode = $item['pricing_mode'];
+                $unitPrice = match ($pricingMode) {
+                    'package' => (float) $variant->cost_price,
+                    'pack' => (float) $variant->pack_price,
+                    default => (float) $variant->per_unit_price,
+                };
+                $unitsConsumed = match ($pricingMode) {
+                    'package' => (float) $item['quantity'] * (float) $variant->units_per_package,
+                    'pack' => (float) $item['quantity'] * (float) $variant->units_per_pack,
+                    default => (float) $item['quantity'],
+                };
 
                 if ($variant->stock_quantity < $unitsConsumed) {
                     throw ValidationException::withMessages([

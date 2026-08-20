@@ -1,5 +1,6 @@
 import { CheckIcon, ChevronDownIcon, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -76,7 +77,9 @@ export function SearchableSelect({
         const onMouseDown = (e: MouseEvent) => {
             if (
                 dropdownRef.current &&
-                !dropdownRef.current.contains(e.target as Node)
+                !dropdownRef.current.contains(e.target as Node) &&
+                triggerRef.current &&
+                !triggerRef.current.contains(e.target as Node)
             ) {
                 setOpen(false);
             }
@@ -134,57 +137,63 @@ export function SearchableSelect({
                 </span>
                 <ChevronDownIcon className="size-4 shrink-0 opacity-50" />
             </button>
-            {open && position && (
-                <div
-                    ref={dropdownRef}
-                    style={{
-                        position: 'fixed',
-                        top: position.top,
-                        left: position.left,
-                        width: position.width,
-                        zIndex: 50,
-                    }}
-                    className="bg-popover text-popover-foreground flex min-w-40 flex-col overflow-hidden rounded-md border shadow-md"
-                >
-                    <div className="flex items-center gap-2 border-b px-2 py-1.5">
-                        <Search className="size-4 shrink-0 opacity-50" />
-                        <Input
-                            autoFocus
-                            value={query}
-                            onChange={(e) => setQuery(e.target.value)}
-                            placeholder={searchPlaceholder}
-                            className="h-8 border-0 shadow-none focus-visible:ring-0"
-                        />
-                    </div>
-                    <div className="max-h-56 overflow-y-auto p-1">
-                        {filtered.length === 0 && (
-                            <p className="px-2 py-6 text-center text-sm text-muted-foreground">
-                                {emptyText}
-                            </p>
-                        )}
-                        {filtered.map((o) => (
-                            <button
-                                key={o.value}
-                                type="button"
-                                onClick={() => {
-                                    onValueChange(o.value);
-                                    setOpen(false);
-                                }}
-                                className={cn(
-                                    'flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 pr-8 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground',
-                                    o.value === value &&
-                                        'bg-accent text-accent-foreground',
-                                )}
-                            >
-                                <span className="line-clamp-1">{o.label}</span>
-                                {o.value === value && (
-                                    <CheckIcon className="size-4 shrink-0" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
+            {open &&
+                position &&
+                createPortal(
+                    <div
+                        ref={dropdownRef}
+                        data-slot="searchable-select-dropdown"
+                        style={{
+                            position: 'fixed',
+                            top: position.top,
+                            left: position.left,
+                            width: position.width,
+                            zIndex: 100,
+                        }}
+                        className="bg-popover text-popover-foreground flex min-w-40 flex-col overflow-hidden rounded-md border shadow-md"
+                    >
+                        <div className="flex items-center gap-2 border-b px-2 py-1.5">
+                            <Search className="size-4 shrink-0 opacity-50" />
+                            <Input
+                                autoFocus
+                                value={query}
+                                onChange={(e) => setQuery(e.target.value)}
+                                placeholder={searchPlaceholder}
+                                className="h-8 border-0 shadow-none focus-visible:ring-0"
+                            />
+                        </div>
+                        <div className="max-h-56 overflow-y-auto p-1">
+                            {filtered.length === 0 && (
+                                <p className="px-2 py-6 text-center text-sm text-muted-foreground">
+                                    {emptyText}
+                                </p>
+                            )}
+                            {filtered.map((o) => (
+                                <button
+                                    key={o.value}
+                                    type="button"
+                                    onClick={() => {
+                                        onValueChange(o.value);
+                                        setOpen(false);
+                                    }}
+                                    className={cn(
+                                        'flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1.5 pr-8 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground',
+                                        o.value === value &&
+                                            'bg-accent text-accent-foreground',
+                                    )}
+                                >
+                                    <span className="line-clamp-1">
+                                        {o.label}
+                                    </span>
+                                    {o.value === value && (
+                                        <CheckIcon className="size-4 shrink-0" />
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>,
+                    document.body,
+                )}
         </>
     );
 }

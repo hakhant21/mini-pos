@@ -16,7 +16,7 @@ class AddItemsRequest extends FormRequest
         return [
             'items' => ['required', 'array', 'min:1'],
             'items.*.variant_id' => ['required', 'exists:product_variants,id'],
-            'items.*.pricing_mode' => ['required', 'string', 'in:package,single'],
+            'items.*.pricing_mode' => ['required', 'string', 'in:package,single,pack,single_pack'],
             'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
             'amount_paid' => ['required', 'numeric', 'min:0'],
         ];

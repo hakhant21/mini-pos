@@ -22,6 +22,8 @@ class ProductVariantResource extends JsonResource
             'cost_price' => $this->cost_price,
             'selling_price' => $this->selling_price,
             'per_unit_price' => $this->per_unit_price,
+            'pack_price' => $this->pack_price,
+            'units_per_pack' => $this->units_per_pack,
             'stock_quantity' => $this->stock_quantity,
             'min_stock_level' => $this->min_stock_level,
             'max_stock_level' => $this->max_stock_level,

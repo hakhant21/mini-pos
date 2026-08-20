@@ -23,15 +23,40 @@ type Props = {
 type VariantForm = {
     unit_id: string;
     name: string;
-    pricing_mode: 'single' | 'package' | 'both';
+    pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     image: File | null;
     units_per_package: string;
+    units_per_pack: string;
     cost_price: string;
     selling_price: string;
     per_unit_price: string;
+    pack_price: string;
     min_stock_level: string;
     max_stock_level: string;
 };
+
+const emptyVariant = (): VariantForm => ({
+    unit_id: '',
+    name: '',
+    pricing_mode: 'both',
+    image: null,
+    units_per_package: '1',
+    units_per_pack: '1',
+    cost_price: '0',
+    selling_price: '0',
+    per_unit_price: '0',
+    pack_price: '0',
+    min_stock_level: '0',
+    max_stock_level: '',
+});
+
+const pricingModeOptions = (t: (k: string) => string) => [
+    { value: 'both', label: t('single + pack + package') },
+    { value: 'single_pack', label: t('single + pack') },
+    { value: 'single', label: t('single mode') },
+    { value: 'pack', label: t('pack mode') },
+    { value: 'package', label: t('package mode') },
+];
 
 export default function ProductsCreate({ categories, units }: Props) {
     const { t } = useTranslation();
@@ -58,21 +83,7 @@ export default function ProductsCreate({ categories, units }: Props) {
     const variants = data.variants;
 
     const addVariant = () => {
-        setData('variants', [
-            ...variants,
-            {
-                unit_id: '',
-                name: '',
-                pricing_mode: 'both',
-                image: null,
-                units_per_package: '1',
-                cost_price: '0',
-                selling_price: '0',
-                per_unit_price: '0',
-                min_stock_level: '0',
-                max_stock_level: '',
-            },
-        ]);
+        setData('variants', [...variants, emptyVariant()]);
     };
 
     const removeVariant = (index: number) => {
@@ -286,11 +297,7 @@ export default function ProductsCreate({ categories, units }: Props) {
                                                         v,
                                                     )
                                                 }
-                                                options={[
-                                                    { value: 'both', label: t('Single + Package') },
-                                                    { value: 'single', label: t('Single Only') },
-                                                    { value: 'package', label: t('Package Only') },
-                                                ]}
+                                                options={pricingModeOptions(t)}
                                                 placeholder={t('Pricing Mode')}
                                                 className="w-full"
                                             />
@@ -301,7 +308,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={
                                                     variant.units_per_package
                                                 }
@@ -320,7 +326,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={variant.cost_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -337,7 +342,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={variant.selling_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -354,7 +358,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={variant.per_unit_price}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -367,11 +370,42 @@ export default function ProductsCreate({ categories, units }: Props) {
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="text-xs">
+                                                {t('Pack Price')}
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                value={variant.pack_price}
+                                                onChange={(e) =>
+                                                    updateVariant(
+                                                        index,
+                                                        'pack_price',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
+                                                {t('Units per Pack')}
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                value={variant.units_per_pack}
+                                                onChange={(e) =>
+                                                    updateVariant(
+                                                        index,
+                                                        'units_per_pack',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
                                                 {t('Min Stock')}
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={variant.min_stock_level}
                                                 onChange={(e) =>
                                                     updateVariant(
@@ -388,7 +422,6 @@ export default function ProductsCreate({ categories, units }: Props) {
                                             </Label>
                                             <Input
                                                 type="number"
-
                                                 value={variant.max_stock_level}
                                                 onChange={(e) =>
                                                     updateVariant(

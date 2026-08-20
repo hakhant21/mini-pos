@@ -1,16 +1,9 @@
 import { Head, Link, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { LoaderCircle, Plus, Pencil, Trash2 } from 'lucide-react';
+import { LoaderCircle, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SearchableSelect } from '@/components/ui/searchable-select';
@@ -40,6 +33,36 @@ type Props = {
     units: Unit[];
 };
 
+type VariantFormData = {
+    unit_id: string;
+    name: string;
+    pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
+    image: File | null;
+    units_per_package: string;
+    units_per_pack: string;
+    cost_price: string;
+    selling_price: string;
+    per_unit_price: string;
+    pack_price: string;
+    min_stock_level: string;
+    max_stock_level: string;
+};
+
+const emptyVariant: VariantFormData = {
+    unit_id: '',
+    name: '',
+    pricing_mode: 'both',
+    image: null,
+    units_per_package: '1',
+    units_per_pack: '1',
+    cost_price: '0',
+    selling_price: '0',
+    per_unit_price: '0',
+    pack_price: '0',
+    min_stock_level: '0',
+    max_stock_level: '',
+};
+
 export default function ProductsEdit({ product, categories, units }: Props) {
     const { t } = useTranslation();
     const {
@@ -55,24 +78,16 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         is_active: product.is_active,
     });
 
-    const [newVariant, setNewVariant] = useState({
-        unit_id: '',
-        name: '',
-        pricing_mode: 'both' as 'single' | 'package' | 'both',
-        image: null as File | null,
-        units_per_package: '1',
-        cost_price: '0',
-        selling_price: '0',
-        per_unit_price: '0',
-        min_stock_level: '0',
-        max_stock_level: '',
+    const [newVariant, setNewVariant] = useState<VariantFormData>({
+        ...emptyVariant,
     });
-
-    const [editingVariant, setEditingVariant] = useState<
-        Product['variants'][number] | null
-    >(null);
+    const [editVariant, setEditVariant] = useState<VariantFormData>({
+        ...emptyVariant,
+    });
+    const [editingVariantId, setEditingVariantId] = useState<number | null>(
+        null,
+    );
     const [editVariantProcessing, setEditVariantProcessing] = useState(false);
-    const [editDialogOpen, setEditDialogOpen] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,9 +103,11 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                 ...newVariant,
                 image: newVariant.image ?? null,
                 units_per_package: parseFloat(newVariant.units_per_package),
+                units_per_pack: parseFloat(newVariant.units_per_pack),
                 cost_price: parseFloat(newVariant.cost_price),
                 selling_price: parseFloat(newVariant.selling_price),
                 per_unit_price: parseFloat(newVariant.per_unit_price),
+                pack_price: parseFloat(newVariant.pack_price),
                 min_stock_level: parseFloat(newVariant.min_stock_level),
                 max_stock_level: newVariant.max_stock_level
                     ? parseFloat(newVariant.max_stock_level)
@@ -111,59 +128,61 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     };
 
     const handleEditVariant = (variant: Product['variants'][number]) => {
-        setEditingVariant(variant);
-        setNewVariant({
+        setEditingVariantId(variant.id);
+        setEditVariant({
             unit_id: String(variant.unit_id),
             name: variant.name || '',
             pricing_mode: variant.pricing_mode || 'both',
             image: null,
             units_per_package: String(variant.units_per_package),
+            units_per_pack: String(variant.units_per_pack),
             cost_price: String(variant.cost_price),
             selling_price: String(variant.selling_price),
             per_unit_price: String(variant.per_unit_price),
+            pack_price: String(variant.pack_price),
             min_stock_level: String(variant.min_stock_level),
             max_stock_level: variant.max_stock_level
                 ? String(variant.max_stock_level)
                 : '',
         });
-        setEditDialogOpen(true);
     };
 
     const handleUpdateVariant = () => {
-        if (!editingVariant) {
+        if (editingVariantId === null) {
             return;
         }
 
         setEditVariantProcessing(true);
 
         const payload: Record<string, unknown> = {
-            ...newVariant,
-            units_per_package: parseFloat(newVariant.units_per_package),
-            cost_price: parseFloat(newVariant.cost_price),
-            selling_price: parseFloat(newVariant.selling_price),
-            per_unit_price: parseFloat(newVariant.per_unit_price),
-            min_stock_level: parseFloat(newVariant.min_stock_level),
-            max_stock_level: newVariant.max_stock_level
-                ? parseFloat(newVariant.max_stock_level)
+            ...editVariant,
+            units_per_package: parseFloat(editVariant.units_per_package),
+            units_per_pack: parseFloat(editVariant.units_per_pack),
+            cost_price: parseFloat(editVariant.cost_price),
+            selling_price: parseFloat(editVariant.selling_price),
+            per_unit_price: parseFloat(editVariant.per_unit_price),
+            pack_price: parseFloat(editVariant.pack_price),
+            min_stock_level: parseFloat(editVariant.min_stock_level),
+            max_stock_level: editVariant.max_stock_level
+                ? parseFloat(editVariant.max_stock_level)
                 : null,
         };
 
-        if (newVariant.image instanceof File) {
-            payload.image = newVariant.image;
+        if (editVariant.image instanceof File) {
+            payload.image = editVariant.image;
         } else {
             delete payload.image;
         }
 
         router.patch(
-            variantsUpdate({ product: product.id, variant: editingVariant.id })
+            variantsUpdate({ product: product.id, variant: editingVariantId })
                 .url,
             payload,
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     setEditVariantProcessing(false);
-                    setEditDialogOpen(false);
-                    setEditingVariant(null);
+                    setEditingVariantId(null);
                 },
                 onError: () => {
                     setEditVariantProcessing(false);
@@ -269,6 +288,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             {t('Selling Price')}
                                         </TableHead>
                                         <TableHead>{t('Per Unit')}</TableHead>
+                                        <TableHead>{t('Pack Price')}</TableHead>
                                         <TableHead>{t('Stock')}</TableHead>
                                         <TableHead className="text-right">
                                             {t('Actions')}
@@ -301,10 +321,19 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             </TableCell>
                                             <TableCell>
                                                 {variant.pricing_mode === 'both'
-                                                    ? t('Single + Package')
-                                                    : variant.pricing_mode === 'single'
-                                                      ? t('Single Only')
-                                                      : t('Package Only')}
+                                                    ? t(
+                                                          'single + pack + package',
+                                                      )
+                                                    : variant.pricing_mode ===
+                                                        'single_pack'
+                                                      ? t('single + pack')
+                                                      : variant.pricing_mode ===
+                                                          'single'
+                                                        ? t('single mode')
+                                                        : variant.pricing_mode ===
+                                                            'pack'
+                                                          ? t('pack mode')
+                                                          : t('package mode')}
                                             </TableCell>
                                             <TableCell>
                                                 Ks {ks(variant.cost_price)}
@@ -314,6 +343,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             </TableCell>
                                             <TableCell>
                                                 Ks {ks(variant.per_unit_price)}
+                                            </TableCell>
+                                            <TableCell>
+                                                Ks {ks(variant.pack_price)}
                                             </TableCell>
                                             <TableCell>
                                                 {Number(variant.stock_quantity)}
@@ -352,7 +384,9 @@ export default function ProductsEdit({ product, categories, units }: Props) {
 
                         <div className="mt-4 rounded-lg border p-4">
                             <h3 className="mb-3 text-sm font-medium">
-                                {t('Add New Variant')}
+                                {editingVariantId
+                                    ? t('Edit Variant')
+                                    : t('Add New Variant')}
                             </h3>
                             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
                                 <div className="space-y-2">
@@ -366,35 +400,69 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             const file = e.target.files?.[0];
 
                                             if (file) {
-                                                setNewVariant({
-                                                    ...newVariant,
-                                                    image: file,
-                                                });
+                                                if (editingVariantId) {
+                                                    setEditVariant({
+                                                        ...editVariant,
+                                                        image: file,
+                                                    });
+                                                } else {
+                                                    setNewVariant({
+                                                        ...newVariant,
+                                                        image: file,
+                                                    });
+                                                }
                                             }
                                         }}
                                     />
-                                    {newVariant.image instanceof File && (
-                                        <img
-                                            src={URL.createObjectURL(
-                                                newVariant.image,
-                                            )}
-                                            alt="Variant preview"
-                                            className="h-12 w-12 rounded object-cover"
-                                        />
-                                    )}
+                                    {(() => {
+                                        const active = editingVariantId
+                                            ? editVariant
+                                            : newVariant;
+                                        const imgSrc =
+                                            active.image instanceof File
+                                                ? URL.createObjectURL(
+                                                      active.image,
+                                                  )
+                                                : editingVariantId
+                                                  ? product.variants.find(
+                                                        (v) =>
+                                                            v.id ===
+                                                            editingVariantId,
+                                                    )?.image_url
+                                                  : null;
+
+                                        return imgSrc ? (
+                                            <img
+                                                src={imgSrc}
+                                                alt="Variant preview"
+                                                className="h-12 w-12 rounded object-cover"
+                                            />
+                                        ) : null;
+                                    })()}
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs">
                                         {t('Unit')}
                                     </Label>
                                     <SearchableSelect
-                                        value={newVariant.unit_id}
-                                        onValueChange={(v) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                unit_id: v,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.unit_id
+                                                : newVariant.unit_id
                                         }
+                                        onValueChange={(v) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    unit_id: v,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    unit_id: v,
+                                                });
+                                            }
+                                        }}
                                         options={units.map((u) => ({
                                             value: String(u.id),
                                             label: u.name,
@@ -408,13 +476,24 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         {t('Name')}
                                     </Label>
                                     <Input
-                                        value={newVariant.name}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                name: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.name
+                                                : newVariant.name
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    name: e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    name: e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -422,17 +501,49 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         {t('Pricing Mode')}
                                     </Label>
                                     <SearchableSelect
-                                        value={newVariant.pricing_mode}
-                                        onValueChange={(v) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                pricing_mode: v as 'single' | 'package' | 'both',
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.pricing_mode
+                                                : newVariant.pricing_mode
                                         }
+                                        onValueChange={(v) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    pricing_mode:
+                                                        v as VariantFormData['pricing_mode'],
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    pricing_mode:
+                                                        v as VariantFormData['pricing_mode'],
+                                                });
+                                            }
+                                        }}
                                         options={[
-                                            { value: 'both', label: t('Single + Package') },
-                                            { value: 'single', label: t('Single Only') },
-                                            { value: 'package', label: t('Package Only') },
+                                            {
+                                                value: 'both',
+                                                label: t(
+                                                    'single + pack + package',
+                                                ),
+                                            },
+                                            {
+                                                value: 'single_pack',
+                                                label: t('single + pack'),
+                                            },
+                                            {
+                                                value: 'single',
+                                                label: t('single mode'),
+                                            },
+                                            {
+                                                value: 'pack',
+                                                label: t('pack mode'),
+                                            },
+                                            {
+                                                value: 'package',
+                                                label: t('package mdoe'),
+                                            },
                                         ]}
                                         placeholder={t('Pricing Mode')}
                                         className="w-full"
@@ -444,15 +555,26 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.units_per_package}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                units_per_package:
-                                                    e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.units_per_package
+                                                : newVariant.units_per_package
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    units_per_package:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    units_per_package:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -461,14 +583,24 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.cost_price}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                cost_price: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.cost_price
+                                                : newVariant.cost_price
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    cost_price: e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    cost_price: e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -477,14 +609,26 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.selling_price}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                selling_price: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.selling_price
+                                                : newVariant.selling_price
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    selling_price:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    selling_price:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -493,14 +637,80 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.per_unit_price}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                per_unit_price: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.per_unit_price
+                                                : newVariant.per_unit_price
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    per_unit_price:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    per_unit_price:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">
+                                        {t('Pack Price')}
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.pack_price
+                                                : newVariant.pack_price
+                                        }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    pack_price: e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    pack_price: e.target.value,
+                                                });
+                                            }
+                                        }}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">
+                                        {t('Units/Pack')}
+                                    </Label>
+                                    <Input
+                                        type="number"
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.units_per_pack
+                                                : newVariant.units_per_pack
+                                        }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    units_per_pack:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    units_per_pack:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -509,14 +719,26 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.min_stock_level}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                min_stock_level: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.min_stock_level
+                                                : newVariant.min_stock_level
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    min_stock_level:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    min_stock_level:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -525,244 +747,70 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                     </Label>
                                     <Input
                                         type="number"
-
-                                        value={newVariant.max_stock_level}
-                                        onChange={(e) =>
-                                            setNewVariant({
-                                                ...newVariant,
-                                                max_stock_level: e.target.value,
-                                            })
+                                        value={
+                                            editingVariantId
+                                                ? editVariant.max_stock_level
+                                                : newVariant.max_stock_level
                                         }
+                                        onChange={(e) => {
+                                            if (editingVariantId) {
+                                                setEditVariant({
+                                                    ...editVariant,
+                                                    max_stock_level:
+                                                        e.target.value,
+                                                });
+                                            } else {
+                                                setNewVariant({
+                                                    ...newVariant,
+                                                    max_stock_level:
+                                                        e.target.value,
+                                                });
+                                            }
+                                        }}
                                     />
                                 </div>
                             </div>
-                            <div className="mt-3 flex justify-end">
-                                <Button
-                                    type="button"
-                                    size="sm"
-                                    onClick={handleAddVariant}
-                                >
-                                    <Plus className="mr-2 h-4 w-4" />{' '}
-                                    {t('Add Variant')}
-                                </Button>
+                            <div className="mt-3 flex justify-end gap-2">
+                                {editingVariantId && (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => {
+                                            setEditingVariantId(null);
+                                        }}
+                                        disabled={editVariantProcessing}
+                                    >
+                                        <X className="mr-1 h-4 w-4" />
+                                        {t('Cancel')}
+                                    </Button>
+                                )}
+                                {editingVariantId ? (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleUpdateVariant}
+                                        disabled={editVariantProcessing}
+                                    >
+                                        {editVariantProcessing && (
+                                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {t('Update Variant')}
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleAddVariant}
+                                    >
+                                        <Plus className="mr-2 h-4 w-4" />{' '}
+                                        {t('Add Variant')}
+                                    </Button>
+                                )}
                             </div>
                         </div>
                     </CardContent>
                 </Card>
-
-                <Dialog
-                    open={editDialogOpen}
-                    onOpenChange={(open) => {
-                        setEditDialogOpen(open);
-
-                        if (!open) {
-                            setEditingVariant(null);
-                        }
-                    }}
-                >
-                    <DialogContent className="max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                            <DialogTitle>{t('Edit Variant')}</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid grid-cols-1 gap-3 py-4 md:grid-cols-2 lg:grid-cols-3">
-                            <div className="space-y-2">
-                                <Label className="text-xs">{t('Image')}</Label>
-                                <Input
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/jpg,image/webp"
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0];
-
-                                        if (file) {
-                                            setNewVariant({
-                                                ...newVariant,
-                                                image: file,
-                                            });
-                                        }
-                                    }}
-                                />
-                                {(newVariant.image instanceof File
-                                    ? URL.createObjectURL(newVariant.image)
-                                    : editingVariant?.image_url) && (
-                                    <img
-                                        src={
-                                            newVariant.image instanceof File
-                                                ? URL.createObjectURL(
-                                                      newVariant.image,
-                                                  )
-                                                : editingVariant?.image_url
-                                        }
-                                        alt="Variant preview"
-                                        className="h-14 w-14 rounded object-cover"
-                                    />
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">{t('Unit')}</Label>
-                                <SearchableSelect
-                                    value={newVariant.unit_id}
-                                    onValueChange={(v) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            unit_id: v,
-                                        })
-                                    }
-                                    options={units.map((u) => ({
-                                        value: String(u.id),
-                                        label: u.name,
-                                    }))}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">{t('Name')}</Label>
-                                <Input
-                                    value={newVariant.name}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            name: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Pricing Mode')}
-                                </Label>
-                                <SearchableSelect
-                                    value={newVariant.pricing_mode}
-                                    onValueChange={(v) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            pricing_mode: v as 'single' | 'package' | 'both',
-                                        })
-                                    }
-                                    options={[
-                                        { value: 'both', label: t('Single + Package') },
-                                        { value: 'single', label: t('Single Only') },
-                                        { value: 'package', label: t('Package Only') },
-                                    ]}
-                                    className="w-full"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Units/Pkg')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.units_per_package}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            units_per_package: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Cost Price')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.cost_price}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            cost_price: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Selling Price')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.selling_price}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            selling_price: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Per Unit Price')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.per_unit_price}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            per_unit_price: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Min Stock')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.min_stock_level}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            min_stock_level: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-xs">
-                                    {t('Max Stock')}
-                                </Label>
-                                <Input
-                                    type="number"
-
-                                    value={newVariant.max_stock_level}
-                                    onChange={(e) =>
-                                        setNewVariant({
-                                            ...newVariant,
-                                            max_stock_level: e.target.value,
-                                        })
-                                    }
-                                />
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button
-                                variant="outline"
-                                onClick={() => setEditDialogOpen(false)}
-                                disabled={editVariantProcessing}
-                            >
-                                {t('Cancel')}
-                            </Button>
-                            <Button
-                                onClick={handleUpdateVariant}
-                                disabled={editVariantProcessing}
-                            >
-                                {editVariantProcessing && (
-                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
-                                )}
-                                {t('Update Variant')}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
             </div>
         </>
     );
