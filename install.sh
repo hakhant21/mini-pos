@@ -112,8 +112,16 @@ check_success "Failed to install packages"
 log "Installing Node.js 20.x for ARM architecture..."
 if ! command -v node &> /dev/null; then
     # For Raspberry Pi (ARM architecture)
-    curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-    apt install -y nodejs
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
+
+    \. "$HOME/.nvm/nvm.sh"
+
+    nvm install 24
+
+    node -v
+
+    npm -v
+
     check_success "Failed to install Node.js"
 else
     info "Node.js already installed: $(node -v)"
