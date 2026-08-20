@@ -20,6 +20,7 @@ export type ProductVariant = {
     product_id: number;
     unit_id: number;
     name: string | null;
+    pricing_mode: 'single' | 'package' | 'both';
     image: string | null;
     image_url: string | null;
     sku: string;
@@ -49,6 +50,7 @@ export type ProductForm = {
 export type ProductVariantForm = {
     unit_id: number;
     name?: string;
+    pricing_mode?: 'single' | 'package' | 'both';
     image?: File | string | null;
     sku: string;
     units_per_package: number;

@@ -1,5 +1,5 @@
-import { useTranslation } from '@/lib/i18n';
 import { usePage } from '@inertiajs/react';
+import { useTranslation } from '@/lib/i18n';
 
 export default function AppLogo() {
     const { t } = useTranslation();

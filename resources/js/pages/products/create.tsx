@@ -23,6 +23,7 @@ type Props = {
 type VariantForm = {
     unit_id: string;
     name: string;
+    pricing_mode: 'single' | 'package' | 'both';
     image: File | null;
     units_per_package: string;
     cost_price: string;
@@ -62,6 +63,7 @@ export default function ProductsCreate({ categories, units }: Props) {
             {
                 unit_id: '',
                 name: '',
+                pricing_mode: 'both',
                 image: null,
                 units_per_package: '1',
                 cost_price: '0',
@@ -269,6 +271,28 @@ export default function ProductsCreate({ categories, units }: Props) {
                                                     )
                                                 }
                                                 placeholder="e.g. Bottle"
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
+                                                {t('Pricing Mode')}
+                                            </Label>
+                                            <SearchableSelect
+                                                value={variant.pricing_mode}
+                                                onValueChange={(v) =>
+                                                    updateVariant(
+                                                        index,
+                                                        'pricing_mode',
+                                                        v,
+                                                    )
+                                                }
+                                                options={[
+                                                    { value: 'both', label: t('Single + Package') },
+                                                    { value: 'single', label: t('Single Only') },
+                                                    { value: 'package', label: t('Package Only') },
+                                                ]}
+                                                placeholder={t('Pricing Mode')}
+                                                className="w-full"
                                             />
                                         </div>
                                         <div className="space-y-1">

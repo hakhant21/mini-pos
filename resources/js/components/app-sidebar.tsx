@@ -1,5 +1,10 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+} from '@radix-ui/react-dropdown-menu';
+import {
     LayoutGrid,
     Package,
     PackageCheck,
@@ -28,11 +33,6 @@ import {
     productsStockPriceUpdate,
 } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuTrigger,
-} from '@radix-ui/react-dropdown-menu';
 import { Button } from './ui/button';
 import { UserInfo } from './user-info';
 import { UserMenuContent } from './user-menu-content';

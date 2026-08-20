@@ -21,6 +21,7 @@ class StoreProductRequest extends FormRequest
             'variants' => ['nullable', 'array'],
             'variants.*.unit_id' => ['required_with:variants', 'exists:units,id'],
             'variants.*.name' => ['nullable', 'string', 'max:255'],
+            'variants.*.pricing_mode' => ['nullable', 'string', 'in:single,package,both'],
             'variants.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'variants.*.units_per_package' => ['nullable', 'numeric', 'min:0.01'],
             'variants.*.cost_price' => ['required_with:variants', 'numeric', 'min:0'],

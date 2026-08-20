@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
 
 #[Fillable([
-    'product_id', 'unit_id', 'name', 'image', 'sku',
+    'product_id', 'unit_id', 'name', 'pricing_mode', 'image', 'sku',
     'units_per_package', 'cost_price', 'selling_price', 'per_unit_price',
     'stock_quantity', 'min_stock_level', 'max_stock_level', 'is_active',
 ])]
@@ -30,6 +30,7 @@ class ProductVariant extends Model
             'stock_quantity' => 'decimal:2',
             'min_stock_level' => 'decimal:2',
             'max_stock_level' => 'decimal:2',
+            'pricing_mode' => 'string',
             'is_active' => 'boolean',
         ];
     }

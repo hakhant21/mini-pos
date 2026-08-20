@@ -58,6 +58,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
     const [newVariant, setNewVariant] = useState({
         unit_id: '',
         name: '',
+        pricing_mode: 'both' as 'single' | 'package' | 'both',
         image: null as File | null,
         units_per_package: '1',
         cost_price: '0',
@@ -114,6 +115,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
         setNewVariant({
             unit_id: String(variant.unit_id),
             name: variant.name || '',
+            pricing_mode: variant.pricing_mode || 'both',
             image: null,
             units_per_package: String(variant.units_per_package),
             cost_price: String(variant.cost_price),
@@ -261,6 +263,7 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                         <TableHead>{t('Image')}</TableHead>
                                         <TableHead>{t('Name')}</TableHead>
                                         <TableHead>{t('Unit')}</TableHead>
+                                        <TableHead>{t('Pricing')}</TableHead>
                                         <TableHead>{t('Cost Price')}</TableHead>
                                         <TableHead>
                                             {t('Selling Price')}
@@ -295,6 +298,13 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             <TableCell>
                                                 {variant.unit?.abbreviation ||
                                                     '—'}
+                                            </TableCell>
+                                            <TableCell>
+                                                {variant.pricing_mode === 'both'
+                                                    ? t('Single + Package')
+                                                    : variant.pricing_mode === 'single'
+                                                      ? t('Single Only')
+                                                      : t('Package Only')}
                                             </TableCell>
                                             <TableCell>
                                                 Ks {ks(variant.cost_price)}
@@ -405,6 +415,27 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                                 name: e.target.value,
                                             })
                                         }
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-xs">
+                                        {t('Pricing Mode')}
+                                    </Label>
+                                    <SearchableSelect
+                                        value={newVariant.pricing_mode}
+                                        onValueChange={(v) =>
+                                            setNewVariant({
+                                                ...newVariant,
+                                                pricing_mode: v as 'single' | 'package' | 'both',
+                                            })
+                                        }
+                                        options={[
+                                            { value: 'both', label: t('Single + Package') },
+                                            { value: 'single', label: t('Single Only') },
+                                            { value: 'package', label: t('Package Only') },
+                                        ]}
+                                        placeholder={t('Pricing Mode')}
+                                        className="w-full"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -593,6 +624,26 @@ export default function ProductsEdit({ product, categories, units }: Props) {
                                             name: e.target.value,
                                         })
                                     }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-xs">
+                                    {t('Pricing Mode')}
+                                </Label>
+                                <SearchableSelect
+                                    value={newVariant.pricing_mode}
+                                    onValueChange={(v) =>
+                                        setNewVariant({
+                                            ...newVariant,
+                                            pricing_mode: v as 'single' | 'package' | 'both',
+                                        })
+                                    }
+                                    options={[
+                                        { value: 'both', label: t('Single + Package') },
+                                        { value: 'single', label: t('Single Only') },
+                                        { value: 'package', label: t('Package Only') },
+                                    ]}
+                                    className="w-full"
                                 />
                             </div>
                             <div className="space-y-2">
