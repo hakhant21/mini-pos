@@ -108,31 +108,7 @@ apt install -y \
     supervisor
 check_success "Failed to install packages"
 
-# 4. Install Node.js 20.x for Raspberry Pi ARM
-log "Installing Node.js 20.x for ARM architecture..."
-if ! command -v node &> /dev/null; then
-    # For Raspberry Pi (ARM architecture)
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.6/install.sh | bash
-
-    \. "$HOME/.nvm/nvm.sh"
-
-    nvm install 24
-
-    node -v
-
-    npm -v
-
-    check_success "Failed to install Node.js"
-else
-    info "Node.js already installed: $(node -v)"
-    info "npm version: $(npm -v)"
-fi
-
-# Verify Node.js installation
-log "Node.js version: $(node --version)"
-log "npm version: $(npm --version)"
-
-# 5. Configure MySQL
+# 4. Configure MySQL
 log "Configuring MySQL..."
 systemctl start mysql
 systemctl enable mysql
@@ -147,7 +123,7 @@ mysql --user=root <<_EOF_
 _EOF_
 check_success "Failed to create database"
 
-# 6. Clone Repository
+# 5. Clone Repository
 log "Cloning branch '${GIT_BRANCH}' from ${GIT_REPO}..."
 mkdir -p /var/www
 
@@ -174,7 +150,7 @@ cd ${APP_DIR}
 # Show current branch
 info "Current branch: $(git branch --show-current)"
 
-# 7. Install Composer Dependencies
+# 6. Install Composer Dependencies
 log "Installing Composer dependencies..."
 export COMPOSER_ALLOW_SUPERUSER=1
 if [ -f "composer.lock" ]; then
@@ -184,17 +160,7 @@ else
 fi
 check_success "Failed to install Composer dependencies"
 
-# 8. Install NPM Dependencies
-log "Installing npm dependencies..."
-npm install
-check_success "Failed to install npm dependencies"
-
-# 9. Build Assets
-log "Building production assets..."
-npm run build
-check_success "Failed to build assets"
-
-# 10. Configure Environment
+# 7. Configure Environment
 log "Configuring environment..."
 if [ ! -f ".env" ]; then
     if [ -f ".env.example" ]; then
@@ -250,13 +216,13 @@ if ! grep -q "APP_KEY=base64:" .env; then
     check_success "Failed to generate key"
 fi
 
-# 11. Set Permissions
+# 8. Set Permissions
 log "Setting permissions..."
 chown -R www-data:www-data ${APP_DIR}
 chmod -R 775 ${APP_DIR}/storage
 chmod -R 775 ${APP_DIR}/bootstrap/cache
 
-# 12. Run Migrations
+# 9. Run Migrations
 log "Running database migrations..."
 php artisan migrate --force
 check_success "Failed to run migrations"
@@ -272,13 +238,13 @@ fi
 log "Creating storage link..."
 php artisan storage:link
 
-# 13. Optimize
+# 10. Optimize
 log "Optimizing application..."
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# 14. Configure Nginx
+# 11. Configure Nginx
 log "Configuring Nginx..."
 cat > /etc/nginx/sites-available/${APP_NAME} <<EOF
 server {
@@ -332,7 +298,7 @@ rm -f /etc/nginx/sites-enabled/default
 nginx -t
 check_success "Nginx configuration test failed"
 
-# 15. Configure PHP 8.4 for Raspberry Pi
+# 12. Configure PHP 8.4 for Raspberry Pi
 log "Configuring PHP 8.4..."
 # Optimize for Raspberry Pi 4B (4GB/8GB RAM)
 sed -i "s/memory_limit = .*/memory_limit = 256M/" /etc/php/${PHP_VERSION}/fpm/php.ini
@@ -340,7 +306,7 @@ sed -i "s/upload_max_filesize = .*/upload_max_filesize = 20M/" /etc/php/${PHP_VE
 sed -i "s/post_max_size = .*/post_max_size = 20M/" /etc/php/${PHP_VERSION}/fpm/php.ini
 sed -i "s/max_execution_time = .*/max_execution_time = 60/" /etc/php/${PHP_VERSION}/fpm/php.ini
 
-# 16. Configure Supervisor for Queue (if needed)
+# 13. Configure Supervisor for Queue (if needed)
 if [ -d "app/Jobs" ] || grep -q "Queue" routes/*.php 2>/dev/null; then
     log "Configuring Supervisor for queue workers..."
     cat > /etc/supervisor/conf.d/bee-kyal-worker.conf <<EOF
@@ -360,12 +326,12 @@ EOF
     supervisorctl start bee-kyal-worker:*
 fi
 
-# 17. Restart Services
+# 14. Restart Services
 log "Restarting services..."
 systemctl restart php${PHP_VERSION}-fpm
 systemctl restart nginx
 
-# 18. Configure Firewall
+# 15. Configure Firewall
 if command -v ufw &> /dev/null; then
     log "Configuring firewall..."
     ufw allow 22/tcp
@@ -374,7 +340,7 @@ if command -v ufw &> /dev/null; then
     echo "y" | ufw enable
 fi
 
-# 19. Create Update Script
+# 16. Create Update Script
 log "Creating update script..."
 cat > /usr/local/bin/update-bee-kyal.sh <<EOF
 #!/bin/bash
@@ -383,8 +349,6 @@ echo "Pulling latest changes from ${GIT_BRANCH}..."
 git pull origin ${GIT_BRANCH}
 echo "Installing dependencies..."
 composer install --no-dev --optimize-autoloader
-npm install
-npm run build
 echo "Running migrations..."
 php artisan migrate --force
 echo "Optimizing..."
@@ -398,7 +362,7 @@ EOF
 
 chmod +x /usr/local/bin/update-bee-kyal.sh
 
-# 20. Create Backup Script
+# 17. Create Backup Script
 log "Creating backup script..."
 cat > /usr/local/bin/backup-bee-kyal.sh <<EOF
 #!/bin/bash
