@@ -49,6 +49,119 @@ if [[ $EUID -ne 0 ]]; then
    error "This script must be run as root. Use: sudo bash deploy-bee-kyal.sh"
 fi
 
+# =============================================
+# REMOVE MODE
+# =============================================
+remove_all() {
+    log "==============================================="
+ log "ဘီးကြဲ Removal Mode"
+    log "==============================================="
+
+    read -p "This will remove ALL installed services and application data. Continue? (y/n): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        info "Removal cancelled."
+        exit 0
+    fi
+
+    # 1. Stop and remove supervisor queue worker
+    log "Stopping supervisor queue worker..."
+    if [ -f /etc/supervisor/conf.d/bee-kyal-worker.conf ]; then
+        supervisorctl stop bee-kyal-worker:* 2>/dev/null || true
+        rm -f /etc/supervisor/conf.d/bee-kyal-worker.conf
+        supervisorctl reread 2>/dev/null || true
+        supervisorctl update 2>/dev/null || true
+    fi
+
+    # 2. Stop and disable services
+    log "Stopping and disabling services..."
+    systemctl stop nginx 2>/dev/null || true
+    systemctl disable nginx 2>/dev/null || true
+    systemctl stop php${PHP_VERSION}-fpm 2>/dev/null || true
+    systemctl disable php${PHP_VERSION}-fpm 2>/dev/null || true
+    systemctl stop mysql 2>/dev/null || true
+    systemctl disable mysql 2>/dev/null || true
+    systemctl stop mariadb 2>/dev/null || true
+    systemctl disable mariadb 2>/dev/null || true
+
+    # 3. Remove application directory
+    log "Removing application directory..."
+    rm -rf ${APP_DIR}
+
+    # 4. Remove Nginx configuration
+    log "Removing Nginx configuration..."
+    rm -f /etc/nginx/sites-available/${APP_NAME}
+    rm -f /etc/nginx/sites-enabled/${APP_NAME}
+
+    # 5. Remove supervisor queue worker config
+    log "Removing supervisor worker config..."
+    rm -f /etc/supervisor/conf.d/bee-kyal-worker.conf
+
+    # 6. Drop database and remove user
+    log "Dropping database and removing user..."
+    mysql --user=root <<_EOF_ 2>/dev/null || true
+  DROP DATABASE IF EXISTS ${DB_NAME};
+  DROP USER IF EXISTS '${DB_USER}'@'localhost';
+  FLUSH PRIVILEGES;
+_EOF_
+
+    # 7. Remove helper scripts
+    log "Removing helper scripts..."
+    rm -f /usr/local/bin/update-bee-kyal.sh
+    rm -f /usr/local/bin/backup-bee-kyal.sh
+
+    # 8. Remove credentials file
+    log "Removing credentials file..."
+    rm -f /root/bee-kyal-credentials.txt
+
+    # 9. Remove installed packages
+    log "Removing installed packages..."
+    apt-get remove -y --purge \
+        nginx \
+        mariadb-server \
+        php${PHP_VERSION}-fpm \
+        php${PHP_VERSION}-mysql \
+        php${PHP_VERSION}-cli \
+        php${PHP_VERSION}-common \
+        php${PHP_VERSION}-mbstring \
+        php${PHP_VERSION}-xml \
+        php${PHP_VERSION}-zip \
+        php${PHP_VERSION}-gd \
+        php${PHP_VERSION}-curl \
+        php${PHP_VERSION}-bcmath \
+        php${PHP_VERSION}-intl \
+        php${PHP_VERSION}-sqlite3 \
+        2>/dev/null || true
+
+    apt-get autoremove -y 2>/dev/null || true
+
+    # 10. Remove PHP repository
+    log "Removing PHP repository..."
+    rm -f /etc/apt/sources.list.d/php.list
+    rm -f /etc/apt/trusted.gpg.d/php.gpg
+    apt-get update -y 2>/dev/null || true
+
+    log "==============================================="
+    log "ဘီးကြဲ Removal Complete!"
+    log "==============================================="
+    log "Removed:"
+    log "  - Application directory"
+    log "  - Nginx configuration"
+    log "  - Supervisor queue worker"
+    log "  - Database and user"
+    log "  - Helper scripts"
+    log "  - Credentials file"
+    log "  - Installed packages (nginx, mariadb, php)"
+    log "  - PHP repository"
+    log "==============================================="
+    exit 0
+}
+
+# Parse arguments
+if [[ "$1" == "--remove" ]]; then
+    remove_all
+fi
+
 # Check if app already exists
 if [ -d "$APP_DIR" ]; then
     warning "Application directory already exists at ${APP_DIR}"

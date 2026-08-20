@@ -6,11 +6,13 @@ services:
     container_name: backend
     restart: unless-stopped
     working_dir: /var/www
+    ports:
+      - "80:8000"
     volumes:
       - ./:/var/www
       - ./storage:/var/www/storage
     environment:
-      APP_URL: ${APP_URL:-http://localhost:9000}
+      APP_URL: ${APP_URL:-http://localhost}
       DB_CONNECTION: ${DB_CONNECTION:-mysql}
       DB_HOST: ${DB_HOST:-mysql}
       DB_PORT: ${DB_PORT:-3306}
@@ -21,23 +23,6 @@ services:
       - laravel-net
     depends_on:
       - mysql
-
-  # REPLACE nginx with Caddy!
-  caddy:
-    image: caddy:2-alpine # ARM-compatible
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    volumes:
-      - ./:/var/www
-      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    networks:
-      - laravel-net
-    depends_on:
-      - app
 
   mysql:
     image: jsurf/rpi-mariadb:latest
@@ -62,5 +47,3 @@ networks:
 
 volumes:
   db_data:
-  caddy_data:
-  caddy_config:

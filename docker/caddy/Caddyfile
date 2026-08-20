@@ -1,7 +1,0 @@
-:80 {
-    root * /var/www/public
-    encode gzip
-    try_files {path} /index.php?{query}
-    php_fastcgi backend:9000
-    file_server
-}
