@@ -9,7 +9,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('product_variants', function (Blueprint $table) {
-            $table->string('pricing_mode', 10)->default('both')->after('name');
+            $table->string('pricing_mode', 50)->default('both')->after('name');
         });
     }
 
