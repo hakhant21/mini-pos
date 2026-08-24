@@ -40,6 +40,8 @@ export function SearchableSelect({
     } | null>(null);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    const openedAtRef = useRef<number>(0);
 
     const selected = options.find((o) => o.value === value);
 
@@ -64,8 +66,18 @@ export function SearchableSelect({
 
         setPosition({ top: rect.bottom + 4, left: rect.left, width: rect.width });
         setQuery('');
+        openedAtRef.current = Date.now();
         setOpen(true);
     };
+
+    useEffect(() => {
+        if (open && searchInputRef.current) {
+            const timer = setTimeout(() => {
+                searchInputRef.current?.focus();
+            }, 50);
+            return () => clearTimeout(timer);
+        }
+    }, [open]);
 
     useEffect(() => {
         if (!open) {
@@ -92,6 +104,10 @@ export function SearchableSelect({
         };
 
         const onScroll = (e: Event) => {
+            if (Date.now() - openedAtRef.current < 300) {
+                return;
+            }
+
             if (
                 dropdownRef.current &&
                 dropdownRef.current.contains(e.target as Node)
@@ -155,7 +171,7 @@ export function SearchableSelect({
                         <div className="flex items-center gap-2 border-b px-2 py-1.5">
                             <Search className="size-4 shrink-0 opacity-50" />
                             <Input
-                                autoFocus
+                                ref={searchInputRef}
                                 value={query}
                                 onChange={(e) => setQuery(e.target.value)}
                                 placeholder={searchPlaceholder}
