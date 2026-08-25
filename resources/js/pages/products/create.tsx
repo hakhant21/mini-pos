@@ -31,6 +31,7 @@ type VariantForm = {
     selling_price: string;
     per_unit_price: string;
     pack_price: string;
+    stock_quantity: string;
     min_stock_level: string;
     max_stock_level: string;
 };
@@ -46,6 +47,7 @@ const emptyVariant = (): VariantForm => ({
     selling_price: '0',
     per_unit_price: '0',
     pack_price: '0',
+    stock_quantity: '0',
     min_stock_level: '0',
     max_stock_level: '',
 });
@@ -395,6 +397,22 @@ export default function ProductsCreate({ categories, units }: Props) {
                                                     updateVariant(
                                                         index,
                                                         'units_per_pack',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-xs">
+                                                {t('Stock Quantity')}
+                                            </Label>
+                                            <Input
+                                                type="number"
+                                                value={variant.stock_quantity}
+                                                onChange={(e) =>
+                                                    updateVariant(
+                                                        index,
+                                                        'stock_quantity',
                                                         e.target.value,
                                                     )
                                                 }

@@ -12,6 +12,7 @@ import {
     Tags,
     ShoppingCart,
     Receipt,
+    Wallet,
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import {
@@ -31,6 +32,7 @@ import {
     sales,
     salesCheckoutPage,
     productsStockPriceUpdate,
+    balances,
 } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from './ui/button';
@@ -52,6 +54,11 @@ const cashierMenuItems = [
         title: 'Sales History',
         href: sales(),
         icon: Receipt,
+    },
+    {
+        title: 'Balances',
+        href: balances(),
+        icon: Wallet,
     },
 ];
 

@@ -1,12 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import {
     ArrowDownUp,
     ArrowUpDown,
     Banknote,
+    LoaderCircle,
+    Plus,
     Receipt,
     TrendingUp,
+    AlertTriangle,
 } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
@@ -15,6 +21,17 @@ import {
     CardDescription,
 } from '@/components/ui/card';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
     Table,
     TableBody,
     TableCell,
@@ -22,7 +39,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { dashboard, productsShow } from '@/feature-routes';
+import { dashboard, productsShow, balancesStore } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import { ks } from '@/lib/utils';
 
@@ -35,7 +52,6 @@ const stockStatusConfig = {
 };
 
 export default function Dashboard({
-    inventoryValue,
     lowStockVariants,
     totalRevenue,
     totalCost,
@@ -43,13 +59,104 @@ export default function Dashboard({
     totalSales,
     recentSales,
     mostSoldProducts,
+    hasBalanceToday,
 }: DashboardData) {
     const { t } = useTranslation();
+    const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
+
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        reset,
+        errors: formErrors,
+    } = useForm({
+        opening_amount: 0,
+    });
+
+    const handleBalanceSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post(balancesStore().url, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setBalanceDialogOpen(false);
+                reset();
+            },
+        });
+    };
 
     return (
         <>
             <Head title={t('Dashboard')} />
             <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-xl font-bold">{t('Dashboard')}</h1>
+                    <Dialog
+                        open={balanceDialogOpen}
+                        onOpenChange={(open) => {
+                            setBalanceDialogOpen(open);
+                            if (!open) reset();
+                        }}
+                    >
+                        <DialogTrigger asChild>
+                            <Button onClick={() => setBalanceDialogOpen(true)}>
+                                <Plus className="mr-2 h-4 w-4" />{' '}
+                                {t('Add Balance')}
+                            </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>{t('Add Balance')}</DialogTitle>
+                            </DialogHeader>
+                            <form
+                                onSubmit={handleBalanceSubmit}
+                                className="space-y-4"
+                            >
+                                <div className="space-y-2">
+                                    <Label htmlFor="opening_amount">
+                                        {t('Opening Amount')} *
+                                    </Label>
+                                    <Input
+                                        id="opening_amount"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={data.opening_amount}
+                                        onChange={(e) =>
+                                            setData(
+                                                'opening_amount',
+                                                parseFloat(e.target.value) || 0,
+                                            )
+                                        }
+                                        className="mt-2"
+                                    />
+                                    {formErrors.opening_amount && (
+                                        <p className="text-sm text-destructive">
+                                            {formErrors.opening_amount}
+                                        </p>
+                                    )}
+                                </div>
+                                <DialogFooter>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing && (
+                                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                        )}
+                                        {t('Create')}
+                                    </Button>
+                                </DialogFooter>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+
+                {!hasBalanceToday && (
+                    <div className="flex items-center gap-2 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+                        <AlertTriangle className="h-5 w-5" />
+                        <span>{t('No balance recorded for today')}</span>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between pb-2">

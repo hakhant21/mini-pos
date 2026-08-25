@@ -35,6 +35,7 @@ type VariantRow = {
     variant_name: string;
     unit_abbreviation: string;
     units_per_package: number;
+    pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     quantity: string;
     stock_quantity: string;
     cost_price: string;
@@ -97,6 +98,7 @@ export default function StockPriceUpdate({ products }: Props) {
                 variant_name: variant.name || '—',
                 unit_abbreviation: variant.unit?.abbreviation || '—',
                 units_per_package: unitsPerPackage,
+                pricing_mode: variant.pricing_mode || 'both',
                 quantity: '',
                 stock_quantity: String(Number(variant.stock_quantity)),
                 cost_price: String(Number(variant.cost_price)),
@@ -373,49 +375,60 @@ export default function StockPriceUpdate({ products }: Props) {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                className="h-8 w-28"
-                                                value={row.selling_price}
-                                                onChange={(e) =>
-                                                    updateRow(
-                                                        row.variant_id,
-                                                        'selling_price',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {(row.pricing_mode === 'single' ||
+                                                row.pricing_mode === 'both' ||
+                                                row.pricing_mode === 'package' ||
+                                                row.pricing_mode === 'single_pack') && (
+                                                <Input
+                                                    type="number"
+                                                    step="1"
+                                                    className="h-8 w-28"
+                                                    value={row.selling_price}
+                                                    onChange={(e) =>
+                                                        updateRow(
+                                                            row.variant_id,
+                                                            'selling_price',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            )}
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                className="h-8 w-28"
-                                                value={row.per_unit_price}
-                                                onChange={(e) =>
-                                                    updateRow(
-                                                        row.variant_id,
-                                                        'per_unit_price',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {(row.pricing_mode === 'both') && (
+                                                <Input
+                                                    type="number"
+                                                    step="1"
+                                                    className="h-8 w-28"
+                                                    value={row.per_unit_price}
+                                                    onChange={(e) =>
+                                                        updateRow(
+                                                            row.variant_id,
+                                                            'per_unit_price',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            )}
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                className="h-8 w-28"
-                                                value={row.pack_price}
-                                                onChange={(e) =>
-                                                    updateRow(
-                                                        row.variant_id,
-                                                        'pack_price',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {(row.pricing_mode === 'pack' ||
+                                                row.pricing_mode === 'both' ||
+                                                row.pricing_mode === 'single_pack') && (
+                                                <Input
+                                                    type="number"
+                                                    step="1"
+                                                    className="h-8 w-28"
+                                                    value={row.pack_price}
+                                                    onChange={(e) =>
+                                                        updateRow(
+                                                            row.variant_id,
+                                                            'pack_price',
+                                                            e.target.value,
+                                                        )
+                                                    }
+                                                />
+                                            )}
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <Button
@@ -442,7 +455,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                 {paginated.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={10}
+                                            colSpan={11}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             {t('No variants found.')}

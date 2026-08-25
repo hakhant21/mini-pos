@@ -6,3 +6,4 @@ export type * from './unit';
 export type * from './product';
 export type * from './dashboard';
 export type * from './sale';
+export type * from './balance';

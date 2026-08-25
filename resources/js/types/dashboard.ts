@@ -13,4 +13,5 @@ export type DashboardData = {
     totalSales: number;
     recentSales: Sale[];
     mostSoldProducts: (Product & { total_sold: number })[];
+    hasBalanceToday: boolean;
 };

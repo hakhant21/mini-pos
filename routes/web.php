@@ -14,3 +14,4 @@ require __DIR__ . '/categories.php';
 require __DIR__ . '/units.php';
 require __DIR__ . '/products.php';
 require __DIR__ . '/sales.php';
+require __DIR__ . '/balances.php';

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Dashboard;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductVariantResource;
+use App\Models\Balance;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
@@ -67,6 +68,8 @@ class DashboardController extends Controller
             ->sortByDesc('total_sold')
             ->values();
 
+        $hasBalanceToday = Balance::whereDate('created_at', today())->exists();
+
         return inertia('dashboard', [
             'inventoryValue' => $inventoryValue,
             'lowStockVariants' => ProductVariantResource::collection($lowStockVariants),
@@ -76,6 +79,7 @@ class DashboardController extends Controller
             'totalSales' => $totalSales,
             'recentSales' => $recentSales,
             'mostSoldProducts' => ProductResource::collection($mostSoldProducts),
+            'hasBalanceToday' => $hasBalanceToday,
         ]);
     }
 }
