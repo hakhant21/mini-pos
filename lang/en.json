@@ -137,6 +137,16 @@
     "Delete Unit": "Delete Unit",
     "Delete Category": "Delete Category",
     "Package": "Package",
+    "packs": "packs",
+    "max": "max",
+    "Stock History": "Stock History",
+    "Previous": "Previous",
+    "New": "New",
+    "No stock history yet": "No stock history yet",
+    "History": "History",
+    "Total Amount": "Total Amount",
+    "Today opening balance": "Today opening balance",
+    "Total change from sales": "Total change from sales",
     "Pkg": "Pkg",
     "Per Unit Price": "Per Unit Price"
 }

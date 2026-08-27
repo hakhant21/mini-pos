@@ -60,6 +60,8 @@ export default function Dashboard({
     recentSales,
     mostSoldProducts,
     hasBalanceToday,
+    openingAmount,
+    totalChange,
 }: DashboardData) {
     const { t } = useTranslation();
     const [balanceDialogOpen, setBalanceDialogOpen] = useState(false);
@@ -198,6 +200,41 @@ export default function Dashboard({
                             </div>
                             <p className="py-1 text-xs text-muted-foreground">
                                 {t('Total Sales')}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-1 lg:grid-cols-2">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                {t('Opening Amount')}
+                            </CardTitle>
+                            <Banknote className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="py-1 text-2xl font-bold">
+                                Ks {ks(openingAmount)}
+                            </div>
+                            <p className="py-1 text-xs text-muted-foreground">
+                                {t('Today opening balance')}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                            <CardTitle className="text-sm font-medium">
+                                {t('Total Change')}
+                            </CardTitle>
+                            <ArrowDownUp className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="py-1 text-2xl font-bold">
+                                Ks {ks(totalChange)}
+                            </div>
+                            <p className="py-1 text-xs text-muted-foreground">
+                                {t('Total change from sales')}
                             </p>
                         </CardContent>
                     </Card>

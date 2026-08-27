@@ -27,7 +27,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -49,7 +49,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -71,7 +71,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -93,7 +93,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -115,7 +115,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -137,7 +137,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -159,7 +159,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -181,7 +181,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -203,7 +203,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -225,7 +225,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -247,7 +247,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -269,7 +269,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -291,7 +291,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -313,7 +313,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -335,7 +335,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -357,7 +357,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -379,7 +379,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -401,7 +401,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -423,7 +423,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -445,7 +445,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -467,7 +467,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -489,7 +489,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -511,7 +511,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -533,7 +533,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -555,7 +555,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -577,7 +577,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -599,7 +599,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -621,7 +621,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -643,7 +643,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -665,7 +665,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -687,7 +687,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -709,7 +709,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -731,7 +731,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -753,7 +753,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -775,7 +775,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -797,7 +797,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -819,7 +819,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -841,7 +841,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -863,7 +863,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -885,7 +885,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -907,7 +907,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -929,7 +929,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -951,7 +951,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -973,7 +973,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -995,7 +995,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1017,7 +1017,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1039,7 +1039,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1061,7 +1061,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1083,7 +1083,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1105,7 +1105,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1127,7 +1127,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1149,7 +1149,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1171,7 +1171,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1193,7 +1193,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1215,7 +1215,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1237,7 +1237,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1259,7 +1259,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1281,7 +1281,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1303,7 +1303,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1325,7 +1325,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1347,7 +1347,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1369,7 +1369,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1391,7 +1391,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1413,7 +1413,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1435,7 +1435,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1457,7 +1457,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1479,7 +1479,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1501,7 +1501,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1523,7 +1523,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1545,7 +1545,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1567,7 +1567,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1589,7 +1589,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1611,7 +1611,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1633,7 +1633,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1655,7 +1655,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1677,7 +1677,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1699,7 +1699,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1721,7 +1721,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1743,7 +1743,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1765,7 +1765,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1787,7 +1787,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1809,7 +1809,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1831,7 +1831,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1853,7 +1853,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1875,7 +1875,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1897,7 +1897,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1919,7 +1919,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1941,7 +1941,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1963,7 +1963,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -1985,7 +1985,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2007,7 +2007,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2029,7 +2029,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2051,7 +2051,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2073,7 +2073,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2095,7 +2095,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2117,7 +2117,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2139,7 +2139,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2161,7 +2161,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2183,7 +2183,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2205,7 +2205,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2227,7 +2227,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2249,7 +2249,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2271,7 +2271,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2293,7 +2293,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2315,7 +2315,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2337,7 +2337,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2359,7 +2359,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2381,7 +2381,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2403,7 +2403,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2425,7 +2425,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2447,7 +2447,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2469,7 +2469,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2491,7 +2491,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2513,7 +2513,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2535,7 +2535,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2557,7 +2557,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2579,7 +2579,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2601,7 +2601,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2623,7 +2623,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2645,7 +2645,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2667,7 +2667,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2689,7 +2689,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2711,7 +2711,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2733,7 +2733,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2755,7 +2755,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2777,7 +2777,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2799,7 +2799,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2821,7 +2821,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2843,7 +2843,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2865,7 +2865,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2887,7 +2887,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2909,7 +2909,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2931,7 +2931,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2953,7 +2953,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2975,7 +2975,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -2997,7 +2997,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3019,7 +3019,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3041,7 +3041,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3063,7 +3063,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3085,7 +3085,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3107,7 +3107,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3129,7 +3129,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3151,7 +3151,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3173,7 +3173,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3195,7 +3195,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3217,7 +3217,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3239,7 +3239,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3261,7 +3261,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3283,7 +3283,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3305,7 +3305,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3327,7 +3327,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3349,7 +3349,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3371,7 +3371,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3393,7 +3393,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3415,7 +3415,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3437,7 +3437,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3459,7 +3459,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3481,7 +3481,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3503,7 +3503,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3525,7 +3525,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3547,7 +3547,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3569,7 +3569,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3591,7 +3591,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3613,7 +3613,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3635,7 +3635,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3657,7 +3657,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3679,7 +3679,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3701,7 +3701,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3723,7 +3723,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3745,7 +3745,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3767,7 +3767,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3789,7 +3789,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3811,7 +3811,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3833,7 +3833,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3855,7 +3855,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3877,7 +3877,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3899,7 +3899,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3921,7 +3921,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3943,7 +3943,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3965,7 +3965,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -3987,7 +3987,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4009,7 +4009,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4031,7 +4031,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4053,7 +4053,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4075,7 +4075,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4097,7 +4097,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4119,7 +4119,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4141,7 +4141,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4163,7 +4163,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4185,7 +4185,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4207,7 +4207,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4229,7 +4229,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4251,7 +4251,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4273,7 +4273,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4295,7 +4295,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4317,7 +4317,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4339,7 +4339,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4361,7 +4361,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4383,7 +4383,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4405,7 +4405,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4427,7 +4427,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4449,7 +4449,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4471,7 +4471,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4493,7 +4493,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4515,7 +4515,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4537,7 +4537,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4559,7 +4559,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4581,7 +4581,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4603,7 +4603,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4625,7 +4625,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4647,7 +4647,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4669,7 +4669,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4691,7 +4691,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4713,7 +4713,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4735,7 +4735,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4757,7 +4757,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4779,7 +4779,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4801,7 +4801,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4823,7 +4823,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4845,7 +4845,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4867,7 +4867,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4889,7 +4889,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4911,7 +4911,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4933,7 +4933,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4955,7 +4955,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4977,7 +4977,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -4999,7 +4999,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5021,7 +5021,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5043,7 +5043,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5065,7 +5065,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5087,7 +5087,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5109,7 +5109,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5152,7 +5152,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5174,7 +5174,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5196,7 +5196,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5218,7 +5218,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5240,7 +5240,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5262,7 +5262,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5284,7 +5284,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5306,7 +5306,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5328,7 +5328,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5350,7 +5350,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5372,7 +5372,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5394,7 +5394,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5416,7 +5416,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5438,7 +5438,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5460,7 +5460,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5482,7 +5482,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5504,7 +5504,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5526,7 +5526,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5548,7 +5548,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5570,7 +5570,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5592,7 +5592,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5614,7 +5614,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5636,7 +5636,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5658,7 +5658,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5680,7 +5680,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5702,7 +5702,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5724,7 +5724,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5746,7 +5746,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5768,7 +5768,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5790,7 +5790,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5812,7 +5812,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5834,7 +5834,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5856,7 +5856,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5878,7 +5878,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5900,7 +5900,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5922,7 +5922,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5944,7 +5944,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5966,7 +5966,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -5988,7 +5988,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6010,7 +6010,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6032,7 +6032,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6054,7 +6054,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6076,7 +6076,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6098,7 +6098,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6120,7 +6120,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6142,7 +6142,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6164,7 +6164,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6186,7 +6186,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6208,7 +6208,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6230,7 +6230,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6252,7 +6252,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6274,7 +6274,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6296,7 +6296,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6318,7 +6318,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6340,7 +6340,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6362,7 +6362,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6384,7 +6384,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6406,7 +6406,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6428,7 +6428,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6450,7 +6450,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6472,7 +6472,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6494,7 +6494,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6516,7 +6516,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6538,7 +6538,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6560,7 +6560,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6582,7 +6582,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6604,7 +6604,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6626,7 +6626,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6648,7 +6648,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6670,7 +6670,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6692,7 +6692,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,
@@ -6714,7 +6714,7 @@ class ProductVariantSeeder extends Seeder
                 "per_unit_price" => 0,
                 "pack_price" => 0,
                 "units_per_pack" => 1,
-                "pricing_mode" => "single_pack",
+                "pricing_mode" => "both",
 
                 "stock_quantity" => 0,
                 "min_stock_level" => 0,

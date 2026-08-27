@@ -1,5 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
-import { Pencil, ArrowLeft } from 'lucide-react';
+import { Pencil, ArrowLeft, History } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { products, productsEdit, dashboard } from '@/feature-routes';
+import { products, productsEdit, dashboard, instockHistoryIndex } from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import { ks } from '@/lib/utils';
 import type { Product } from '@/types';
@@ -113,6 +113,7 @@ export default function ProductsShow({ product }: Props) {
                                     <TableHead>{t('Units/Pack')}</TableHead>
                                     <TableHead>{t('Stock')}</TableHead>
                                     <TableHead>{t('Status')}</TableHead>
+                                    <TableHead>{t('History')}</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -173,6 +174,22 @@ export default function ProductsShow({ product }: Props) {
                                                     ].label,
                                                 )}
                                             </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Link
+                                                href={instockHistoryIndex([
+                                                    product.id,
+                                                    variant.id,
+                                                ])}
+                                            >
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8"
+                                                >
+                                                    <History className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
                                         </TableCell>
                                     </TableRow>
                                 ))}

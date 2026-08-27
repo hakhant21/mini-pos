@@ -10,7 +10,6 @@ use App\Http\Resources\SaleResource;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Sale;
-use App\Services\ReceiptPrinter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -93,19 +92,29 @@ class SaleController extends Controller
                     'pack' => (float) $variant->pack_price,
                     default => (float) $variant->per_unit_price,
                 };
+
+                $unitsPerPack = (float) $variant->units_per_pack;
+                $unitsPerPackage = (float) $variant->units_per_package;
+                $quantity = (float) $item['quantity'];
+
                 $unitsConsumed = match ($pricingMode) {
-                    'package' => (float) $item['quantity'] * (float) $variant->units_per_package,
-                    'pack' => (float) $item['quantity'] * (float) $variant->units_per_pack,
-                    default => (float) $item['quantity'],
+                    'package' => $quantity * $unitsPerPackage * $unitsPerPack,
+                    'pack' => $quantity * $unitsPerPack,
+                    default => $quantity,
                 };
 
-                if ($variant->stock_quantity < $unitsConsumed) {
+                $availableUnits = (float) $variant->stock_quantity * $unitsPerPackage * $unitsPerPack;
+
+                if ($availableUnits < $unitsConsumed) {
                     throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity} units",
+                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$this->formatStockForDisplay($availableUnits, $unitsPerPack, $unitsPerPackage)}",
                     ]);
                 }
 
-                $lineTotal = round($item['quantity'] * $unitPrice, 2);
+                $packagesToDecrement = $unitsConsumed / ($unitsPerPackage * $unitsPerPack);
+                $variant->decrement('stock_quantity', $packagesToDecrement);
+
+                $lineTotal = round($quantity * $unitPrice, 2);
                 $totalAmount += $lineTotal;
 
                 $saleItems[] = [
@@ -117,9 +126,11 @@ class SaleController extends Controller
                     'unit_price' => $unitPrice,
                     'cost_price' => $variant->cost_price,
                     'total_price' => $lineTotal,
+                    'pricing_mode' => $pricingMode,
+                    'units_per_pack' => $unitsPerPack,
+                    'units_per_package' => $unitsPerPackage,
+                    'units_consumed' => $unitsConsumed,
                 ];
-
-                $variant->decrement('stock_quantity', $unitsConsumed);
             }
 
             $discount = $data['discount'] ?? 0;
@@ -145,8 +156,6 @@ class SaleController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => "Sale {$sale->invoice_number} completed successfully."]);
 
-        app(ReceiptPrinter::class)->printSale($sale);
-
         return redirect()->route('sales.index');
     }
 
@@ -164,19 +173,29 @@ class SaleController extends Controller
                     'pack' => (float) $variant->pack_price,
                     default => (float) $variant->per_unit_price,
                 };
+
+                $unitsPerPack = (float) $variant->units_per_pack;
+                $unitsPerPackage = (float) $variant->units_per_package;
+                $quantity = (float) $item['quantity'];
+
                 $unitsConsumed = match ($pricingMode) {
-                    'package' => (float) $item['quantity'] * (float) $variant->units_per_package,
-                    'pack' => (float) $item['quantity'] * (float) $variant->units_per_pack,
-                    default => (float) $item['quantity'],
+                    'package' => $quantity * $unitsPerPackage * $unitsPerPack,
+                    'pack' => $quantity * $unitsPerPack,
+                    default => $quantity,
                 };
 
-                if ($variant->stock_quantity < $unitsConsumed) {
+                $availableUnits = (float) $variant->stock_quantity * $unitsPerPackage * $unitsPerPack;
+
+                if ($availableUnits < $unitsConsumed) {
                     throw ValidationException::withMessages([
-                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$variant->stock_quantity} units",
+                        'items' => "Insufficient stock for {$variant->product->name} ({$variant->name}). Available: {$this->formatStockForDisplay($availableUnits, $unitsPerPack, $unitsPerPackage)}",
                     ]);
                 }
 
-                $lineTotal = round($item['quantity'] * $unitPrice, 2);
+                $packagesToDecrement = $unitsConsumed / ($unitsPerPackage * $unitsPerPack);
+                $variant->decrement('stock_quantity', $packagesToDecrement);
+
+                $lineTotal = round($quantity * $unitPrice, 2);
 
                 $sale->items()->create([
                     'product_variant_id' => $variant->id,
@@ -187,9 +206,11 @@ class SaleController extends Controller
                     'unit_price' => $unitPrice,
                     'cost_price' => $variant->cost_price,
                     'total_price' => $lineTotal,
+                    'pricing_mode' => $pricingMode,
+                    'units_per_pack' => $unitsPerPack,
+                    'units_per_package' => $unitsPerPackage,
+                    'units_consumed' => $unitsConsumed,
                 ]);
-
-                $variant->decrement('stock_quantity', $unitsConsumed);
             }
 
             $newTotal = $sale->items()->sum('total_price');
@@ -207,8 +228,34 @@ class SaleController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => "Items added to {$sale->invoice_number} successfully."]);
 
-        app(ReceiptPrinter::class)->printSale($sale);
-
         return redirect()->route('sales.index');
+    }
+
+    private function formatStockForDisplay(
+        float $stockInUnits,
+        float $unitsPerPack,
+        float $unitsPerPackage
+    ): string {
+        $units = (int) $stockInUnits;
+        $packSize = (int) $unitsPerPack;
+        $packageSize = (int) $unitsPerPackage;
+
+        $packages = floor($units / ($packageSize * $packSize));
+        $remainingAfterPackages = $units - ($packages * $packageSize * $packSize);
+        $packs = floor($remainingAfterPackages / $packSize);
+        $remainingUnits = $remainingAfterPackages - ($packs * $packSize);
+
+        $parts = [];
+        if ($packages > 0) {
+            $parts[] = "{$packages} package" . ($packages > 1 ? 's' : '');
+        }
+        if ($packs > 0) {
+            $parts[] = "{$packs} pack" . ($packs > 1 ? 's' : '');
+        }
+        if ($remainingUnits > 0) {
+            $parts[] = "{$remainingUnits} units";
+        }
+
+        return !empty($parts) ? implode(' + ', $parts) : "0 units";
     }
 }

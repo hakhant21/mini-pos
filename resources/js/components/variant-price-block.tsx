@@ -1,19 +1,22 @@
 import { MinusIcon, PlusIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { useTranslation } from '@/lib/i18n';
 import { num, ks } from '@/lib/utils';
+import { useProductStockCalculator } from '@/hooks/use-product-stock-calculator';
 import type { CartItem } from '@/types';
 import type { ProductVariant } from '@/types/product';
 
 export type VariantPriceBlockProps = {
     variant: ProductVariant;
     productName: string;
+    cart: CartItem[];
     getQuantity: (variantId: number, mode: CartItem['pricing_mode']) => number;
-    totalUnits: (variantId: number) => number;
-    canAddMode: (
-        variant: ProductVariant,
-        mode: CartItem['pricing_mode'],
-    ) => boolean;
     onAdd: (
         variant: ProductVariant,
         productName: string,
@@ -25,22 +28,39 @@ export type VariantPriceBlockProps = {
 export function VariantPriceBlock({
     variant,
     productName,
+    cart,
     getQuantity,
-    totalUnits,
-    canAddMode,
     onAdd,
     onDecrement,
 }: VariantPriceBlockProps) {
     const { t } = useTranslation();
 
+    const {
+        availableUnits,
+        displayStock,
+        isOutOfStock,
+        isLowStock,
+        stockPercentage,
+        canAddToCart,
+        getMaxQuantity,
+        formatStock,
+    } = useProductStockCalculator({
+        variant,
+        cartItems: cart,
+        minStockLevel: num(variant.min_stock_level) || 5,
+    });
+
     const qtySingle = getQuantity(variant.id, 'single');
     const qtyPack = getQuantity(variant.id, 'pack');
     const qtyPackage = getQuantity(variant.id, 'package');
-    const reservedUnits = totalUnits(variant.id);
-    const availableStock = num(variant.stock_quantity) - reservedUnits;
-    const isOutOfStock = availableStock <= 0;
-    const isLowStock =
-        availableStock > 0 && availableStock <= variant.min_stock_level;
+
+    const canAddSingle = canAddToCart('single', 1);
+    const canAddPack = canAddToCart('pack', 1);
+    const canAddPackage = canAddToCart('package', 1);
+
+    const maxSingle = getMaxQuantity('single');
+    const maxPack = getMaxQuantity('pack');
+    const maxPackage = getMaxQuantity('package');
 
     const showSingle =
         variant.pricing_mode === 'single' ||
@@ -55,27 +75,64 @@ export function VariantPriceBlock({
 
     const hasBorderTop = (showPrev: boolean) => (showPrev ? 'border-t' : '');
 
+    const stockDetails = formatStock(availableUnits);
+    const unitLabel = variant.unit?.abbreviation || 'units';
+
     return (
         <div>
-            <div className="mx-1 flex items-center justify-end gap-1 py-1">
-                {isOutOfStock ? (
-                    <Badge
-                        variant="destructive"
-                        className="h-4 px-1.5 text-[10px]"
-                    >
-                        {t('Out')}
-                    </Badge>
-                ) : (
-                    <p className="shrink-0 text-[10px] text-muted-foreground">
-                        {t('Stock')}: {Number(availableStock)}
-                        {isLowStock && (
-                            <span className="ml-0.5 text-orange-600 dark:text-orange-400">
-                                ({t('Low')})
-                            </span>
-                        )}
-                    </p>
+            <div className="mx-1 flex items-center justify-between gap-1 py-1">
+                <div className="flex items-center gap-1">
+                    {isOutOfStock ? (
+                        <Badge
+                            variant="destructive"
+                            className="h-4 px-1.5 text-[10px]"
+                        >
+                            {t('Out')}
+                        </Badge>
+                    ) : isLowStock ? (
+                        <Badge
+                            variant="secondary"
+                            className="h-4 px-1.5 text-[10px] text-orange-600 dark:text-orange-400"
+                        >
+                            {t('Low')}
+                        </Badge>
+                    ) : (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Badge
+                                        variant="secondary"
+                                        className="h-4 px-1.5 text-[10px] cursor-help"
+                                    >
+                                        {displayStock.short}
+                                    </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>
+                                        {t('Available')}:{' '}
+                                        {displayStock.detailed}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground">
+                                        {stockDetails.formatted}
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
+
+                {!isOutOfStock && (
+                    <div className="w-12 h-1 bg-muted rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-primary transition-all duration-300"
+                            style={{
+                                width: `${Math.min(100, stockPercentage)}%`,
+                            }}
+                        />
+                    </div>
                 )}
             </div>
+
             <div
                 className={`${
                     isOutOfStock ? 'opacity-40' : ''
@@ -85,13 +142,13 @@ export function VariantPriceBlock({
                     <div className="flex items-stretch">
                         <button
                             type="button"
-                            onClick={() => onAdd(variant, productName, 'single')}
-                            disabled={
-                                isOutOfStock || !canAddMode(variant, 'single')
+                            onClick={() =>
+                                onAdd(variant, productName, 'single')
                             }
+                            disabled={!canAddSingle || isOutOfStock}
                             className={`flex min-h-9 flex-1 flex-col justify-center gap-0.5 p-1 text-left ${
-                                isOutOfStock
-                                    ? 'cursor-not-allowed'
+                                !canAddSingle || isOutOfStock
+                                    ? 'cursor-not-allowed opacity-60'
                                     : 'cursor-pointer hover:bg-accent/50'
                             }`}
                         >
@@ -111,6 +168,12 @@ export function VariantPriceBlock({
                                     <PlusIcon className="h-3 w-3 text-muted-foreground" />
                                 )}
                             </div>
+                            {qtySingle > 0 && (
+                                <p className="text-[9px] text-muted-foreground">
+                                    {qtySingle} / {maxSingle}{' '}
+                                    {t('max')}
+                                </p>
+                            )}
                         </button>
                         {qtySingle > 0 && (
                             <button
@@ -118,7 +181,7 @@ export function VariantPriceBlock({
                                 onClick={() =>
                                     onDecrement(variant.id, 'single')
                                 }
-                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
                             >
                                 <MinusIcon className="h-3 w-3" />
                             </button>
@@ -131,13 +194,13 @@ export function VariantPriceBlock({
                     >
                         <button
                             type="button"
-                            onClick={() => onAdd(variant, productName, 'pack')}
-                            disabled={
-                                isOutOfStock || !canAddMode(variant, 'pack')
+                            onClick={() =>
+                                onAdd(variant, productName, 'pack')
                             }
+                            disabled={!canAddPack || isOutOfStock}
                             className={`flex min-h-9 flex-1 items-center justify-between gap-1 px-1.5 py-1 text-left ${
-                                isOutOfStock
-                                    ? 'cursor-not-allowed'
+                                !canAddPack || isOutOfStock
+                                    ? 'cursor-not-allowed opacity-60'
                                     : 'cursor-pointer hover:bg-accent/50'
                             }`}
                         >
@@ -145,7 +208,9 @@ export function VariantPriceBlock({
                                 Ks {ks(variant.pack_price)}
                                 <span className="text-[10px] font-normal text-muted-foreground">
                                     {' '}
-                                    / {t('Pack')}
+                                    / {t('Pack')} (
+                                    {num(variant.units_per_pack)}{' '}
+                                    units)
                                 </span>
                             </p>
                             {qtyPack > 0 ? (
@@ -162,7 +227,7 @@ export function VariantPriceBlock({
                                 onClick={() =>
                                     onDecrement(variant.id, 'pack')
                                 }
-                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
                             >
                                 <MinusIcon className="h-3 w-3" />
                             </button>
@@ -178,17 +243,24 @@ export function VariantPriceBlock({
                             onClick={() =>
                                 onAdd(variant, productName, 'package')
                             }
-                            disabled={
-                                isOutOfStock || !canAddMode(variant, 'package')
-                            }
+                            disabled={!canAddPackage || isOutOfStock}
                             className={`flex min-h-9 flex-1 items-center justify-between gap-1 px-1.5 py-1 text-left ${
-                                isOutOfStock
-                                    ? 'cursor-not-allowed'
+                                !canAddPackage || isOutOfStock
+                                    ? 'cursor-not-allowed opacity-60'
                                     : 'cursor-pointer hover:bg-accent/50'
                             }`}
                         >
                             <p className="text-[11px] font-semibold text-primary">
-                                Ks {ks(variant.cost_price)} / {t('Package')}
+                                Ks {ks(variant.cost_price)}
+                                <span className="text-[10px] font-normal text-muted-foreground">
+                                    {' '}
+                                    / {t('Package')} (
+                                    {num(variant.units_per_package)}{' '}
+                                    {t('packs')} ={' '}
+                                    {num(variant.units_per_package) *
+                                        num(variant.units_per_pack)}{' '}
+                                    units)
+                                </span>
                             </p>
                             {qtyPackage > 0 ? (
                                 <span className="rounded-full bg-muted-foreground/10 px-1.5 py-0.5 text-[9px] font-semibold">
@@ -204,7 +276,7 @@ export function VariantPriceBlock({
                                 onClick={() =>
                                     onDecrement(variant.id, 'package')
                                 }
-                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                                className="flex w-7 shrink-0 items-center justify-center border-l text-muted-foreground hover:bg-accent/50 hover:text-foreground transition-colors"
                             >
                                 <MinusIcon className="h-3 w-3" />
                             </button>
@@ -212,6 +284,15 @@ export function VariantPriceBlock({
                     </div>
                 )}
             </div>
+
+            {!isOutOfStock && availableUnits > 0 && (
+                <div className="mt-1 text-[9px] text-muted-foreground flex items-center justify-end gap-1">
+                    <span>{displayStock.hierarchical}</span>
+                    <span className="text-[8px] opacity-50">
+                        ({availableUnits} units)
+                    </span>
+                </div>
+            )}
         </div>
     );
 }

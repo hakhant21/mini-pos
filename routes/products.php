@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Products\ProductController;
 use App\Http\Controllers\Products\ProductVariantController;
+use App\Http\Controllers\Products\StockHistoryController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified', 'admin'])->group(function () {
@@ -21,4 +22,7 @@ Route::middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::delete('products/{product}/variants/{variant}', [ProductVariantController::class, 'destroy'])->name('variants.destroy');
 
     Route::get('stock-price-update', [ProductController::class, 'stockPriceUpdate'])->name('products.stock-price-update');
+
+    Route::get('products/{product}/variants/{variant}/instock-history', [StockHistoryController::class, 'index'])->name('instock-history.index');
+    Route::post('products/{product}/variants/{variant}/instock-history', [StockHistoryController::class, 'store'])->name('instock-history.store');
 });

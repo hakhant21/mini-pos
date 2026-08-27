@@ -5,3 +5,4 @@ export { index as products, create as productsCreate, store as productsStore, sh
 export { index as sales, checkoutPage as salesCheckoutPage, checkout as salesCheckout, addItems as salesAddItems } from './routes/sales'
 export { store as variantsStore, update as variantsUpdate, destroy as variantsDestroy, updateStockPrice as variantsUpdateStockPrice } from './routes/variants'
 export { index as balances, store as balancesStore, update as balancesUpdate, destroy as balancesDestroy } from './routes/balances'
+export { index as instockHistoryIndex, store as instockHistoryStore } from './routes/instock-history'

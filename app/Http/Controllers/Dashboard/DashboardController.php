@@ -70,6 +70,10 @@ class DashboardController extends Controller
 
         $hasBalanceToday = Balance::whereDate('created_at', today())->exists();
 
+        $openingAmount = Balance::whereDate('created_at', today())->sum('opening_amount');
+
+        $totalChange = Sale::whereDate('created_at', today())->sum('change');
+
         return inertia('dashboard', [
             'inventoryValue' => $inventoryValue,
             'lowStockVariants' => ProductVariantResource::collection($lowStockVariants),
@@ -80,6 +84,8 @@ class DashboardController extends Controller
             'recentSales' => $recentSales,
             'mostSoldProducts' => ProductResource::collection($mostSoldProducts),
             'hasBalanceToday' => $hasBalanceToday,
+            'openingAmount' => $openingAmount,
+            'totalChange' => $totalChange,
         ]);
     }
 }

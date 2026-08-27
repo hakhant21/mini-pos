@@ -35,8 +35,10 @@ type VariantRow = {
     variant_name: string;
     unit_abbreviation: string;
     units_per_package: number;
+    units_per_pack: number;
     pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     quantity: string;
+    original_stock_quantity: number;
     stock_quantity: string;
     cost_price: string;
     selling_price: string;
@@ -98,8 +100,10 @@ export default function StockPriceUpdate({ products }: Props) {
                 variant_name: variant.name || '—',
                 unit_abbreviation: variant.unit?.abbreviation || '—',
                 units_per_package: unitsPerPackage,
+                units_per_pack: Number(variant.units_per_pack) || 1,
                 pricing_mode: variant.pricing_mode || 'both',
                 quantity: '',
+                original_stock_quantity: Number(variant.stock_quantity) || 0,
                 stock_quantity: String(Number(variant.stock_quantity)),
                 cost_price: String(Number(variant.cost_price)),
                 selling_price: String(Number(variant.selling_price)),
@@ -176,7 +180,9 @@ export default function StockPriceUpdate({ products }: Props) {
 
                 const integerValue = value.replace(/[^0-9]/g, '');
                 const qty = parseInt(integerValue, 10) || 0;
-                const stock = String(qty * r.units_per_package);
+                const stock = String(
+                    r.original_stock_quantity + qty,
+                );
 
                 return {
                     ...r,
@@ -298,13 +304,11 @@ export default function StockPriceUpdate({ products }: Props) {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>{t('Product')}</TableHead>
-                                    <TableHead>{t('Category')}</TableHead>
                                     <TableHead>{t('Variant')}</TableHead>
                                     <TableHead>
                                         {t('Units Per Package')}
                                     </TableHead>
                                     <TableHead>{t('Quantity')}</TableHead>
-                                    <TableHead>{t('Stock')}</TableHead>
                                     <TableHead>{t('Cost Price')}</TableHead>
                                     <TableHead>{t('Selling Price')}</TableHead>
                                     <TableHead>{t('Per Unit Price')}</TableHead>
@@ -321,12 +325,14 @@ export default function StockPriceUpdate({ products }: Props) {
                                             {row.product_name}
                                         </TableCell>
                                         <TableCell>
-                                            {row.category_name || '—'}
+                                            <div className="flex flex-col gap-1">
+                                                <span>{row.variant_name}</span>
+                                                <span className="text-sm font-bold text-muted-foreground">
+                                                    {t('Stock')}: {row.stock_quantity}
+                                                </span>
+                                            </div>
                                         </TableCell>
-                                        <TableCell>
-                                            {row.variant_name}
-                                        </TableCell>
-                                        <TableCell>
+                                        <TableCell className="text-center">
                                             {Number(row.units_per_package)}
                                         </TableCell>
                                         <TableCell>
@@ -339,21 +345,6 @@ export default function StockPriceUpdate({ products }: Props) {
                                                 onChange={(e) =>
                                                     updateQuantity(
                                                         row.variant_id,
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                className="h-8 w-24"
-                                                value={row.stock_quantity}
-                                                onChange={(e) =>
-                                                    updateRow(
-                                                        row.variant_id,
-                                                        'stock_quantity',
                                                         e.target.value,
                                                     )
                                                 }
@@ -455,7 +446,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                 {paginated.length === 0 && (
                                     <TableRow>
                                         <TableCell
-                                            colSpan={11}
+                                            colSpan={9}
                                             className="py-8 text-center text-muted-foreground"
                                         >
                                             {t('No variants found.')}

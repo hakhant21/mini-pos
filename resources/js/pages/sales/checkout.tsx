@@ -118,38 +118,6 @@ export default function SalesCheckout({ products, sale = null }: Props) {
         return item?.quantity ?? 0;
     };
 
-    const totalUnitsForVariant = (variantId: number): number =>
-        cart.reduce(
-            (sum, item) => {
-                if (item.variant_id !== variantId) {
-return sum;
-}
-
-                return sum +
-                    (item.pricing_mode === 'package'
-                        ? item.quantity * item.units_per_package
-                        : item.pricing_mode === 'pack'
-                          ? item.quantity * item.units_per_pack
-                          : item.quantity);
-            },
-            0,
-        );
-
-    const canAddMode = (
-        variant: Product['variants'][number],
-        mode: CartItem['pricing_mode'],
-    ): boolean => {
-        const reserved = totalUnitsForVariant(variant.id);
-        const needed =
-            mode === 'package'
-                ? num(variant.units_per_package)
-                : mode === 'pack'
-                  ? num(variant.units_per_pack)
-                  : 1;
-
-        return num(variant.stock_quantity) - reserved >= needed;
-    };
-
     const decrementLine = (
         variantId: number,
         mode: CartItem['pricing_mode'],
@@ -168,10 +136,6 @@ return sum;
         productName: string,
         pricing_mode: CartItem['pricing_mode'],
     ) => {
-        if (num(variant.stock_quantity) <= 0) {
-            return;
-        }
-
         const unitsPerPackage = num(variant.units_per_package);
         const unitsPerPack = num(variant.units_per_pack);
         const unitPrice =
@@ -188,7 +152,7 @@ return sum;
                     (sum, item) =>
                         sum +
                         (item.pricing_mode === 'package'
-                            ? item.quantity * item.units_per_package
+                            ? item.quantity * item.units_per_package * item.units_per_pack
                             : item.pricing_mode === 'pack'
                               ? item.quantity * item.units_per_pack
                               : item.quantity),
@@ -196,12 +160,14 @@ return sum;
                 );
             const needed =
                 pricing_mode === 'package'
-                    ? unitsPerPackage
+                    ? unitsPerPackage * unitsPerPack
                     : pricing_mode === 'pack'
                       ? unitsPerPack
                       : 1;
 
-            if (reserved + needed > num(variant.stock_quantity)) {
+            const availableUnits = num(variant.stock_quantity) * unitsPerPackage * unitsPerPack;
+
+            if (reserved + needed > availableUnits) {
                 return prev;
             }
 
@@ -268,7 +234,7 @@ return sum;
                                 (sum, i) =>
                                     sum +
                                     (i.pricing_mode === 'package'
-                                        ? i.quantity * i.units_per_package
+                                        ? i.quantity * i.units_per_package * i.units_per_pack
                                         : i.pricing_mode === 'pack'
                                           ? i.quantity * i.units_per_pack
                                           : i.quantity),
@@ -276,12 +242,14 @@ return sum;
                             );
                         const newUnits =
                             item.pricing_mode === 'package'
-                                ? newQty * item.units_per_package
+                                ? newQty * item.units_per_package * item.units_per_pack
                                 : item.pricing_mode === 'pack'
                                   ? newQty * item.units_per_pack
                                   : newQty;
 
-                        if (otherUnits + newUnits > item.stock_quantity) {
+                        const availableUnits = item.stock_quantity * item.units_per_package * item.units_per_pack;
+
+                        if (otherUnits + newUnits > availableUnits) {
                             return item;
                         }
 
@@ -481,9 +449,8 @@ return sum;
                                         <VariantPriceBlock
                                             variant={variant}
                                             productName={product.name}
+                                            cart={cart}
                                             getQuantity={getCartItemQuantity}
-                                            totalUnits={totalUnitsForVariant}
-                                            canAddMode={canAddMode}
                                             onAdd={addToCart}
                                             onDecrement={decrementLine}
                                         />
@@ -650,10 +617,6 @@ return sum;
                                                                 variant="outline"
                                                                 size="icon"
                                                                 className="h-5 w-5"
-                                                                disabled={
-                                                                    item.quantity >=
-                                                                    item.stock_quantity
-                                                                }
                                                                 onClick={() =>
                                                                     updateQuantity(
                                                                         item.id,

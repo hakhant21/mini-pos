@@ -7,12 +7,12 @@ import {
 import {
     LayoutGrid,
     Package,
-    PackageCheck,
     Ruler,
     Tags,
     ShoppingCart,
     Receipt,
     Wallet,
+    DollarSign,
 } from 'lucide-react';
 import { NavMain } from '@/components/nav-main';
 import {
@@ -81,7 +81,7 @@ const adminMenuItems = [
     {
         title: 'Stock & Price Update',
         href: productsStockPriceUpdate(),
-        icon: PackageCheck,
+        icon: DollarSign,
     },
 ];
 
