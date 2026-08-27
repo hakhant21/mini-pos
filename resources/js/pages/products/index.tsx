@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     Plus,
     Search,
@@ -7,8 +7,9 @@ import {
     Trash2,
     ToggleLeft,
     ToggleRight,
+    X,
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,10 +39,17 @@ type Props = {
     products: Product[];
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function ProductsIndex({ products: productsData }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
+    const [categoryFilter, setCategoryFilter] = useState(() =>
+        getInitialSearchParam('category'),
+    );
 
     const categories = useMemo(() => {
         const map = new Map<number, string>();
@@ -56,6 +64,27 @@ export default function ProductsIndex({ products: productsData }: Props) {
             .map(([id, name]) => ({ id, name }))
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [productsData]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        if (categoryFilter && categoryFilter !== 'all') {
+            params.set('category', categoryFilter);
+        } else {
+            params.delete('category');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search, categoryFilter]);
 
     const filteredProducts = useMemo(() => {
         let result = productsData;
@@ -97,6 +126,14 @@ export default function ProductsIndex({ products: productsData }: Props) {
         );
     };
 
+    const hasActiveFilters = search !== '' || (categoryFilter !== '' && categoryFilter !== 'all');
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setCategoryFilter('');
+        window.history.replaceState({}, '', window.location.pathname);
+    };
+
     return (
         <>
             <Head title={t('Products')} />
@@ -132,6 +169,16 @@ export default function ProductsIndex({ products: productsData }: Props) {
                         className="max-w-sm"
                     />
                     <Search className="h-4 w-4 text-muted-foreground" />
+                    {hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                        >
+                            <X className="mr-1 h-4 w-4" />
+                            {t('Clear')}
+                        </Button>
+                    )}
                 </div>
 
                 <Card>

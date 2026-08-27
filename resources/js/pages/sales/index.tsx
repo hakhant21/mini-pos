@@ -10,7 +10,7 @@ import {
     ChevronRight,
     Pencil,
 } from 'lucide-react';
-import { Fragment, useState, useMemo } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -50,6 +50,11 @@ type Props = {
     };
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 const paymentMethodLabel: Record<string, string> = {
     cash: 'Cash',
     kbzpay: 'KBZ Pay',
@@ -67,14 +72,30 @@ export default function SalesIndex({
     filters,
 }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
     const [expandedId, setExpandedId] = useState<number | null>(null);
     const [startDate, setStartDate] = useState(filters.start_date ?? '');
     const [endDate, setEndDate] = useState(filters.end_date ?? '');
 
     const isDateFiltered = Boolean(startDate && endDate);
+    const hasActiveFilters = search !== '' || isDateFiltered;
 
     const sales = useMemo(() => salesData ?? [], [salesData]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search]);
 
     const today = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
@@ -121,16 +142,10 @@ export default function SalesIndex({
     };
 
     const handleClearFilter = () => {
+        setSearch('');
         setStartDate('');
         setEndDate('');
-        router.get(
-            salesRoute().url,
-            {},
-            {
-                preserveState: true,
-                replace: true,
-            },
-        );
+        window.history.replaceState({}, '', window.location.pathname);
     };
 
     const goToPage = (page: number) => {
@@ -261,7 +276,7 @@ export default function SalesIndex({
                                 >
                                     {t('Filter')}
                                 </Button>
-                                {isDateFiltered && (
+                                {hasActiveFilters && (
                                     <Button
                                         variant="outline"
                                         size="sm"

@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { router } from '@inertiajs/react';
-import { Pencil, Trash2, LoaderCircle } from 'lucide-react';
+import { Pencil, Trash2, LoaderCircle, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -31,11 +31,20 @@ type Props = {
     balances: Balance[];
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function BalancesIndex({ balances: balancesData }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
-    const [startDate, setStartDate] = useState('');
-    const [endDate, setEndDate] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('name'));
+    const [startDate, setStartDate] = useState(() =>
+        getInitialSearchParam('start_date'),
+    );
+    const [endDate, setEndDate] = useState(() =>
+        getInitialSearchParam('end_date'),
+    );
     const [deleteTarget, setDeleteTarget] = useState<Balance | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [processing, setProcessing] = useState(false);
@@ -46,6 +55,15 @@ export default function BalancesIndex({ balances: balancesData }: Props) {
         params.end_date = endDate || new Date().toISOString().split('T')[0];
         params.start_date = startDate || new Date().toISOString().split('T')[0];
         router.get(balances(), params, { preserveScroll: true });
+    };
+
+    const hasActiveFilters = search !== '' || startDate !== '' || endDate !== '';
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setStartDate('');
+        setEndDate('');
+        router.get(balances().url, {}, { preserveScroll: true, replace: true });
     };
 
     const handleDelete = () => {
@@ -107,6 +125,14 @@ export default function BalancesIndex({ balances: balancesData }: Props) {
                             {t('Filter')}
                         </Button>
                     </div>
+                    {hasActiveFilters && (
+                        <div>
+                            <Button variant="outline" onClick={handleClearFilters}>
+                                <X className="mr-1 h-4 w-4" />
+                                {t('Clear')}
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 <Card>

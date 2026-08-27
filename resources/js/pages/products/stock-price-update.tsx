@@ -5,8 +5,9 @@ import {
     Search,
     ChevronLeft,
     ChevronRight,
+    X,
 } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -48,13 +49,25 @@ type VariantRow = {
 
 const PAGE_SIZE = 20;
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function StockPriceUpdate({ products }: Props) {
     const { t } = useTranslation();
     const [savingId, setSavingId] = useState<number | null>(null);
-    const [search, setSearch] = useState('');
-    const [categoryFilter, setCategoryFilter] = useState('');
-    const [unitFilter, setUnitFilter] = useState('');
-    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
+    const [categoryFilter, setCategoryFilter] = useState(() =>
+        getInitialSearchParam('category'),
+    );
+    const [unitFilter, setUnitFilter] = useState(() =>
+        getInitialSearchParam('unit'),
+    );
+    const [page, setPage] = useState(() => {
+        const p = parseInt(getInitialSearchParam('page'), 10);
+        return isNaN(p) || p < 1 ? 1 : p;
+    });
 
     const categories = useMemo(() => {
         const map = new Map<number, string>();
@@ -144,6 +157,52 @@ export default function StockPriceUpdate({ products }: Props) {
         return result;
     }, [data, search, categoryFilter, unitFilter, products]);
 
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        if (categoryFilter && categoryFilter !== 'all') {
+            params.set('category', categoryFilter);
+        } else {
+            params.delete('category');
+        }
+
+        if (unitFilter && unitFilter !== 'all') {
+            params.set('unit', unitFilter);
+        } else {
+            params.delete('unit');
+        }
+
+        if (page > 1) {
+            params.set('page', String(page));
+        } else {
+            params.delete('page');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search, categoryFilter, unitFilter, page]);
+
+    const hasActiveFilters =
+        search !== '' ||
+        (categoryFilter !== '' && categoryFilter !== 'all') ||
+        (unitFilter !== '' && unitFilter !== 'all');
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setCategoryFilter('');
+        setUnitFilter('');
+        setPage(1);
+        window.history.replaceState({}, '', window.location.pathname);
+    };
+
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const currentPage = Math.min(page, totalPages);
     const paginated = filtered.slice(
@@ -180,9 +239,7 @@ export default function StockPriceUpdate({ products }: Props) {
 
                 const integerValue = value.replace(/[^0-9]/g, '');
                 const qty = parseInt(integerValue, 10) || 0;
-                const stock = String(
-                    r.original_stock_quantity + qty,
-                );
+                const stock = String(r.original_stock_quantity + qty);
 
                 return {
                     ...r,
@@ -293,6 +350,16 @@ export default function StockPriceUpdate({ products }: Props) {
                         className="max-w-sm"
                     />
                     <Search className="h-4 w-4 text-muted-foreground" />
+                    {hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                        >
+                            <X className="mr-1 h-4 w-4" />
+                            {t('Clear')}
+                        </Button>
+                    )}
                 </div>
 
                 <Card>
@@ -328,7 +395,13 @@ export default function StockPriceUpdate({ products }: Props) {
                                             <div className="flex flex-col gap-1">
                                                 <span>{row.variant_name}</span>
                                                 <span className="text-sm font-bold text-muted-foreground">
-                                                    {t('Stock')}: {row.stock_quantity}
+                                                    {t('Stock')}:{' '}
+                                                    {Number(
+                                                        row.stock_quantity,
+                                                    ) *
+                                                        Number(
+                                                            row.units_per_package,
+                                                        )}
                                                 </span>
                                             </div>
                                         </TableCell>
@@ -368,8 +441,10 @@ export default function StockPriceUpdate({ products }: Props) {
                                         <TableCell>
                                             {(row.pricing_mode === 'single' ||
                                                 row.pricing_mode === 'both' ||
-                                                row.pricing_mode === 'package' ||
-                                                row.pricing_mode === 'single_pack') && (
+                                                row.pricing_mode ===
+                                                    'package' ||
+                                                row.pricing_mode ===
+                                                    'single_pack') && (
                                                 <Input
                                                     type="number"
                                                     step="1"
@@ -386,7 +461,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                             )}
                                         </TableCell>
                                         <TableCell>
-                                            {(row.pricing_mode === 'both') && (
+                                            {row.pricing_mode === 'both' && (
                                                 <Input
                                                     type="number"
                                                     step="1"
@@ -405,7 +480,8 @@ export default function StockPriceUpdate({ products }: Props) {
                                         <TableCell>
                                             {(row.pricing_mode === 'pack' ||
                                                 row.pricing_mode === 'both' ||
-                                                row.pricing_mode === 'single_pack') && (
+                                                row.pricing_mode ===
+                                                    'single_pack') && (
                                                 <Input
                                                     type="number"
                                                     step="1"

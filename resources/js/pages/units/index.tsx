@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, LoaderCircle, Search } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, LoaderCircle, Search, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -37,9 +37,14 @@ type Props = {
     units: Unit[];
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function UnitsIndex({ units: unitsData }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
     const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Unit | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -47,8 +52,8 @@ export default function UnitsIndex({ units: unitsData }: Props) {
 
     const filteredUnits = useMemo(() => {
         if (!search.trim()) {
-return unitsData;
-}
+            return unitsData;
+        }
 
         const q = search.toLowerCase();
 
@@ -58,6 +63,21 @@ return unitsData;
                 u.abbreviation.toLowerCase().includes(q),
         );
     }, [unitsData, search]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search]);
 
     const {
         data,
@@ -120,6 +140,13 @@ return unitsData;
                 setDeleteDialogOpen(false);
             },
         });
+    };
+
+    const hasActiveFilters = search !== '';
+
+    const handleClearFilters = () => {
+        setSearch('');
+        window.history.replaceState({}, '', window.location.pathname);
     };
 
     return (
@@ -217,6 +244,16 @@ return unitsData;
                         onChange={(e) => setSearch(e.target.value)}
                         className="max-w-sm"
                     />
+                    {hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                        >
+                            <X className="mr-1 h-4 w-4" />
+                            {t('Clear')}
+                        </Button>
+                    )}
                 </div>
 
                 <Card>

@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, LoaderCircle, Search } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, LoaderCircle, Search, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -40,9 +40,14 @@ type UserForm = {
     role: string;
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function UsersIndex({ users: usersData }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
     const [editingUser, setEditingUser] = useState<User | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -62,6 +67,21 @@ export default function UsersIndex({ users: usersData }: Props) {
                 u.role.toLowerCase().includes(q),
         );
     }, [usersData, search]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search]);
 
     const {
         data,
@@ -120,6 +140,13 @@ export default function UsersIndex({ users: usersData }: Props) {
         });
     };
 
+    const hasActiveFilters = search !== '';
+
+    const handleClearFilters = () => {
+        setSearch('');
+        window.history.replaceState({}, '', window.location.pathname);
+    };
+
     return (
         <>
             <Head title={t('Users')} />
@@ -141,6 +168,16 @@ export default function UsersIndex({ users: usersData }: Props) {
                         onChange={(e) => setSearch(e.target.value)}
                         className="max-w-sm"
                     />
+                    {hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                        >
+                            <X className="mr-1 h-4 w-4" />
+                            {t('Clear')}
+                        </Button>
+                    )}
                 </div>
 
                 <Card>

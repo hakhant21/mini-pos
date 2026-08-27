@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useForm } from '@inertiajs/react';
-import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, EyeOff, Eye, LoaderCircle, X } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -41,10 +41,17 @@ type Props = {
     categories: Category[];
 };
 
+function getInitialSearchParam(key: string): string {
+    const params = new URLSearchParams(window.location.search);
+    return params.get(key) ?? '';
+}
+
 export default function CategoriesIndex({ categories: categoriesData }: Props) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [search, setSearch] = useState(() => getInitialSearchParam('search'));
+    const [statusFilter, setStatusFilter] = useState(() =>
+        getInitialSearchParam('status'),
+    );
     const [editingCategory, setEditingCategory] = useState<Category | null>(
         null,
     );
@@ -71,6 +78,27 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
 
         return result;
     }, [categoriesData, search, statusFilter]);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+
+        if (search) {
+            params.set('search', search);
+        } else {
+            params.delete('search');
+        }
+
+        if (statusFilter && statusFilter !== 'all') {
+            params.set('status', statusFilter);
+        } else {
+            params.delete('status');
+        }
+
+        const newSearch = params.toString();
+        const newUrl = `${window.location.pathname}${newSearch ? `?${newSearch}` : ''}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }, [search, statusFilter]);
 
     const {
         data,
@@ -146,6 +174,14 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
             {},
             { preserveScroll: true },
         );
+    };
+
+    const hasActiveFilters = search !== '' || (statusFilter !== '' && statusFilter !== 'all');
+
+    const handleClearFilters = () => {
+        setSearch('');
+        setStatusFilter('');
+        window.history.replaceState({}, '', window.location.pathname);
     };
 
     return (
@@ -248,6 +284,16 @@ export default function CategoriesIndex({ categories: categoriesData }: Props) {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
+                    {hasActiveFilters && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearFilters}
+                        >
+                            <X className="mr-1 h-4 w-4" />
+                            {t('Clear')}
+                        </Button>
+                    )}
                 </div>
 
                 <Card>
