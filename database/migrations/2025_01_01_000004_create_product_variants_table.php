@@ -13,7 +13,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->foreignId('unit_id')->constrained()->cascadeOnDelete();
             $table->string('name')->nullable();
-            $table->string('pricing_mode', 50)->default('both')->after('name');
+            $table->string('pricing_mode', 50)->default('both');
             $table->string('image')->nullable();
             $table->string('sku')->unique();
             $table->decimal('units_per_package', 10, 2)->default(1);
