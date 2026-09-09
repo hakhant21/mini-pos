@@ -7,17 +7,9 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm run build
 
-FROM php:8.4-cli-bookworm
+FROM serversideup/php:8.4-cli
 
 WORKDIR /var/www
-
-RUN apt-get -o APT::Sandbox::User=root update \
-    && apt-get -o APT::Sandbox::User=root install -y --no-install-recommends \
-    git unzip libzip-dev libonig-dev libxml2-dev \
-    libpng-dev libjpeg-dev libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" pdo_mysql mbstring zip xml gd \
-    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
