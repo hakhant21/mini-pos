@@ -36,6 +36,11 @@ WORKDIR /var/www
 # Copy application files
 COPY . .
 
+# Laravel needs this directory while Composer discovers packages.
+RUN mkdir -p bootstrap/cache storage/framework/cache storage/framework/sessions \
+    storage/framework/views storage/logs \
+    && chmod -R 775 bootstrap/cache storage
+
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
