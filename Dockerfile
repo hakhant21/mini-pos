@@ -1,26 +1,35 @@
-FROM node:20-bookworm AS node
-
-FROM composer:2 AS vendor
+FROM php:8.4-cli-bookworm
 
 WORKDIR /var/www
-COPY . .
-RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
 
-FROM webdevops/php-nginx:8.4
+RUN apt-get update \
+    && apt-get install -y git unzip supervisor libzip-dev libonig-dev libxml2-dev \
+        libpng-dev libjpeg-dev libfreetype6-dev nodejs npm \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring zip xml gd \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /var/www
-ENV WEB_DOCUMENT_ROOT=/var/www/public
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Copy Node and npm without installing packages in the Raspberry Pi image.
-COPY --from=node /usr/local/bin/ /usr/local/bin/
-COPY --from=node /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
-COPY . .
-COPY --from=vendor /var/www/vendor /var/www/vendor
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+COPY package.json ./
 RUN npm install
+
+COPY . .
 RUN npm run build
 
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
     storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-EXPOSE 80
+COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 8000
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
