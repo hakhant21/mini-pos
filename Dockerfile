@@ -1,37 +1,27 @@
 # ============================================================
-# Assets Build Stage - Using pre-installed pnpm
+# Assets Build Stage - Using Alpine for reliability
 # ============================================================
-FROM node:22-bookworm-slim AS assets
+FROM node:20-alpine AS assets
 
 WORKDIR /var/www
 
-# pnpm is already installed in this image? Let's check and use it
-# If not, we'll use npm which is definitely installed
+# Alpine has working npm
 RUN npm --version && node --version
+
+# Install pnpm using npm (works reliably on Alpine)
+RUN npm install -g pnpm@11.9.0
 
 # Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Try multiple package manager options
-RUN if command -v pnpm &> /dev/null; then \
-    pnpm install --frozen-lockfile || pnpm install; \
-    elif command -v npm &> /dev/null; then \
-    npm install; \
-    else \
-    echo "No package manager found"; exit 1; \
-    fi
+# Install dependencies with pnpm
+RUN pnpm install --frozen-lockfile || pnpm install
 
 # Copy the rest of the application
 COPY . .
 
-# Build frontend assets - try multiple commands
-RUN if command -v pnpm &> /dev/null; then \
-    pnpm run build; \
-    elif command -v npm &> /dev/null; then \
-    npm run build; \
-    else \
-    echo "No package manager found"; exit 1; \
-    fi
+# Build frontend assets
+RUN pnpm run build || npm run build
 
 # ============================================================
 # PHP Dependencies Stage
@@ -40,7 +30,7 @@ FROM php:8.4-cli-bookworm AS vendor
 
 WORKDIR /var/www
 
-# Install system dependencies (using cached packages)
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
@@ -115,7 +105,7 @@ COPY --from=assets /var/www/public/build /var/www/public/build
 RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
     && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
 
-# Create storage directories if they don't exist
+# Create storage directories
 RUN mkdir -p /var/www/storage/framework/cache/data \
     && mkdir -p /var/www/storage/framework/sessions \
     && mkdir -p /var/www/storage/framework/views \
