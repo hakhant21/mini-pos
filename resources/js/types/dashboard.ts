@@ -5,7 +5,6 @@ export type DashboardData = {
     totalStock: number;
     totalProducts: number;
     totalVariants: number;
-    inventoryValue: number;
     lowStockVariants: ProductVariant[];
     totalRevenue: number;
     totalCost: number;

@@ -17,9 +17,8 @@ class DashboardController extends Controller
 {
     public function index(): Response
     {
-        $inventoryValue = round(ProductVariant::select(
-            DB::raw('SUM(cost_price * stock_quantity) as total_inventory_value')
-        )->value('total_inventory_value') ?? 0, 2);
+        $todayStart = today()->startOfDay();
+        $todayEnd = today()->endOfDay();
 
         $lowStockVariants = ProductVariant::with(['product', 'unit'])
             ->where('stock_quantity', '>', 0)
@@ -39,43 +38,39 @@ class DashboardController extends Controller
         $totalProfit =  $totalRevenue - $totalCost;
 
         // Total sales count
-        $totalSales = Sale::whereDate('created_at', today())->sum('total_amount');
+        $totalSales = Sale::whereBetween('created_at', [$todayStart, $todayEnd])->sum('total_amount');
 
         $recentSales = Sale::with('items')
-            ->whereDate('created_at', today())
+            ->whereBetween('created_at', [$todayStart, $todayEnd])
             ->orderBy('created_at', 'desc')
+            ->limit(10)
             ->get();
 
         // Most sold products with variants
-        $mostSoldProductIds = SaleItem::select('product_variants.product_id', DB::raw('SUM(sale_items.quantity) as total_qty'))
+        $mostSoldProductsById = SaleItem::select('product_variants.product_id', DB::raw('SUM(sale_items.quantity) as total_qty'))
             ->join('product_variants', 'sale_items.product_variant_id', '=', 'product_variants.id')
             ->groupBy('product_variants.product_id')
             ->orderByRaw('SUM(sale_items.quantity) desc')
             ->limit(10)
-            ->pluck('product_variants.product_id');
+            ->get()
+            ->keyBy('product_id');
 
         $mostSoldProducts = Product::with(['variants.unit', 'category'])
-            ->whereIn('id', $mostSoldProductIds)
+            ->whereIn('id', $mostSoldProductsById->keys())
             ->get()
-            ->map(function ($product) {
-                $totalSold = SaleItem::whereHas('variant', function ($q) use ($product) {
-                    $q->where('product_id', $product->id);
-                })->sum('quantity');
-                $product->total_sold = $totalSold;
-
-                return $product;
+            ->each(function ($product) use ($mostSoldProductsById) {
+                $product->total_sold = $mostSoldProductsById[$product->id]->total_qty;
             })
             ->sortByDesc('total_sold')
             ->values();
 
-        $hasBalanceToday = Balance::whereDate('created_at', today())->exists();
+        $hasBalanceToday = Balance::whereBetween('created_at', [$todayStart, $todayEnd])->exists();
 
-        $openingAmount = Balance::whereDate('created_at', today())->sum('opening_amount');
+        $openingAmount = Balance::whereBetween('created_at', [$todayStart, $todayEnd])->sum('opening_amount');
 
-        $totalChange = Sale::whereDate('created_at', today())->sum('change');
+        $totalChange = Sale::whereBetween('created_at', [$todayStart, $todayEnd])->sum('change');
 
         return inertia('dashboard', [
-            'inventoryValue' => $inventoryValue,
             'lowStockVariants' => ProductVariantResource::collection($lowStockVariants),
             'totalRevenue' => $totalRevenue,
             'totalCost' => $totalCost,
