@@ -1,36 +1,32 @@
 # ============================================================
-# Assets Build Stage
+# Assets Build Stage - Using pnpm install script directly
 # ============================================================
 FROM node:22-bookworm-slim AS assets
 
 WORKDIR /var/www
 
-# Clean npm cache and set registry
-RUN npm cache clean --force && \
-    npm config set registry https://registry.npmjs.org/
+# Install curl and other dependencies
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Option 1: Try installing pnpm via npm with retry
-RUN npm install -g pnpm@11.9.0 || \
-    npm install -g pnpm@11.9.0 --registry=https://registry.npmjs.org/ || \
-    (curl -fsSL https://get.pnpm.io/install.sh | sh - && \
-    ln -s /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm)
+# Install pnpm using the official install script (bypasses npm)
+RUN curl -fsSL https://get.pnpm.io/install.sh | sh - && \
+    export PNPM_HOME="/root/.local/share/pnpm" && \
+    export PATH="$PNPM_HOME:$PATH"
 
-# Verify installation
-RUN pnpm --version || true
-
-# Copy package files first (for better layer caching)
+# Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies
-RUN pnpm install --frozen-lockfile --no-optional || \
-    pnpm install --frozen-lockfile --no-optional --network-concurrency 1 || \
-    pnpm install --frozen-lockfile --no-optional --fetch-retries 5
+# Install dependencies using pnpm (which was installed via curl)
+RUN /root/.local/share/pnpm/pnpm install --frozen-lockfile || \
+    /root/.local/share/pnpm/pnpm install --no-frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
 
 # Build frontend assets
-RUN pnpm run build || npm run build
+RUN /root/.local/share/pnpm/pnpm run build || \
+    /root/.local/share/pnpm/pnpm build || \
+    npm run build
 
 # ============================================================
 # PHP Dependencies Stage
