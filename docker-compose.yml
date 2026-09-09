@@ -19,24 +19,13 @@ services:
       DB_DATABASE: ${DB_DATABASE:-minipos}
       DB_USERNAME: ${DB_USERNAME:-root}
       DB_PASSWORD: ${DB_PASSWORD:-asdffdsa}
-      REDIS_CLIENT: phpredis
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      CACHE_STORE: file
+      SESSION_DRIVER: file
+      QUEUE_CONNECTION: sync
     networks:
       - laravel-net
     depends_on:
       - mysql
-      - redis
-
-  redis:
-    image: redis:7-alpine
-    container_name: redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-    networks:
-      - laravel-net
 
   mysql:
     image: jsurf/rpi-mariadb:latest
@@ -61,4 +50,3 @@ networks:
 
 volumes:
   db_data:
-  redis_data:

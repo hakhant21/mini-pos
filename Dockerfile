@@ -14,7 +14,6 @@ RUN apt-get update --allow-releaseinfo-change && \
     supervisor \
     nodejs \
     npm \
-    $PHPIZE_DEPS \
     && docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     gd \
