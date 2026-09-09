@@ -11,7 +11,7 @@ COPY --from=node /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 COPY . .
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --no-scripts --optimize-autoloader --no-interaction
 RUN npm install
 RUN npm run build
 
