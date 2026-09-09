@@ -10,13 +10,9 @@ COPY --from=node /usr/local/bin/ /usr/local/bin/
 COPY --from=node /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction
-
-COPY package.json ./
-RUN npm install
-
 COPY . .
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN npm install
 RUN npm run build
 
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
