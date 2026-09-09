@@ -5,28 +5,23 @@ FROM node:22-bookworm-slim AS assets
 
 WORKDIR /var/www
 
-# Install curl and other dependencies
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
-# Install pnpm using the official install script (bypasses npm)
-RUN curl -fsSL https://get.pnpm.io/install.sh | sh - && \
-    export PNPM_HOME="/root/.local/share/pnpm" && \
-    export PATH="$PNPM_HOME:$PATH"
+# Skip apt-get entirely - use the node image's built-in tools
+# Install pnpm using npm (already available in node image)
+RUN npm install -g pnpm@11.9.0 --no-audit --no-fund --loglevel=error || \
+    npm install -g pnpm@11.9.0 --registry=https://registry.npmjs.org/ --no-audit --no-fund
 
 # Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm (which was installed via curl)
-RUN /root/.local/share/pnpm/pnpm install --frozen-lockfile || \
-    /root/.local/share/pnpm/pnpm install --no-frozen-lockfile
+# Install dependencies
+RUN pnpm install --frozen-lockfile || \
+    pnpm install --no-frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
 
 # Build frontend assets
-RUN /root/.local/share/pnpm/pnpm run build || \
-    /root/.local/share/pnpm/pnpm build || \
-    npm run build
+RUN pnpm run build || npm run build
 
 # ============================================================
 # PHP Dependencies Stage
@@ -35,8 +30,14 @@ FROM php:8.4-cli-bookworm AS vendor
 
 WORKDIR /var/www
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Use Debian mirrors that work
+RUN echo "deb http://deb.debian.org/debian bookworm main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+
+# Install system dependencies with retry
+RUN apt-get update --allow-releaseinfo-change || apt-get update --allow-releaseinfo-change && \
+    apt-get install -y --no-install-recommends \
     git \
     unzip \
     libzip-dev \
@@ -74,8 +75,14 @@ FROM php:8.4-fpm-bookworm AS app
 
 WORKDIR /var/www
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Use Debian mirrors that work
+RUN echo "deb http://deb.debian.org/debian bookworm main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+
+# Install system dependencies with retry
+RUN apt-get update --allow-releaseinfo-change || apt-get update --allow-releaseinfo-change && \
+    apt-get install -y --no-install-recommends \
     git \
     unzip \
     libzip-dev \
@@ -131,8 +138,16 @@ CMD ["php-fpm"]
 # ============================================================
 FROM nginx:stable-bookworm AS nginx
 
-# Install curl for healthcheck
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+# Use Debian mirrors that work
+RUN echo "deb http://deb.debian.org/debian bookworm main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://deb.debian.org/debian bookworm-updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://security.debian.org/debian-security bookworm-security main contrib non-free" >> /etc/apt/sources.list
+
+# Install curl for healthcheck with retry
+RUN apt-get update --allow-releaseinfo-change || apt-get update --allow-releaseinfo-change && \
+    apt-get install -y --no-install-recommends curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy nginx configuration
 COPY docker/nginx/default.conf /etc/nginx/conf.d/default.conf
