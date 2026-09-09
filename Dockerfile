@@ -20,8 +20,6 @@ RUN apt-get update --allow-releaseinfo-change && \
     gd \
     zip \
     bcmath \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
