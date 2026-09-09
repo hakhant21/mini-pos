@@ -5,6 +5,9 @@ set -e
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
+# Use the normal Compose builder on small Raspberry Pi systems.
+export COMPOSE_BAKE=false
+
 # ============================================================
 # Colors and formatting
 # ============================================================
