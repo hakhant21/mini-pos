@@ -1,22 +1,22 @@
-FROM node:20-bookworm AS assets
-
-WORKDIR /var/www
-RUN npm install -g pnpm
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-COPY . .
-RUN pnpm run build
+FROM node:20-bookworm AS node
 
 FROM webdevops/php-nginx:8.4
 
 WORKDIR /var/www
 ENV WEB_DOCUMENT_ROOT=/var/www/public
 
+# Copy Node and npm without installing packages in the Raspberry Pi image.
+COPY --from=node /usr/local/bin/ /usr/local/bin/
+COPY --from=node /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
+
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
+COPY package.json ./
+RUN npm install
+
 COPY . .
-COPY --from=assets /var/www/public/build /var/www/public/build
+RUN npm run build
 
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
     storage/framework/views storage/logs bootstrap/cache \
