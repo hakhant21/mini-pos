@@ -31,8 +31,10 @@ FROM php:8.4-cli-bookworm AS vendor
 
 WORKDIR /var/www
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies. Some Raspberry Pi Docker/libseccomp versions
+# terminate APT's sandbox with SIGSYS (exit 159), so run APT as root here.
+RUN apt-get -o APT::Sandbox::User=root update \
+    && apt-get -o APT::Sandbox::User=root install -y --no-install-recommends \
     git \
     unzip \
     libzip-dev \
@@ -70,8 +72,9 @@ FROM php:8.4-fpm-bookworm AS app
 
 WORKDIR /var/www
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
+# Install system dependencies. See the vendor stage for the APT sandbox note.
+RUN apt-get -o APT::Sandbox::User=root update \
+    && apt-get -o APT::Sandbox::User=root install -y --no-install-recommends \
     git \
     unzip \
     libzip-dev \
