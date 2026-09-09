@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      target: app
     restart: unless-stopped
     working_dir: /var/www
     ports:
