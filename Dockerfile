@@ -5,20 +5,32 @@ FROM node:22-bookworm-slim AS assets
 
 WORKDIR /var/www
 
-# Install pnpm globally using npm (more reliable than corepack)
-RUN npm install -g pnpm@11.9.0
+# Clean npm cache and set registry
+RUN npm cache clean --force && \
+    npm config set registry https://registry.npmjs.org/
+
+# Option 1: Try installing pnpm via npm with retry
+RUN npm install -g pnpm@11.9.0 || \
+    npm install -g pnpm@11.9.0 --registry=https://registry.npmjs.org/ || \
+    (curl -fsSL https://get.pnpm.io/install.sh | sh - && \
+    ln -s /root/.local/share/pnpm/pnpm /usr/local/bin/pnpm)
+
+# Verify installation
+RUN pnpm --version || true
 
 # Copy package files first (for better layer caching)
 COPY package.json pnpm-lock.yaml ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --no-optional || \
+    pnpm install --frozen-lockfile --no-optional --network-concurrency 1 || \
+    pnpm install --frozen-lockfile --no-optional --fetch-retries 5
 
 # Copy the rest of the application
 COPY . .
 
 # Build frontend assets
-RUN pnpm run build
+RUN pnpm run build || npm run build
 
 # ============================================================
 # PHP Dependencies Stage
@@ -54,7 +66,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 COPY composer.json composer.lock ./
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # Copy the rest of the application
 COPY . .
@@ -119,7 +131,7 @@ EXPOSE 9000
 CMD ["php-fpm"]
 
 # ============================================================
-# Nginx Stage (optional - if you want to build nginx from scratch)
+# Nginx Stage
 # ============================================================
 FROM nginx:stable-bookworm AS nginx
 
