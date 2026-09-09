@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    pull_policy: build
-    image: mini-pos:latest
     restart: unless-stopped
     working_dir: /var/www
     volumes:
