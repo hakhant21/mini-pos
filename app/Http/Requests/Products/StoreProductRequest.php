@@ -23,15 +23,15 @@ class StoreProductRequest extends FormRequest
             'variants.*.name' => ['nullable', 'string', 'max:255'],
             'variants.*.pricing_mode' => ['nullable', 'string', 'in:single,package,both'],
             'variants.*.image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
-            'variants.*.units_per_package' => ['nullable', 'numeric', 'min:0.01'],
-            'variants.*.units_per_pack' => ['nullable', 'numeric', 'min:0.01'],
+            'variants.*.units_per_package' => ['nullable', 'integer', 'min:1'],
+            'variants.*.units_per_pack' => ['nullable', 'integer', 'min:1'],
             'variants.*.cost_price' => ['required_with:variants', 'numeric', 'min:0'],
             'variants.*.selling_price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.per_unit_price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.pack_price' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.stock_quantity' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.min_stock_level' => ['nullable', 'numeric', 'min:0'],
-            'variants.*.max_stock_level' => ['nullable', 'numeric', 'min:0'],
+            'variants.*.stock_quantity' => ['nullable', 'integer', 'min:0'],
+            'variants.*.min_stock_level' => ['nullable', 'integer', 'min:0'],
+            'variants.*.max_stock_level' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

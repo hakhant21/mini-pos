@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { num } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { ProductVariant } from '@/types/product';
 import type { CartItem } from '@/types';
 
@@ -20,10 +21,10 @@ export function useProductStockCalculator({
     cartItems = [],
     minStockLevel = 5,
 }: UseProductStockCalculatorProps) {
+    const { t } = useTranslation();
     const unitsPerPack = num(variant.units_per_pack) || 1;
     const unitsPerPackage = num(variant.units_per_package) || 1;
-    const totalUnits =
-        num(variant.stock_quantity) * unitsPerPackage * unitsPerPack || 0;
+    const totalUnits = num(variant.stock_quantity) || 0;
 
     const reservedUnits = useMemo(() => {
         return cartItems
@@ -63,24 +64,19 @@ export function useProductStockCalculator({
         const parts: string[] = [];
         if (packages > 0)
             parts.push(
-                `${packages} package${packages > 1 ? 's' : ''}`,
+                `${packages} ${t(packages > 1 ? 'Packages' : 'Package')}`,
             );
         if (packs > 0)
-            parts.push(`${packs} pack${packs > 1 ? 's' : ''}`);
-        if (units > 0)
-            parts.push(`${units} units`);
+            parts.push(`${packs} ${t(packs > 1 ? 'Packs' : 'Pack')}`);
+        if (units > 0) parts.push(`${units} ${t('Units')}`);
 
-        const short =
-            parts.length > 0 ? parts.join(' + ') : 'Out of stock';
+        const short = parts.length > 0 ? parts.join(' + ') : 'Out of stock';
         const detailed =
-            parts.length > 0
-                ? `${parts.join(', ')} available`
-                : 'Out of stock';
-        const hierarchical =
-            parts.length > 0 ? parts.join(' + ') : 'No stock';
+            parts.length > 0 ? `${parts.join(', ')} available` : 'Out of stock';
+        const hierarchical = parts.length > 0 ? parts.join(' + ') : 'No stock';
 
         return { short, detailed, hierarchical };
-    }, [breakdownUnits, variant.unit?.abbreviation]);
+    }, [breakdownUnits, t, variant.unit?.abbreviation]);
 
     const calculateUnitsForMode = (
         mode: 'single' | 'pack' | 'package',
@@ -105,9 +101,7 @@ export function useProductStockCalculator({
         return neededUnits <= availableUnits && availableUnits > 0;
     };
 
-    const getMaxQuantity = (
-        mode: 'single' | 'pack' | 'package',
-    ): number => {
+    const getMaxQuantity = (mode: 'single' | 'pack' | 'package'): number => {
         if (availableUnits <= 0) return 0;
 
         switch (mode) {
@@ -127,34 +121,27 @@ export function useProductStockCalculator({
     ): StockBreakdown & { formatted: string } => {
         const u = Math.max(0, units);
         const pkgs = Math.floor(u / (unitsPerPackage * unitsPerPack));
-        const rem1 =
-            u - pkgs * unitsPerPackage * unitsPerPack;
+        const rem1 = u - pkgs * unitsPerPackage * unitsPerPack;
         const pks = Math.floor(rem1 / unitsPerPack);
         const rem2 = rem1 - pks * unitsPerPack;
 
         const parts: string[] = [];
         if (pkgs > 0)
-            parts.push(
-                `${pkgs} package${pkgs > 1 ? 's' : ''}`,
-            );
-        if (pks > 0)
-            parts.push(`${pks} pack${pks > 1 ? 's' : ''}`);
-        if (rem2 > 0)
-            parts.push(`${rem2} units`);
+            parts.push(`${pkgs} ${t(pkgs > 1 ? 'Packages' : 'Package')}`);
+        if (pks > 0) parts.push(`${pks} ${t(pks > 1 ? 'Packs' : 'Pack')}`);
+        if (rem2 > 0) parts.push(`${rem2} ${t('Units')}`);
 
         return {
             packages: pkgs,
             packs: pks,
             units: rem2,
-            formatted:
-                parts.length > 0 ? parts.join(' + ') : 'No stock',
+            formatted: parts.length > 0 ? parts.join(' + ') : 'No stock',
         };
     };
 
     const isOutOfStock = availableUnits <= 0;
-    const minStockUnits = minStockLevel * unitsPerPackage * unitsPerPack;
-    const isLowStock =
-        availableUnits > 0 && availableUnits <= minStockUnits;
+    const minStockUnits = minStockLevel;
+    const isLowStock = availableUnits > 0 && availableUnits <= minStockUnits;
     const stockPercentage =
         totalUnits > 0 ? (availableUnits / totalUnits) * 100 : 0;
 

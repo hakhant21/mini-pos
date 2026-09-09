@@ -6725,7 +6725,16 @@ class ProductVariantSeeder extends Seeder
             ],
         ];
 
+        $packagePricingCategories = [3, 4, 5];
+        $productCategories = Product::query()
+            ->whereIn("id", array_unique(array_column($variants, "product_id")))
+            ->pluck("category_id", "id");
+
         foreach ($variants as $variant) {
+            if (in_array($productCategories[$variant["product_id"]] ?? null, $packagePricingCategories, true)) {
+                $variant["pricing_mode"] = "single_pack";
+            }
+
             ProductVariant::create($variant);
         }
 
@@ -6744,25 +6753,28 @@ class ProductVariantSeeder extends Seeder
         ];
 
         $selfVariants = Product::query()
-            ->with('category')
-            ->whereDoesntHave('variants')
+            ->with("category")
+            ->whereDoesntHave("variants")
             ->get();
 
         foreach ($selfVariants as $product) {
             ProductVariant::create([
-                'product_id' => $product->id,
-                'unit_id' => $unitIdByCategory[$product->category_id] ?? 1,
-                'name' => $product->name,
-                'image' => null,
-                'sku' => $product->sku,
-                'units_per_package' => 1,
-                'cost_price' => 0,
-                'selling_price' => 0,
-                'per_unit_price' => 0,
-                'stock_quantity' => 0,
-                'min_stock_level' => 0,
-                'max_stock_level' => null,
-                'is_active' => true,
+                "product_id" => $product->id,
+                "unit_id" => $unitIdByCategory[$product->category_id] ?? 1,
+                "name" => $product->name,
+                "image" => null,
+                "sku" => $product->sku,
+                "units_per_package" => 1,
+                "cost_price" => 0,
+                "selling_price" => 0,
+                "per_unit_price" => 0,
+                "stock_quantity" => 0,
+                "min_stock_level" => 0,
+                "max_stock_level" => null,
+                "is_active" => true,
+                "pricing_mode" => in_array($product->category_id, $packagePricingCategories, true)
+                    ? "single_pack"
+                    : "both",
             ]);
         }
     }

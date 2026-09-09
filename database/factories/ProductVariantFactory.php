@@ -17,14 +17,14 @@ class ProductVariantFactory extends Factory
         $costPrice = fake()->randomFloat(2, 1, 50);
         $sellingPrice = $costPrice * fake()->randomFloat(2, 1.1, 1.5);
         $perUnitPrice = fake()->randomFloat(2, 1, $costPrice);
-        $stockQuantity = fake()->randomFloat(2, 0, 200);
+        $stockQuantity = fake()->numberBetween(0, 200);
 
         return [
             'product_id' => Product::factory(),
             'unit_id' => Unit::factory(),
             'name' => fake()->optional()->randomElement(['Small', 'Medium', 'Large', 'Family Size', 'Single', 'Twin Pack']),
             'sku' => strtoupper(Str::random(10)),
-            'units_per_package' => fake()->randomFloat(2, 1, 24),
+            'units_per_package' => fake()->numberBetween(1, 24),
             'cost_price' => $costPrice,
             'selling_price' => round($sellingPrice, 2),
             'per_unit_price' => round($perUnitPrice, 2),

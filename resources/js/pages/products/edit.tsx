@@ -102,15 +102,15 @@ export default function ProductsEdit({ product, categories, units }: Props) {
             {
                 ...newVariant,
                 image: newVariant.image ?? null,
-                units_per_package: parseFloat(newVariant.units_per_package),
-                units_per_pack: parseFloat(newVariant.units_per_pack),
+                units_per_package: parseInt(newVariant.units_per_package, 10),
+                units_per_pack: parseInt(newVariant.units_per_pack, 10),
                 cost_price: parseFloat(newVariant.cost_price),
                 selling_price: parseFloat(newVariant.selling_price),
                 per_unit_price: parseFloat(newVariant.per_unit_price),
                 pack_price: parseFloat(newVariant.pack_price),
-                min_stock_level: parseFloat(newVariant.min_stock_level),
+                min_stock_level: parseInt(newVariant.min_stock_level, 10),
                 max_stock_level: newVariant.max_stock_level
-                    ? parseFloat(newVariant.max_stock_level)
+                    ? parseInt(newVariant.max_stock_level, 10)
                     : null,
             },
             { preserveScroll: true },
@@ -156,15 +156,15 @@ export default function ProductsEdit({ product, categories, units }: Props) {
 
         const payload: Record<string, unknown> = {
             ...editVariant,
-            units_per_package: parseFloat(editVariant.units_per_package),
-            units_per_pack: parseFloat(editVariant.units_per_pack),
+            units_per_package: parseInt(editVariant.units_per_package, 10),
+            units_per_pack: parseInt(editVariant.units_per_pack, 10),
             cost_price: parseFloat(editVariant.cost_price),
             selling_price: parseFloat(editVariant.selling_price),
             per_unit_price: parseFloat(editVariant.per_unit_price),
             pack_price: parseFloat(editVariant.pack_price),
-            min_stock_level: parseFloat(editVariant.min_stock_level),
+            min_stock_level: parseInt(editVariant.min_stock_level, 10),
             max_stock_level: editVariant.max_stock_level
-                ? parseFloat(editVariant.max_stock_level)
+                ? parseInt(editVariant.max_stock_level, 10)
                 : null,
         };
 

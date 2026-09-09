@@ -103,7 +103,7 @@ class SaleController extends Controller
                     default => $quantity,
                 };
 
-                $availableUnits = (float) $variant->stock_quantity * $unitsPerPackage * $unitsPerPack;
+                $availableUnits = (int) $variant->stock_quantity;
 
                 if ($availableUnits < $unitsConsumed) {
                     throw ValidationException::withMessages([
@@ -111,8 +111,7 @@ class SaleController extends Controller
                     ]);
                 }
 
-                $packagesToDecrement = $unitsConsumed / ($unitsPerPackage * $unitsPerPack);
-                $variant->decrement('stock_quantity', $packagesToDecrement);
+                $variant->decrement('stock_quantity', $unitsConsumed);
 
                 $lineTotal = round($quantity * $unitPrice, 2);
                 $totalAmount += $lineTotal;
@@ -184,7 +183,7 @@ class SaleController extends Controller
                     default => $quantity,
                 };
 
-                $availableUnits = (float) $variant->stock_quantity * $unitsPerPackage * $unitsPerPack;
+                $availableUnits = (int) $variant->stock_quantity;
 
                 if ($availableUnits < $unitsConsumed) {
                     throw ValidationException::withMessages([
@@ -192,8 +191,7 @@ class SaleController extends Controller
                     ]);
                 }
 
-                $packagesToDecrement = $unitsConsumed / ($unitsPerPackage * $unitsPerPack);
-                $variant->decrement('stock_quantity', $packagesToDecrement);
+                $variant->decrement('stock_quantity', $unitsConsumed);
 
                 $lineTotal = round($quantity * $unitPrice, 2);
 

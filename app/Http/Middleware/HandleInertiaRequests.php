@@ -37,6 +37,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $locale = $request->cookie('locale', config('app.locale', 'my'));
+        $locale = in_array($locale, ['en', 'my'], true)
+            ? $locale
+            : config('app.fallback_locale', 'en');
         App::setLocale($locale);
 
         $translations = [];

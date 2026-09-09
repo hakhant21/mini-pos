@@ -11,7 +11,6 @@ import { logout } from '@/feature-routes';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { edit } from '@/routes/profile';
 import type { User } from '@/types';
-import { LocaleSwitcher } from './locale-switcher';
 
 type Props = {
     user: User;
@@ -46,10 +45,6 @@ export function UserMenuContent({ user }: Props) {
                     </Link>
                 </DropdownMenuItem>
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-                <LocaleSwitcher />
-            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link

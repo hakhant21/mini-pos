@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import {
     LoaderCircle,
     Save,
+    Pencil,
     Search,
     ChevronLeft,
     ChevronRight,
@@ -10,6 +11,14 @@ import {
 import { useState, useMemo, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
@@ -35,10 +44,11 @@ type VariantRow = {
     variant_id: number;
     variant_name: string;
     unit_abbreviation: string;
-    units_per_package: number;
+    units_per_package: string;
     units_per_pack: number;
     pricing_mode: 'single' | 'pack' | 'package' | 'both' | 'single_pack';
     quantity: string;
+    loose_quantity: string;
     original_stock_quantity: number;
     stock_quantity: string;
     cost_price: string;
@@ -51,12 +61,16 @@ const PAGE_SIZE = 20;
 
 function getInitialSearchParam(key: string): string {
     const params = new URLSearchParams(window.location.search);
+
     return params.get(key) ?? '';
 }
 
 export default function StockPriceUpdate({ products }: Props) {
     const { t } = useTranslation();
     const [savingId, setSavingId] = useState<number | null>(null);
+    const [editingVariantId, setEditingVariantId] = useState<number | null>(
+        null,
+    );
     const [search, setSearch] = useState(() => getInitialSearchParam('search'));
     const [categoryFilter, setCategoryFilter] = useState(() =>
         getInitialSearchParam('category'),
@@ -66,6 +80,7 @@ export default function StockPriceUpdate({ products }: Props) {
     );
     const [page, setPage] = useState(() => {
         const p = parseInt(getInitialSearchParam('page'), 10);
+
         return isNaN(p) || p < 1 ? 1 : p;
     });
 
@@ -103,8 +118,6 @@ export default function StockPriceUpdate({ products }: Props) {
 
     for (const product of products) {
         for (const variant of product.variants ?? []) {
-            const unitsPerPackage = Number(variant.units_per_package) || 0;
-
             rows.push({
                 product_id: product.id,
                 product_name: product.name,
@@ -112,10 +125,11 @@ export default function StockPriceUpdate({ products }: Props) {
                 variant_id: variant.id,
                 variant_name: variant.name || '—',
                 unit_abbreviation: variant.unit?.abbreviation || '—',
-                units_per_package: unitsPerPackage,
+                units_per_package: String(Number(variant.units_per_package)),
                 units_per_pack: Number(variant.units_per_pack) || 1,
                 pricing_mode: variant.pricing_mode || 'both',
                 quantity: '',
+                loose_quantity: '',
                 original_stock_quantity: Number(variant.stock_quantity) || 0,
                 stock_quantity: String(Number(variant.stock_quantity)),
                 cost_price: String(Number(variant.cost_price)),
@@ -230,7 +244,39 @@ export default function StockPriceUpdate({ products }: Props) {
         });
     };
 
-    const updateQuantity = (variantId: number, value: string) => {
+    const updateUnitsPerPackage = (variantId: number, value: string) => {
+        updateRow(variantId, 'units_per_package', value);
+
+        const units = Number(value);
+
+        if (!units || units < 0.01) {
+            return;
+        }
+
+        setData((prev) =>
+            prev.map((r) => {
+                if (r.variant_id !== variantId) {
+                    return r;
+                }
+
+                const packages = parseInt(r.quantity, 10) || 0;
+                const loose = parseInt(r.loose_quantity, 10) || 0;
+
+                return {
+                    ...r,
+                    stock_quantity: String(
+                        r.original_stock_quantity + packages * units + loose,
+                    ),
+                };
+            }),
+        );
+    };
+
+    const updateQuantity = (
+        variantId: number,
+        field: 'quantity' | 'loose_quantity',
+        value: string,
+    ) => {
         setData((prev) =>
             prev.map((r) => {
                 if (r.variant_id !== variantId) {
@@ -238,16 +284,40 @@ export default function StockPriceUpdate({ products }: Props) {
                 }
 
                 const integerValue = value.replace(/[^0-9]/g, '');
-                const qty = parseInt(integerValue, 10) || 0;
-                const stock = String(r.original_stock_quantity + qty);
+                const packages =
+                    parseInt(
+                        field === 'quantity' ? integerValue : r.quantity,
+                        10,
+                    ) || 0;
+                const units = Number(r.units_per_package) || 1;
+                const loose =
+                    parseInt(
+                        field === 'loose_quantity'
+                            ? integerValue
+                            : r.loose_quantity,
+                        10,
+                    ) || 0;
 
                 return {
                     ...r,
-                    quantity: integerValue,
-                    stock_quantity: stock,
+                    [field]: integerValue,
+                    stock_quantity: String(
+                        r.original_stock_quantity + packages * units + loose,
+                    ),
                 };
             }),
         );
+    };
+
+    const getStockBreakdown = (row: VariantRow) => {
+        const units = Number(row.units_per_package) || 1;
+        const totalUnits = Number(row.stock_quantity);
+
+        return {
+            totalUnits,
+            packages: Math.floor(totalUnits / units),
+            loose: totalUnits % units,
+        };
     };
 
     const handleSave = (variantId: number) => {
@@ -266,6 +336,7 @@ export default function StockPriceUpdate({ products }: Props) {
             }).url,
             {
                 stock_quantity: parseFloat(row.stock_quantity),
+                units_per_package: parseInt(row.units_per_package, 10),
                 cost_price: parseFloat(row.cost_price),
                 selling_price: parseFloat(row.selling_price),
                 per_unit_price: parseFloat(row.per_unit_price) || 0,
@@ -273,6 +344,7 @@ export default function StockPriceUpdate({ products }: Props) {
             },
             {
                 preserveScroll: true,
+                onSuccess: () => setEditingVariantId(null),
                 onFinish: () => setSavingId(null),
             },
         );
@@ -288,12 +360,15 @@ export default function StockPriceUpdate({ products }: Props) {
 
         return (
             original.stock_quantity !== current.stock_quantity ||
+            original.units_per_package !== current.units_per_package ||
             original.cost_price !== current.cost_price ||
             original.selling_price !== current.selling_price ||
             original.per_unit_price !== current.per_unit_price ||
             original.pack_price !== current.pack_price
         );
     };
+
+    const editingRow = data.find((row) => row.variant_id === editingVariantId);
 
     return (
         <>
@@ -372,9 +447,7 @@ export default function StockPriceUpdate({ products }: Props) {
                                 <TableRow>
                                     <TableHead>{t('Product')}</TableHead>
                                     <TableHead>{t('Variant')}</TableHead>
-                                    <TableHead>
-                                        {t('Units Per Package')}
-                                    </TableHead>
+                                    <TableHead>{t('Units/Pkg')}</TableHead>
                                     <TableHead>{t('Quantity')}</TableHead>
                                     <TableHead>{t('Cost Price')}</TableHead>
                                     <TableHead>{t('Selling Price')}</TableHead>
@@ -387,7 +460,28 @@ export default function StockPriceUpdate({ products }: Props) {
                             </TableHeader>
                             <TableBody>
                                 {paginated.map((row) => (
-                                    <TableRow key={row.variant_id}>
+                                    <TableRow
+                                        key={row.variant_id}
+                                        className="cursor-pointer"
+                                        tabIndex={0}
+                                        onClick={() =>
+                                            setEditingVariantId(row.variant_id)
+                                        }
+                                        onTouchEnd={() =>
+                                            setEditingVariantId(row.variant_id)
+                                        }
+                                        onKeyDown={(e) => {
+                                            if (
+                                                e.key === 'Enter' ||
+                                                e.key === ' '
+                                            ) {
+                                                e.preventDefault();
+                                                setEditingVariantId(
+                                                    row.variant_id,
+                                                );
+                                            }
+                                        }}
+                                    >
                                         <TableCell>
                                             {row.product_name}
                                         </TableCell>
@@ -395,127 +489,48 @@ export default function StockPriceUpdate({ products }: Props) {
                                             <div className="flex flex-col gap-1">
                                                 <span>{row.variant_name}</span>
                                                 <span className="text-sm font-bold text-muted-foreground">
-                                                    {t('Stock')}:{' '}
-                                                    {Number(
-                                                        row.stock_quantity,
-                                                    ) *
-                                                        Number(
-                                                            row.units_per_package,
-                                                        )}
+                                                    {t('Stock')}:
+                                                </span>
+                                                <span className="text-sm font-bold text-muted-foreground">
+                                                    {(() => {
+                                                        const stock =
+                                                            getStockBreakdown(
+                                                                row,
+                                                            );
+
+                                                        return `${stock.totalUnits} / ${row.units_per_package} = ${stock.packages} ${t('Packages')}, ${stock.loose} ${t('Units')}`;
+                                                    })()}
                                                 </span>
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-center">
-                                            {Number(row.units_per_package)}
+                                            {row.units_per_package}
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                min="0"
-                                                className="h-8 w-24"
-                                                value={row.quantity}
-                                                onChange={(e) =>
-                                                    updateQuantity(
-                                                        row.variant_id,
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {row.stock_quantity}
+                                        </TableCell>
+                                        <TableCell>{row.cost_price}</TableCell>
+                                        <TableCell>
+                                            {row.selling_price}
                                         </TableCell>
                                         <TableCell>
-                                            <Input
-                                                type="number"
-                                                step="1"
-                                                className="h-8 w-28"
-                                                value={row.cost_price}
-                                                onChange={(e) =>
-                                                    updateRow(
-                                                        row.variant_id,
-                                                        'cost_price',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
+                                            {row.per_unit_price}
                                         </TableCell>
-                                        <TableCell>
-                                            {(row.pricing_mode === 'single' ||
-                                                row.pricing_mode === 'both' ||
-                                                row.pricing_mode ===
-                                                    'package' ||
-                                                row.pricing_mode ===
-                                                    'single_pack') && (
-                                                <Input
-                                                    type="number"
-                                                    step="1"
-                                                    className="h-8 w-28"
-                                                    value={row.selling_price}
-                                                    onChange={(e) =>
-                                                        updateRow(
-                                                            row.variant_id,
-                                                            'selling_price',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {row.pricing_mode === 'both' && (
-                                                <Input
-                                                    type="number"
-                                                    step="1"
-                                                    className="h-8 w-28"
-                                                    value={row.per_unit_price}
-                                                    onChange={(e) =>
-                                                        updateRow(
-                                                            row.variant_id,
-                                                            'per_unit_price',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </TableCell>
-                                        <TableCell>
-                                            {(row.pricing_mode === 'pack' ||
-                                                row.pricing_mode === 'both' ||
-                                                row.pricing_mode ===
-                                                    'single_pack') && (
-                                                <Input
-                                                    type="number"
-                                                    step="1"
-                                                    className="h-8 w-28"
-                                                    value={row.pack_price}
-                                                    onChange={(e) =>
-                                                        updateRow(
-                                                            row.variant_id,
-                                                            'pack_price',
-                                                            e.target.value,
-                                                        )
-                                                    }
-                                                />
-                                            )}
-                                        </TableCell>
+                                        <TableCell>{row.pack_price}</TableCell>
                                         <TableCell className="text-right">
-                                            <Button
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                disabled={
-                                                    savingId ===
-                                                        row.variant_id ||
-                                                    !hasChanges(row.variant_id)
-                                                }
-                                                onClick={() =>
-                                                    handleSave(row.variant_id)
-                                                }
-                                            >
-                                                {savingId === row.variant_id ? (
-                                                    <LoaderCircle className="h-4 w-4 animate-spin" />
-                                                ) : (
-                                                    <Save className="h-4 w-4" />
-                                                )}
-                                            </Button>
+                                            <div className="flex justify-end gap-1">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={() =>
+                                                        setEditingVariantId(
+                                                            row.variant_id,
+                                                        )
+                                                    }
+                                                >
+                                                    <Pencil className="mr-1 h-4 w-4" />
+                                                    {t('Edit')}
+                                                </Button>
+                                            </div>
                                         </TableCell>
                                     </TableRow>
                                 ))}
@@ -561,6 +576,169 @@ export default function StockPriceUpdate({ products }: Props) {
                         </div>
                     </CardContent>
                 </Card>
+
+                <Dialog
+                    open={editingRow !== undefined}
+                    onOpenChange={(open) => {
+                        if (!open && savingId === null) {
+                            setEditingVariantId(null);
+                        }
+                    }}
+                >
+                    {editingRow && (
+                        <DialogContent className="max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {t('Edit Stock & Price')}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    {editingRow.product_name} -{' '}
+                                    {editingRow.variant_name}
+                                </DialogDescription>
+                            </DialogHeader>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Units/Pkg')}
+                                    <Input
+                                        type="number"
+                                        min="1"
+                                        step="1"
+                                        value={editingRow.units_per_package}
+                                        onChange={(e) =>
+                                            updateUnitsPerPackage(
+                                                editingRow.variant_id,
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Packages')}
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder={t('Packages')}
+                                        value={editingRow.quantity}
+                                        onChange={(e) =>
+                                            updateQuantity(
+                                                editingRow.variant_id,
+                                                'quantity',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Loose')}
+                                    <Input
+                                        type="number"
+                                        min="0"
+                                        step="1"
+                                        placeholder={t('Units')}
+                                        value={editingRow.loose_quantity}
+                                        onChange={(e) =>
+                                            updateQuantity(
+                                                editingRow.variant_id,
+                                                'loose_quantity',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Cost Price')}
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editingRow.cost_price}
+                                        onChange={(e) =>
+                                            updateRow(
+                                                editingRow.variant_id,
+                                                'cost_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Selling Price')}
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editingRow.selling_price}
+                                        onChange={(e) =>
+                                            updateRow(
+                                                editingRow.variant_id,
+                                                'selling_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium">
+                                    {t('Per Unit Price')}
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editingRow.per_unit_price}
+                                        onChange={(e) =>
+                                            updateRow(
+                                                editingRow.variant_id,
+                                                'per_unit_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                                <label className="grid gap-2 text-sm font-medium sm:col-span-2">
+                                    {t('Pack Price')}
+                                    <Input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={editingRow.pack_price}
+                                        onChange={(e) =>
+                                            updateRow(
+                                                editingRow.variant_id,
+                                                'pack_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
+                                </label>
+                            </div>
+                            <DialogFooter>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setEditingVariantId(null)}
+                                    disabled={savingId !== null}
+                                >
+                                    {t('Cancel')}
+                                </Button>
+                                <Button
+                                    disabled={
+                                        savingId === editingRow.variant_id ||
+                                        !hasChanges(editingRow.variant_id)
+                                    }
+                                    onClick={() =>
+                                        handleSave(editingRow.variant_id)
+                                    }
+                                >
+                                    {savingId === editingRow.variant_id ? (
+                                        <LoaderCircle className="mr-1 h-4 w-4 animate-spin" />
+                                    ) : (
+                                        <Save className="mr-1 h-4 w-4" />
+                                    )}
+                                    {t('Save')}
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    )}
+                </Dialog>
             </div>
         </>
     );

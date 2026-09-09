@@ -11,7 +11,12 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { products, productsEdit, dashboard, instockHistoryIndex } from '@/feature-routes';
+import {
+    products,
+    productsEdit,
+    dashboard,
+    instockHistoryIndex,
+} from '@/feature-routes';
 import { useTranslation } from '@/lib/i18n';
 import { ks } from '@/lib/utils';
 import type { Product } from '@/types';
@@ -131,11 +136,14 @@ export default function ProductsShow({ product }: Props) {
                                         <TableCell>
                                             {variant.pricing_mode === 'both'
                                                 ? t('single + pack + package')
-                                                : variant.pricing_mode === 'single_pack'
+                                                : variant.pricing_mode ===
+                                                    'single_pack'
                                                   ? t('single + pack')
-                                                  : variant.pricing_mode === 'single'
+                                                  : variant.pricing_mode ===
+                                                      'single'
                                                     ? t('single mode')
-                                                    : variant.pricing_mode === 'pack'
+                                                    : variant.pricing_mode ===
+                                                        'pack'
                                                       ? t('pack mode')
                                                       : t('package mode')}
                                         </TableCell>
@@ -181,6 +189,9 @@ export default function ProductsShow({ product }: Props) {
                                                     product.id,
                                                     variant.id,
                                                 ])}
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
+                                                }
                                             >
                                                 <Button
                                                     variant="ghost"

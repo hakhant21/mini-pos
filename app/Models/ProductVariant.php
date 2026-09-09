@@ -25,15 +25,15 @@ class ProductVariant extends Model
     protected function casts(): array
     {
         return [
-            'units_per_package' => 'decimal:2',
+            'units_per_package' => 'integer',
             'cost_price' => 'decimal:2',
             'selling_price' => 'decimal:2',
             'per_unit_price' => 'decimal:2',
             'pack_price' => 'decimal:2',
-            'units_per_pack' => 'decimal:2',
-            'stock_quantity' => 'decimal:2',
-            'min_stock_level' => 'decimal:2',
-            'max_stock_level' => 'decimal:2',
+            'units_per_pack' => 'integer',
+            'stock_quantity' => 'integer',
+            'min_stock_level' => 'integer',
+            'max_stock_level' => 'integer',
             'pricing_mode' => 'string',
             'is_active' => 'boolean',
         ];

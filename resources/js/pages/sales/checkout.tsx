@@ -152,7 +152,9 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                     (sum, item) =>
                         sum +
                         (item.pricing_mode === 'package'
-                            ? item.quantity * item.units_per_package * item.units_per_pack
+                            ? item.quantity *
+                              item.units_per_package *
+                              item.units_per_pack
                             : item.pricing_mode === 'pack'
                               ? item.quantity * item.units_per_pack
                               : item.quantity),
@@ -165,7 +167,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                       ? unitsPerPack
                       : 1;
 
-            const availableUnits = num(variant.stock_quantity) * unitsPerPackage * unitsPerPack;
+            const availableUnits = num(variant.stock_quantity);
 
             if (reserved + needed > availableUnits) {
                 return prev;
@@ -234,7 +236,9 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                 (sum, i) =>
                                     sum +
                                     (i.pricing_mode === 'package'
-                                        ? i.quantity * i.units_per_package * i.units_per_pack
+                                        ? i.quantity *
+                                          i.units_per_package *
+                                          i.units_per_pack
                                         : i.pricing_mode === 'pack'
                                           ? i.quantity * i.units_per_pack
                                           : i.quantity),
@@ -242,12 +246,14 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                             );
                         const newUnits =
                             item.pricing_mode === 'package'
-                                ? newQty * item.units_per_package * item.units_per_pack
+                                ? newQty *
+                                  item.units_per_package *
+                                  item.units_per_pack
                                 : item.pricing_mode === 'pack'
                                   ? newQty * item.units_per_pack
                                   : newQty;
 
-                        const availableUnits = item.stock_quantity * item.units_per_package * item.units_per_pack;
+                        const availableUnits = item.stock_quantity;
 
                         if (otherUnits + newUnits > availableUnits) {
                             return item;
@@ -583,7 +589,7 @@ export default function SalesCheckout({ products, sale = null }: Props) {
                                                             'package'
                                                                 ? `${t('Pkg')} x${num(item.units_per_package)}`
                                                                 : item.pricing_mode ===
-                                                                  'pack'
+                                                                    'pack'
                                                                   ? `${t('Pack')} x${num(item.units_per_pack)}`
                                                                   : t('Single')}
                                                         </Badge>
