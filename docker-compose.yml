@@ -7,7 +7,7 @@ services:
     restart: unless-stopped
     working_dir: /var/www
     ports:
-      - "${APP_PORT:-8000}:8000"
+      - "${APP_PORT:-8000}:80"
     volumes:
       - app_storage:/var/www/storage
     environment:

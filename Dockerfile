@@ -1,35 +1,25 @@
-FROM php:8.4-cli-bookworm
+FROM node:20-bookworm AS assets
 
 WORKDIR /var/www
+RUN npm install -g pnpm
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+COPY . .
+RUN pnpm run build
 
-RUN apt-get update \
-    && apt-get install -y git unzip supervisor libzip-dev libonig-dev libxml2-dev \
-        libpng-dev libjpeg-dev libfreetype6-dev nodejs npm \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring zip xml gd \
-    && pecl install redis \
-    && docker-php-ext-enable redis \
-    && rm -rf /var/lib/apt/lists/*
+FROM webdevops/php-nginx:8.4
 
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+WORKDIR /var/www
+ENV WEB_DOCUMENT_ROOT=/var/www/public
 
 COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-COPY package.json ./
-RUN npm install
-
 COPY . .
-RUN npm run build
+COPY --from=assets /var/www/public/build /var/www/public/build
 
 RUN mkdir -p storage/framework/cache/data storage/framework/sessions \
     storage/framework/views storage/logs bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
-COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
-
-EXPOSE 8000
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+EXPOSE 80
