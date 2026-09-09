@@ -3,3 +3,9 @@ vendor
 storage
 bootstrap/cache
 .git
+.env
+.env.*
+!.env.example
+credentials
+public/hot
+public/storage

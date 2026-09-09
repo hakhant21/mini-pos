@@ -55,29 +55,11 @@ until docker compose exec app php -v &>/dev/null 2>&1; do
 done
 
 # ── Backend setup ───────────────────────────────────────
-info "Upgrading npm to latest version"
-run_in_container "npm install -g npm@12.0.2"
-
-info "Installing npm packages..."
-run_in_container "npm install"
-
-info "Building assets..."
-run_in_container "npm run build"
-
-info "Setting permissions..."
-run_in_container "chown -R www-data:www-data /var/www/storage/ /var/www/bootstrap/cache/"
-
-info "Installing composer packages..."
-run_in_container "composer install --no-dev --optimize-autoloader --no-interaction --ignore-platform-reqs"
-
 info "Running migrations..."
-run_in_container "php artisan migrate"
+run_in_container "php artisan migrate --force"
 
-info "Creating storage link..."
-run_in_container "php artisan storage:link"
-
-info "Clearing cache..."
-run_in_container "php artisan optimize:clear"
+info "Caching application..."
+run_in_container "php artisan optimize"
 
 echo ""
 info "Done! App is up and running at http://pos.local"

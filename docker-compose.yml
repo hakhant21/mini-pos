@@ -3,47 +3,102 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: backend
+    image: mini-pos:latest
     restart: unless-stopped
     working_dir: /var/www
-    ports:
-      - "8000:8000"
     volumes:
-      - ./:/var/www
-      - ./storage:/var/www/storage
+      - app_storage:/var/www/storage
     environment:
-      APP_URL: ${APP_URL:-http://localhost}
-      DB_CONNECTION: ${DB_CONNECTION:-mysql}
-      DB_HOST: ${DB_HOST:-mysql}
-      DB_PORT: ${DB_PORT:-3306}
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_URL: ${APP_URL:-http://localhost:8000}
+      APP_KEY: ${APP_KEY:?APP_KEY must be set}
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-minipos}
-      DB_USERNAME: ${DB_USERNAME:-root}
-      DB_PASSWORD: ${DB_PASSWORD:-asdffdsa}
+      DB_USERNAME: minipos
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+      REDIS_CLIENT: phpredis
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     networks:
       - laravel-net
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php-fpm -t"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
 
-  mysql:
-    image: jsurf/rpi-mariadb:latest
-    container_name: mysql
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    networks:
+      - laravel-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  nginx:
+    image: mini-pos:latest
     restart: unless-stopped
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${APP_PORT:-8000}:80"
+    volumes:
+      - app_storage:/var/www/storage
+    depends_on:
+      app:
+        condition: service_healthy
+    networks:
+      - laravel-net
+    command: ["nginx", "-g", "daemon off;"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost/up || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  mysql:
+    image: mariadb:11.4
+    restart: unless-stopped
     environment:
       TZ: "Asia/Yangon"
       MYSQL_DATABASE: ${DB_DATABASE:-minipos}
+      MYSQL_USER: minipos
       MYSQL_PASSWORD: ${DB_PASSWORD:-asdffdsa}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-asdffdsa}
     volumes:
       - db_data:/var/lib/mysql
     networks:
       - laravel-net
-    command: --innodb_use_native_aio=0
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 networks:
   laravel-net:
     driver: bridge
 
 volumes:
+  app_storage:
   db_data:
+  redis_data:
