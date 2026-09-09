@@ -14,13 +14,14 @@ RUN apt-get update --allow-releaseinfo-change && \
     supervisor \
     nodejs \
     npm \
+    $PHPIZE_DEPS \
     && docker-php-ext-install -j$(nproc) \
     pdo_mysql \
     gd \
     zip \
     bcmath \
-    && pecl install redis || true \
-    && docker-php-ext-enable redis || true \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
