@@ -36,6 +36,15 @@ compose() {
     docker compose "$@"
 }
 
+if [ -z "${DOCKER_PLATFORM:-}" ]; then
+    case "$(uname -m)" in
+        aarch64|arm64) export DOCKER_PLATFORM="linux/arm64" ;;
+        armv7l) export DOCKER_PLATFORM="linux/arm/v7" ;;
+        armv6l) export DOCKER_PLATFORM="linux/arm/v6" ;;
+        x86_64|amd64) export DOCKER_PLATFORM="linux/amd64" ;;
+    esac
+fi
+
 wait_for_service() {
     local service=$1
     local max_attempts=30

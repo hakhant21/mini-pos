@@ -1,5 +1,6 @@
 services:
   app:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
     build:
       context: .
       dockerfile: Dockerfile
@@ -40,6 +41,7 @@ services:
       start_period: 30s
 
   redis:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
     image: redis:7.4-alpine
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
@@ -55,6 +57,7 @@ services:
       start_period: 10s
 
   nginx:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
     build:
       context: .
       dockerfile: Dockerfile
@@ -77,6 +80,7 @@ services:
       start_period: 10s
 
   mysql:
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
     image: mariadb:11.4
     restart: unless-stopped
     environment:
