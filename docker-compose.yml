@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: app
     restart: unless-stopped
     working_dir: /var/www
     volumes:
@@ -57,7 +58,10 @@ services:
 
   nginx:
     platform: linux/arm64
-    image: mini-pos:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: nginx
     restart: unless-stopped
     ports:
       - "${APP_PORT:-8000}:80"
@@ -68,7 +72,6 @@ services:
         condition: service_healthy
     networks:
       - laravel-net
-    command: ["nginx", "-g", "daemon off;"]
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS http://localhost/up || exit 1"]
       interval: 30s
