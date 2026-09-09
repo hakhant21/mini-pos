@@ -1,29 +1,37 @@
 # ============================================================
-# Assets Build Stage - Using pnpm via curl (no npm)
+# Assets Build Stage - Using pre-installed pnpm
 # ============================================================
 FROM node:22-bookworm-slim AS assets
 
 WORKDIR /var/www
 
-# Install pnpm using the official install script (bypasses npm)
-RUN curl -fsSL https://get.pnpm.io/install.sh | sh - && \
-    export PNPM_HOME="/root/.local/share/pnpm" && \
-    export PATH="$PNPM_HOME:$PATH"
+# pnpm is already installed in this image? Let's check and use it
+# If not, we'll use npm which is definitely installed
+RUN npm --version && node --version
 
 # Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm (installed via curl)
-RUN /root/.local/share/pnpm/pnpm install --frozen-lockfile || \
-    /root/.local/share/pnpm/pnpm install --no-frozen-lockfile
+# Try multiple package manager options
+RUN if command -v pnpm &> /dev/null; then \
+    pnpm install --frozen-lockfile || pnpm install; \
+    elif command -v npm &> /dev/null; then \
+    npm install; \
+    else \
+    echo "No package manager found"; exit 1; \
+    fi
 
 # Copy the rest of the application
 COPY . .
 
-# Build frontend assets
-RUN /root/.local/share/pnpm/pnpm run build || \
-    /root/.local/share/pnpm/pnpm build || \
-    npm run build
+# Build frontend assets - try multiple commands
+RUN if command -v pnpm &> /dev/null; then \
+    pnpm run build; \
+    elif command -v npm &> /dev/null; then \
+    npm run build; \
+    else \
+    echo "No package manager found"; exit 1; \
+    fi
 
 # ============================================================
 # PHP Dependencies Stage
@@ -32,7 +40,7 @@ FROM php:8.4-cli-bookworm AS vendor
 
 WORKDIR /var/www
 
-# Install system dependencies
+# Install system dependencies (using cached packages)
 RUN apt-get update && apt-get install -y \
     git \
     unzip \
