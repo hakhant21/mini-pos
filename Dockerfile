@@ -14,14 +14,15 @@ RUN npm install -g pnpm@11.9.0
 # Copy package files first
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies with pnpm
-RUN pnpm install --frozen-lockfile || pnpm install
+# Install dependencies with pnpm. Do not fall back to a mutable install: the
+# lockfile must be reproducible on the Pi architecture.
+RUN pnpm install --frozen-lockfile
 
 # Copy the rest of the application
 COPY . .
 
 # Build frontend assets
-RUN pnpm run build || npm run build
+RUN pnpm run build
 
 # ============================================================
 # PHP Dependencies Stage

@@ -1,5 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -e
+
+# Always run Compose relative to this script, not the caller's current folder.
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # ============================================================
 # Colors and formatting
@@ -28,6 +32,10 @@ check_command() {
     command -v "$1" &>/dev/null
 }
 
+compose() {
+    docker compose "$@"
+}
+
 wait_for_service() {
     local service=$1
     local max_attempts=30
@@ -35,7 +43,7 @@ wait_for_service() {
 
     info "Waiting for $service to be ready..."
     while [ $attempt -le $max_attempts ]; do
-        if docker compose exec -T $service php -v &>/dev/null 2>&1; then
+        if compose exec -T "$service" php -v &>/dev/null 2>&1; then
             success "$service is ready!"
             return 0
         fi
@@ -68,13 +76,28 @@ if ! docker info &>/dev/null 2>&1; then
     fi
 fi
 
+if ! docker info &>/dev/null 2>&1; then
+    error "Docker daemon is unavailable. Start Docker and run this script again."
+fi
+
 step "Checking Docker Compose"
 
-if ! docker compose version &>/dev/null 2>&1; then
+if ! compose version &>/dev/null 2>&1; then
     warn "Docker Compose plugin not found. Installing..."
-    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" \
-        -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
+    if ! check_command curl; then
+        error "curl is required to install Docker Compose"
+    fi
+    compose_arch=$(uname -m)
+    case "$compose_arch" in
+        aarch64|arm64) compose_arch="aarch64" ;;
+        armv7l|armv6l) compose_arch="armv7" ;;
+        x86_64|amd64) compose_arch="x86_64" ;;
+        *) error "Unsupported CPU architecture: $compose_arch" ;;
+    esac
+    sudo mkdir -p /usr/local/lib/docker/cli-plugins
+    sudo curl -fsSL "https://github.com/docker/compose/releases/latest/download/docker-compose-linux-${compose_arch}" \
+        -o /usr/local/lib/docker/cli-plugins/docker-compose
+    sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
     success "Docker Compose installed."
 fi
 
@@ -93,22 +116,24 @@ fi
 
 # Generate APP_KEY if not set
 if ! grep -q "^APP_KEY=" .env || [ -z "$(grep "^APP_KEY=" .env | cut -d '=' -f2)" ]; then
-    if check_command openssl; then
-        APP_KEY=$(openssl rand -base64 32)
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
-        else
-            sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
-        fi
-        success "APP_KEY generated"
-    else
-        warn "OpenSSL not found. Please set APP_KEY manually in .env"
+    if ! check_command openssl; then
+        error "OpenSSL is required to generate APP_KEY"
     fi
+    APP_KEY="base64:$(openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | cut -c1-43)"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
+    else
+        sed -i "s/^APP_KEY=.*/APP_KEY=$APP_KEY/" .env
+    fi
+    success "APP_KEY generated"
 fi
 
 # Set database password if not set
 if grep -q "^DB_PASSWORD=$" .env || ! grep -q "^DB_PASSWORD=" .env; then
-    DB_PASSWORD=$(openssl rand -base64 16 | tr -d "=+/" | cut -c1-16)
+    if ! check_command openssl; then
+        error "OpenSSL is required to generate DB_PASSWORD"
+    fi
+    DB_PASSWORD=$(openssl rand -base64 16 | tr -dc 'A-Za-z0-9' | cut -c1-16)
     if [[ "$OSTYPE" == "darwin"* ]]; then
         sed -i '' "s/^DB_PASSWORD=.*/DB_PASSWORD=$DB_PASSWORD/" .env
     else
@@ -121,11 +146,11 @@ step "Starting Docker containers"
 
 # Pull latest images
 info "Pulling Docker images..."
-docker compose pull
+compose pull
 
 # Build and start containers
 info "Building and starting containers..."
-docker compose up -d --build
+compose up -d --build
 
 step "Waiting for services to be ready"
 
@@ -158,7 +183,7 @@ run_in_container "chmod -R 775 /var/www/storage /var/www/bootstrap/cache" || tru
 step "Checking service health"
 
 sleep 10
-if docker compose ps | grep -q "healthy"; then
+if compose ps | grep -q "healthy"; then
     success "✅ All services are healthy!"
 else
     warn "Some services may not be healthy yet. Check with: docker compose ps"

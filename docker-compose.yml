@@ -1,6 +1,5 @@
 services:
   app:
-    platform: linux/arm64
     build:
       context: .
       dockerfile: Dockerfile
@@ -41,7 +40,6 @@ services:
       start_period: 30s
 
   redis:
-    platform: linux/arm64
     image: redis:7.4-alpine
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
@@ -57,7 +55,6 @@ services:
       start_period: 10s
 
   nginx:
-    platform: linux/arm64
     build:
       context: .
       dockerfile: Dockerfile
@@ -73,14 +70,13 @@ services:
     networks:
       - laravel-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost/up || exit 1"]
+      test: ["CMD-SHELL", "nginx -t"]
       interval: 30s
       timeout: 5s
       retries: 3
       start_period: 10s
 
   mysql:
-    platform: linux/arm64
     image: mariadb:11.4
     restart: unless-stopped
     environment:
