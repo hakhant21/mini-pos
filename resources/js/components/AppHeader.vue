@@ -63,7 +63,7 @@ const activeItemStyles =
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
+        title: 'navigation.dashboard',
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -71,12 +71,12 @@ const mainNavItems: NavItem[] = [
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'Repository',
+        title: 'common.repository',
         href: 'https://github.com/laravel/vue-starter-kit',
         icon: Folder,
     },
     {
-        title: 'Documentation',
+        title: 'common.documentation',
         href: 'https://laravel.com/docs/starter-kits#vue',
         icon: BookOpen,
     },
@@ -86,7 +86,7 @@ const rightNavItems: NavItem[] = [
 <template>
     <div>
         <div class="border-sidebar-border/80 border-b">
-            <div class="mx-auto flex h-16 items-center px-4 md:max-w-7xl">
+            <div class="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>
@@ -95,13 +95,14 @@ const rightNavItems: NavItem[] = [
                                 variant="ghost"
                                 size="icon"
                                 class="mr-2 h-9 w-9"
+                                :aria-label="$t('common.navigation_menu')"
                             >
                                 <Menu class="h-5 w-5" />
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" class="w-[300px] p-6">
                             <SheetTitle class="sr-only"
-                                >Navigation menu</SheetTitle
+                                >{{ $t('common.navigation_menu') }}</SheetTitle
                             >
                             <SheetHeader class="flex justify-start text-left">
                                 <AppLogoIcon
@@ -129,7 +130,7 @@ const rightNavItems: NavItem[] = [
                                             :is="item.icon"
                                             class="h-5 w-5"
                                         />
-                                        {{ item.title }}
+                                        {{ $t(item.title) }}
                                     </Link>
                                 </nav>
                                 <div class="flex flex-col space-y-4">
@@ -146,7 +147,7 @@ const rightNavItems: NavItem[] = [
                                             :is="item.icon"
                                             class="h-5 w-5"
                                         />
-                                        <span>{{ item.title }}</span>
+                                        <span>{{ $t(item.title) }}</span>
                                     </a>
                                 </div>
                             </div>
@@ -185,7 +186,7 @@ const rightNavItems: NavItem[] = [
                                         :is="item.icon"
                                         class="mr-2 h-4 w-4"
                                     />
-                                    {{ item.title }}
+                                    {{ $t(item.title) }}
                                 </Link>
                                 <div
                                     v-if="isCurrentUrl(item.href)"
@@ -204,17 +205,18 @@ const rightNavItems: NavItem[] = [
                                 ($event.target as HTMLSelectElement).value,
                             )
                         "
-                        aria-label="Language"
+                        :aria-label="$t('common.language')"
                         class="rounded-lg border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     >
-                        <option value="my">မြန်မာ</option>
-                        <option value="en">English</option>
+                        <option value="my">{{ $t('common.language_myanmar') }}</option>
+                        <option value="en">{{ $t('common.language_english') }}</option>
                     </select>
                     <div class="relative flex items-center space-x-1">
                         <Button
                             variant="ghost"
                             size="icon"
                             class="group h-9 w-9 cursor-pointer"
+                            :aria-label="$t('common.search')"
                         >
                             <Search
                                 class="size-5 opacity-80 group-hover:opacity-100"
@@ -241,7 +243,7 @@ const rightNavItems: NavItem[] = [
                                                     rel="noopener noreferrer"
                                                 >
                                                     <span class="sr-only">{{
-                                                        item.title
+                                                        $t(item.title)
                                                     }}</span>
                                                     <component
                                                         :is="item.icon"
@@ -251,7 +253,7 @@ const rightNavItems: NavItem[] = [
                                             </Button>
                                         </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>{{ item.title }}</p>
+                                            <p>{{ $t(item.title) }}</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>
@@ -265,6 +267,7 @@ const rightNavItems: NavItem[] = [
                                 variant="ghost"
                                 size="icon"
                                 class="focus-within:ring-primary relative size-10 w-auto rounded-full p-1 focus-within:ring-2"
+                                :aria-label="$t('common.user_menu')"
                             >
                                 <Avatar
                                     class="size-8 overflow-hidden rounded-full"

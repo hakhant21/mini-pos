@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\CompleteCheckoutRequest;
 use App\Http\Requests\Sale\CancelSaleRequest;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Services\Checkout\CheckoutService;
@@ -19,16 +20,33 @@ class SaleController extends Controller
     {
         $this->authorize('viewAny', Sale::class);
 
-        return Inertia::render('operations/Index', ['section' => 'sales', 'title' => 'Sales history', 'description' => 'Review completed sales, receipts and payment methods.', 'sales' => Sale::with('user')->latest('sold_at')->paginate(20)]);
+        return Inertia::render('operations/Index', [
+            'section' => 'sales',
+            'title' => 'Sales history',
+            'description' => 'Review completed sales, receipts and payment methods.',
+            'sales' => Sale::with('user')->latest('sold_at')->paginate(20)
+        ]);
     }
 
     public function create(): Response
     {
         $this->authorize('create', Sale::class);
 
-        $products = Product::with(['category', 'units', 'stock'])->where('active', true)->get()->map(fn (Product $product): array => [...$product->toArray(), 'price' => $product->units->first()?->selling_price ?? 0, 'icon' => '📦']);
+        $products = Inertia::scroll(fn() => Product::with(['category', 'units', 'stock'])
+            ->where('active', true)
+            ->orderBy('category_id')
+            ->orderBy('id')
+            ->paginate(50)
+            ->through(fn(Product $product): array => [
+                ...$product->toArray(),
+                'price' => $product->units->first()?->selling_price ?? 0,
+                'icon' => '📦'
+            ]));
 
-        return Inertia::render('checkouts/Index', ['products' => $products]);
+        return Inertia::render('checkouts/Index', [
+            'products' => $products,
+            'categories' => Category::query()->orderBy('id')->pluck('name')->values(),
+        ]);
     }
 
     public function store(CompleteCheckoutRequest $request, CheckoutService $checkout): RedirectResponse
@@ -43,14 +61,25 @@ class SaleController extends Controller
     {
         $this->authorize('view', $sale);
 
-        return Inertia::render('operations/Index', ['section' => 'sales', 'title' => 'Sale '.$sale->invoice_number, 'description' => 'Receipt and payment details.', 'sale' => $sale->load(['user', 'items.product', 'items.unit'])]);
+        return Inertia::render('operations/Index', [
+            'section' => 'sales',
+            'title' => 'Sale ' . $sale->invoice_number,
+            'description' => 'Receipt and payment details.',
+            'sale' => $sale->load(['user', 'items.product', 'items.unit'])
+        ]);
     }
 
     public function receipt(Sale $sale): Response
     {
         $this->authorize('view', $sale);
 
-        return Inertia::render('sales/Receipt', ['sale' => $sale->load(['user', 'items.product', 'items.unit'])]);
+        return Inertia::render('sales/Receipt', [
+            'sale' => $sale->load([
+                'user',
+                'items.product',
+                'items.unit'
+            ])
+        ]);
     }
 
     public function cancel(CancelSaleRequest $request, Sale $sale, SaleService $sales): RedirectResponse

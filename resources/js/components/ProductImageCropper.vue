@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 const props = defineProps<{
     modelValue: File | null;
@@ -15,6 +16,7 @@ const previewUrl = ref<string | null>(null);
 const selectedImage = ref<HTMLImageElement | null>(null);
 const zoom = ref(1);
 const error = ref('');
+const { t } = useI18n();
 
 function revokePreview(): void {
     if (previewUrl.value) {
@@ -30,7 +32,7 @@ function selectFile(event: Event): void {
     }
 
     if (!file.type.startsWith('image/')) {
-        error.value = 'Please select an image file.';
+        error.value = t('products.image_file_error');
         return;
     }
 
@@ -90,25 +92,25 @@ onBeforeUnmount(revokePreview);
     <div class="space-y-3">
         <div class="flex flex-wrap items-center gap-3">
             <button type="button" @click="fileInput?.click()" class="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-blue-950/40">
-                {{ previewUrl || existingImage ? 'Choose another image' : 'Choose image' }}
+                {{ previewUrl || existingImage ? $t('products.choose_another_image') : $t('products.choose_image') }}
             </button>
             <button v-if="previewUrl" type="button" @click="cropImage" class="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-600 px-4 text-sm font-semibold text-white transition hover:bg-blue-700">
-                Crop and use image
+                {{ $t('products.crop_image') }}
             </button>
             <button v-if="previewUrl || props.modelValue" type="button" @click="clearImage" class="text-sm font-semibold text-rose-600 hover:text-rose-700">
-                Remove
+                {{ $t('common.remove') }}
             </button>
         </div>
         <input ref="fileInput" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" @change="selectFile" />
         <div v-if="previewUrl || existingImage" class="relative h-48 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-700 dark:bg-slate-800">
-            <img :src="previewUrl || existingImage || ''" alt="Product preview" class="h-full w-full object-cover" :style="{ transform: previewUrl ? `scale(${zoom})` : undefined }" @load="selectedImage = $event.target as HTMLImageElement" />
+            <img :src="previewUrl || existingImage || ''" :alt="$t('products.image_preview')" class="h-full w-full object-cover" :style="{ transform: previewUrl ? `scale(${zoom})` : undefined }" @load="selectedImage = $event.target as HTMLImageElement" />
             <div v-if="previewUrl" class="pointer-events-none absolute inset-0 border-4 border-white/80 shadow-[inset_0_0_0_999px_rgba(0,0,0,0.2)]" />
         </div>
         <div v-if="previewUrl" class="flex max-w-xs items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
-            <span>Zoom</span>
+            <span>{{ $t('products.zoom') }}</span>
             <input v-model.number="zoom" type="range" min="1" max="3" step="0.1" class="flex-1" />
         </div>
-        <p class="text-xs text-slate-400">JPG, PNG, or WebP. Maximum 2 MB.</p>
+        <p class="text-xs text-slate-400">{{ $t('products.image_requirements') }}</p>
         <p v-if="error" class="text-xs font-medium text-rose-600" role="alert">{{ error }}</p>
     </div>
 </template>

@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Product;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Sequence;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests are redirected from store operations', function (string $path) {
     $this->get($path)->assertRedirect(route('login'));
@@ -11,6 +15,35 @@ test('authenticated users can open checkout and operations', function (string $p
 
     $this->actingAs($user)->get($path)->assertOk();
 })->with(['/checkout', '/products', '/inventory', '/sales']);
+
+test('checkout loads products in pages of twenty', function () {
+    $user = User::factory()->create(['role' => 'manager']);
+    $category = Category::create(['name' => 'Checkout products', 'slug' => 'checkout-products']);
+    $emptyCategory = Category::create(['name' => 'Empty category', 'slug' => 'empty-category']);
+
+    Product::factory()
+        ->count(21)
+        ->sequence(fn (Sequence $sequence): array => [
+            'name' => 'Checkout product '.$sequence->index,
+            'sku' => 'CHECKOUT-'.$sequence->index,
+        ])
+        ->create([
+            'category_id' => $category->id,
+            'base_unit' => 'Piece',
+            'purchase_price' => 100,
+            'reorder_level' => 1,
+            'active' => true,
+        ]);
+
+    $this->actingAs($user)
+        ->get(route('checkout.index'))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('checkouts/Index')
+            ->has('products.data', 20)
+            ->where('categories', [$category->name, $emptyCategory->name])
+            ->where('products.per_page', 20),
+        );
+});
 
 test('unknown store operations return not found', function () {
     $user = User::factory()->create();

@@ -14,7 +14,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Profile settings',
+                title: 'settings.profile_settings',
                 href: edit(),
             },
         ],
@@ -26,15 +26,15 @@ const user = computed(() => page.props.auth.user);
 </script>
 
 <template>
-    <Head title="Profile settings" />
+    <Head :title="$t('settings.profile_settings')" />
 
-    <h1 class="sr-only">Profile settings</h1>
+    <h1 class="sr-only">{{ $t('settings.profile_settings') }}</h1>
 
     <div class="flex flex-col gap-6">
         <Heading
             variant="small"
-            title="Profile"
-            description="Update your name and email address"
+            :title="$t('settings.profile')"
+            :description="$t('settings.profile_description')"
         />
 
         <Form
@@ -42,17 +42,17 @@ const user = computed(() => page.props.auth.user);
             class="space-y-5"
             v-slot="{ errors, processing }"
         >
-            <FormSection title="Personal details" description="Keep your workspace identity and account notifications up to date.">
+            <FormSection :title="$t('settings.personal_details')" :description="$t('settings.personal_details_description')">
                 <div class="grid gap-5">
-                    <FormField label="Name" required :error="errors.name" hint="Your name is shown across the workspace.">
-                        <Input id="name" class="mt-1 block w-full" name="name" :default-value="user.name" required autocomplete="name" placeholder="Full name" />
+                    <FormField :label="$t('settings.name')" required :error="errors.name" :hint="$t('settings.name_hint')">
+                        <Input id="name" class="mt-1 block w-full" name="name" :default-value="user.name" required autocomplete="name" :placeholder="$t('settings.full_name')" />
                     </FormField>
-                    <FormField label="Email address" required :error="errors.email" hint="Use an address you can access for account notifications.">
-                        <Input id="email" type="email" class="mt-1 block w-full" name="email" :default-value="user.email" required autocomplete="username" placeholder="Email address" />
+                    <FormField :label="$t('auth.email')" required :error="errors.email" :hint="$t('settings.email_hint')">
+                        <Input id="email" type="email" class="mt-1 block w-full" name="email" :default-value="user.email" required autocomplete="username" :placeholder="$t('auth.email')" />
                     </FormField>
                 </div>
             </FormSection>
-            <FormActions label="Save changes" :processing="processing" />
+            <FormActions :label="$t('common.save_changes')" :processing="processing" />
         </Form>
     </div>
 

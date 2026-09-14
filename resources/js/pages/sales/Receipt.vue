@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { Head, Link } from "@inertiajs/vue3";
 import { ArrowLeft, Printer } from "@lucide/vue";
+import { useI18n } from "vue-i18n";
 import { index as salesIndex } from "@/routes/sales";
 const props = defineProps<{ sale: any }>();
+const { t } = useI18n();
 const money = (value: number) =>
-    new Intl.NumberFormat("en-US").format(value) + " MMK";
+    `${new Intl.NumberFormat("en-US").format(value)} ${t('common.currency')}`;
 function printReceipt(): void {
     window.print();
 }
 </script>
 <template>
-    <Head title="Receipt" />
+    <Head :title="t('receipt.title')" />
     <div
         class="min-h-screen bg-slate-100 px-4 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100 print:bg-white print:p-0"
     >
@@ -19,20 +21,20 @@ function printReceipt(): void {
                 <Link
                     :href="salesIndex()"
                     class="flex items-center gap-2 text-sm text-slate-500"
-                    ><ArrowLeft class="size-4" /> Sales</Link
+                    ><ArrowLeft class="size-4" /> {{ t('receipt.sales') }}</Link
                 ><button
                     @click="printReceipt"
                     class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white"
                 >
-                    <Printer class="size-4" /> Print receipt
+                    <Printer class="size-4" /> {{ t('receipt.print') }}
                 </button>
             </div>
             <article
                 class="receipt-paper bg-white p-8 shadow-sm dark:bg-slate-900 print:bg-white print:p-4 print:shadow-none"
             >
                 <div class="text-center">
-                    <h1 class="text-xl font-bold">Convenience Store</h1>
-                    <p class="mt-1 text-xs text-slate-500">Sales receipt</p>
+                    <h1 class="text-xl font-bold">{{ t('receipt.store_name') }}</h1>
+                    <p class="mt-1 text-xs text-slate-500">{{ t('receipt.sales_receipt') }}</p>
                     <p class="mt-4 text-xs">{{ props.sale.invoice_number }}</p>
                     <p class="text-xs text-slate-500">
                         {{ props.sale.sold_at }}
@@ -56,33 +58,33 @@ function printReceipt(): void {
                 <div class="my-6 border-t border-dashed border-slate-300" />
                 <div class="space-y-2 text-sm">
                     <div class="flex justify-between">
-                        <span>Subtotal</span
+                        <span>{{ t('checkout.subtotal') }}</span
                         ><span>{{ money(props.sale.subtotal) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Discount</span
+                        <span>{{ t('checkout.discount') }}</span
                         ><span>{{ money(props.sale.discount) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>Tax</span><span>{{ money(props.sale.tax) }}</span>
+                        <span>{{ t('checkout.tax') }}</span><span>{{ money(props.sale.tax) }}</span>
                     </div>
                     <div class="flex justify-between text-base font-bold">
-                        <span>Total</span
+                        <span>{{ t('checkout.total') }}</span
                         ><span>{{ money(props.sale.total) }}</span>
                     </div>
                     <div class="flex justify-between">
-                        <span>{{ props.sale.payment_method }}</span
+                        <span>{{ t(`operations.payment_methods.${props.sale.payment_method}`) }}</span
                         ><span
-                            >Paid {{ money(props.sale.received_amount) }}</span
+                            >{{ t('receipt.paid') }} {{ money(props.sale.received_amount) }}</span
                         >
                     </div>
                     <div class="flex justify-between">
-                        <span>Change</span
+                        <span>{{ t('receipt.change') }}</span
                         ><span>{{ money(props.sale.change_amount) }}</span>
                     </div>
                 </div>
                 <p class="mt-8 text-center text-sm font-semibold">
-                    Thank you. Please come again.
+                    {{ t('receipt.thank_you') }}
                 </p>
             </article>
         </div>

@@ -41,20 +41,20 @@ import type { NavItem } from "@/types";
 const page = usePage();
 
 const allNavItems: NavItem[] = [
-    { title: "Dashboard", href: dashboard(), icon: LayoutGrid },
-    { title: "Checkout", href: checkoutIndex(), icon: ShoppingCart },
-    { title: "Categories", href: categoryIndex(), icon: FolderTree },
-    { title: "Products", href: productIndex(), icon: Store },
-    { title: "Inventory", href: inventoryIndex(), icon: Boxes },
-    { title: "Purchases", href: purchaseIndex(), icon: PackagePlus },
-    { title: "Suppliers", href: supplierIndex(), icon: Truck },
-    { title: "Sales", href: saleIndex(), icon: ReceiptText },
+    { title: "navigation.dashboard", href: dashboard(), icon: LayoutGrid },
+    { title: "navigation.checkout", href: checkoutIndex(), icon: ShoppingCart },
+    { title: "navigation.categories", href: categoryIndex(), icon: FolderTree },
+    { title: "navigation.products", href: productIndex(), icon: Store },
+    { title: "navigation.inventory", href: inventoryIndex(), icon: Boxes },
+    { title: "navigation.purchases", href: purchaseIndex(), icon: PackagePlus },
+    { title: "navigation.suppliers", href: supplierIndex(), icon: Truck },
+    { title: "navigation.sales", href: saleIndex(), icon: ReceiptText },
     {
-        title: "Stock Management",
+        title: "navigation.adjustments",
         href: adjustmentIndex(),
         icon: ClipboardList,
     },
-    { title: "Reports", href: reportIndex(), icon: BarChart3 },
+    { title: "navigation.reports", href: reportIndex(), icon: BarChart3 },
 ];
 
 const mainNavItems = allNavItems.filter((item) => {
@@ -62,7 +62,7 @@ const mainNavItems = allNavItems.filter((item) => {
 
     return (
         role !== "cashier" ||
-        ["Dashboard", "Checkout / New sale", "Products", "Sales"].includes(
+        ["navigation.dashboard", "navigation.checkout", "navigation.products", "navigation.sales"].includes(
             item.title,
         )
     );

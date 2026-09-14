@@ -23,14 +23,14 @@ class CheckoutService
 
                 return ['product' => $product, 'product_id' => $product->id, 'product_unit_id' => $unit->id, 'quantity' => $item['quantity'], 'unit_price' => $unit->selling_price, 'base_quantity' => $item['quantity'] * $unit->conversion];
             });
-            $subtotal = $lines->sum(fn (array $line): int => $line['unit_price'] * $line['quantity']);
+            $subtotal = $lines->sum(fn(array $line): int => $line['unit_price'] * $line['quantity']);
             $discount = (int) ($data['discount'] ?? 0);
             $tax = (int) ($data['tax'] ?? 0);
             $total = max(0, $subtotal - $discount + $tax);
             if ((int) $data['received_amount'] < $total) {
                 throw ValidationException::withMessages(['received_amount' => 'Received amount is less than the total.']);
             }
-            $sale = Sale::create(['user_id' => $userId, 'invoice_number' => 'INV-'.now()->format('YmdHis').'-'.random_int(100, 999), 'sold_at' => now(), 'payment_method' => $data['payment_method'], 'received_amount' => $data['received_amount'], 'change_amount' => $data['received_amount'] - $total, 'subtotal' => $subtotal, 'discount' => $discount, 'tax' => $tax, 'total' => $total]);
+            $sale = Sale::create(['user_id' => $userId, 'invoice_number' => 'INV-' . now()->format('YmdHis') . '-' . random_int(100, 999), 'sold_at' => now(), 'payment_method' => $data['payment_method'], 'received_amount' => $data['received_amount'], 'change_amount' => $data['received_amount'] - $total, 'subtotal' => $subtotal, 'discount' => $discount, 'tax' => $tax, 'total' => $total]);
             $balance = Balance::query()
                 ->where('user_id', $userId)
                 ->whereDate('created_at', today())

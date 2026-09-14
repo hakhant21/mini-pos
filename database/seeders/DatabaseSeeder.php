@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\Category;
 use App\Models\Product;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -17,14 +16,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'),
-            'role' => 'admin',
-        ]);
+        $this->call(UserSeeder::class);
 
         $categories = collect(['Alcohol', 'Beer', 'Soft Drink', 'Cigarettes', 'Cheroots', 'Snacks', 'Other'])->mapWithKeys(fn (string $name) => [$name => Category::create(['name' => $name, 'slug' => str($name)->slug()])]);
 

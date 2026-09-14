@@ -12,7 +12,7 @@ use App\Http\Controllers\StockAdjustments\StockAdjustmentController;
 use App\Http\Controllers\Suppliers\SupplierController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+Route::redirect('/', '/dashboard')->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');

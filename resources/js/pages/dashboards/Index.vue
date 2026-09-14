@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import {
     ArrowUpRight,
     ChevronRight,
@@ -61,9 +62,10 @@ const statStyles = [
     'bg-violet-50 text-violet-600',
 ];
 const showBalanceModal = ref(false);
+const { t } = useI18n();
 const balanceForm = useForm({ opening_amount: 0 });
 const money = (value: string | number) =>
-    new Intl.NumberFormat('en-US').format(Number(value)) + ' MMK';
+    `${new Intl.NumberFormat('en-US').format(Number(value))} ${t('common.currency')}`;
 
 function submitBalance(): void {
     balanceForm.post(balanceStore().url, {
@@ -76,7 +78,7 @@ function submitBalance(): void {
 </script>
 
 <template>
-    <Head title="Dashboard" />
+    <Head :title="$t('navigation.dashboard')" />
     <div
         class="min-h-screen bg-[#f5f7fb] px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
     >
@@ -89,7 +91,7 @@ function submitBalance(): void {
                         {{ props.currentDate }}
                     </p>
                     <h1 class="mt-1 text-2xl font-bold tracking-tight">
-                        Good morning, {{ props.userName }}
+                        {{ $t('dashboard.greeting') }}, {{ props.userName }}
                         <span class="text-amber-400">✦</span>
                     </h1>
                 </div>
@@ -97,20 +99,20 @@ function submitBalance(): void {
                     <Link
                         :href="checkoutIndex()"
                         class="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20"
-                        ><Plus class="size-4" /> New sale</Link
+                        ><Plus class="size-4" /> {{ $t('dashboard.new_sale') }}</Link
                     >
-                    <button type="button" @click="showBalanceModal = true" class="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60">Add Balance</button>
+                    <button type="button" @click="showBalanceModal = true" class="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-100 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-950/60">{{ $t('dashboard.add_balance') }}</button>
                 </div>
             </header>
 
-            <div v-if="!props.balance" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300" role="alert">No opening balance recorded for today.</div>
+            <div v-if="!props.balance" class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300" role="alert">{{ $t('dashboard.no_opening_balance') }}</div>
 
             <section v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <article v-for="item in [
-                    ['Opening balance', props.balance.opening_amount],
-                    ['Sales today', props.balance.total_sale_amount],
-                    ['Change given', props.balance.total_change_amount],
-                    ['Expected closing', props.balance.closing_amount],
+                    [$t('dashboard.opening_balance'), props.balance.opening_amount],
+                    [$t('dashboard.sales_today'), props.balance.total_sale_amount],
+                    [$t('dashboard.change_given'), props.balance.total_change_amount],
+                    [$t('dashboard.expected_closing'), props.balance.closing_amount],
                 ]" :key="item[0]" class="rounded-xl border border-slate-200/80 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-900">
                     <p class="text-xs text-slate-400">{{ item[0] }}</p>
                     <p class="mt-1 text-lg font-bold">{{ money(item[1]) }}</p>
@@ -120,16 +122,16 @@ function submitBalance(): void {
             <Dialog v-model:open="showBalanceModal">
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add opening balance</DialogTitle>
-                        <DialogDescription>Record the opening balance for today.</DialogDescription>
+                        <DialogTitle>{{ $t('dashboard.add_opening_balance') }}</DialogTitle>
+                        <DialogDescription>{{ $t('dashboard.record_opening_balance') }}</DialogDescription>
                     </DialogHeader>
                     <form @submit.prevent="submitBalance" class="space-y-4">
-                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200" for="opening_amount">Opening amount</label>
+                        <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200" for="opening_amount">{{ $t('dashboard.opening_balance') }}</label>
                         <input id="opening_amount" v-model.number="balanceForm.opening_amount" type="number" min="0" step="0.01" required class="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100" />
                         <p v-if="balanceForm.errors.opening_amount" class="text-xs font-medium text-rose-600">{{ balanceForm.errors.opening_amount }}</p>
                         <DialogFooter>
-                            <button type="button" @click="showBalanceModal = false" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">Cancel</button>
-                            <button type="submit" :disabled="balanceForm.processing" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Save balance</button>
+                            <button type="button" @click="showBalanceModal = false" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 dark:border-slate-700 dark:text-slate-300">{{ $t('common.cancel') }}</button>
+                            <button type="submit" :disabled="balanceForm.processing" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{{ $t('dashboard.save_balance') }}</button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
@@ -171,12 +173,12 @@ function submitBalance(): void {
                 >
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="font-bold">Sales overview</h2>
+                        <h2 class="font-bold">{{ $t('dashboard.sales_overview') }}</h2>
                             <p class="mt-1 text-sm text-slate-400">
-                                Revenue performance for the last 7 days
+                                {{ $t('dashboard.revenue_last_seven_days') }}
                             </p>
                         </div>
-                        <span class="rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300">Last 7 days</span>
+                        <span class="rounded-lg bg-slate-50 px-3 py-2 text-xs font-medium text-slate-500 dark:bg-slate-800 dark:text-slate-300">{{ $t('dashboard.last_seven_days') }}</span>
                     </div>
                     <div
                         class="mt-8 flex h-52 items-end gap-3 border-b border-l border-slate-100 px-3 dark:border-slate-800 sm:gap-6"
@@ -198,8 +200,8 @@ function submitBalance(): void {
                     <div
                         class="mt-4 flex justify-between text-xs text-slate-400"
                     >
-                        <span>0 MMK</span><span>100,000 MMK</span
-                        ><span>200,000 MMK</span>
+                         <span>{{ $t('common.currency_amount', { amount: '0' }) }}</span><span>{{ $t('common.currency_amount', { amount: '100,000' }) }}</span
+                         ><span>{{ $t('common.currency_amount', { amount: '200,000' }) }}</span>
                     </div>
                 </article>
                 <article
@@ -207,15 +209,15 @@ function submitBalance(): void {
                 >
                     <div class="flex items-start justify-between">
                         <div>
-                            <h2 class="font-bold">Stock alerts</h2>
+                            <h2 class="font-bold">{{ $t('dashboard.stock_alerts') }}</h2>
                             <p class="mt-1 text-sm text-slate-400">
-                                Items that need your attention
+                                {{ $t('dashboard.items_need_attention') }}
                             </p>
                         </div>
                         <Link
                             :href="inventoryIndex()"
                             class="text-xs font-semibold text-blue-600"
-                            >View all</Link
+                            >{{ $t('common.view_all') }}</Link
                         >
                     </div>
                     <div class="mt-5 divide-y divide-slate-100 dark:divide-slate-800">
@@ -257,15 +259,15 @@ function submitBalance(): void {
                 >
                     <div class="flex items-center justify-between">
                         <div>
-                            <h2 class="font-bold">Recent sales</h2>
+                            <h2 class="font-bold">{{ $t('dashboard.recent_sales') }}</h2>
                             <p class="mt-1 text-sm text-slate-400">
-                                Latest transactions from your store
+                                {{ $t('dashboard.latest_transactions') }}
                             </p>
                         </div>
                         <Link
                             :href="saleIndex()"
                             class="flex items-center gap-1 text-xs font-semibold text-blue-600"
-                            >View all <ArrowUpRight class="size-3.5"
+                            >{{ $t('common.view_all') }} <ArrowUpRight class="size-3.5"
                         /></Link>
                     </div>
                     <div class="mt-5 overflow-x-auto">
@@ -274,11 +276,11 @@ function submitBalance(): void {
                                 class="border-y border-slate-100 text-xs tracking-wide text-slate-400 uppercase dark:border-slate-800"
                             >
                                 <tr>
-                                    <th class="py-3 font-medium">Invoice</th>
-                                    <th class="py-3 font-medium">Customer</th>
-                                    <th class="py-3 font-medium">Amount</th>
-                                    <th class="py-3 font-medium">Time</th>
-                                    <th class="py-3 font-medium">Status</th>
+                                    <th class="py-3 font-medium">{{ $t('dashboard.invoice') }}</th>
+                                    <th class="py-3 font-medium">{{ $t('dashboard.customer') }}</th>
+                                    <th class="py-3 font-medium">{{ $t('dashboard.amount') }}</th>
+                                    <th class="py-3 font-medium">{{ $t('dashboard.time') }}</th>
+                                    <th class="py-3 font-medium">{{ $t('dashboard.status') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
@@ -314,9 +316,9 @@ function submitBalance(): void {
                 <article
                     class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-6"
                 >
-                    <h2 class="font-bold">Quick actions</h2>
+                    <h2 class="font-bold">{{ $t('dashboard.quick_actions') }}</h2>
                     <p class="mt-1 text-sm text-slate-400">
-                        Common tasks at your fingertips
+                        {{ $t('dashboard.common_tasks') }}
                     </p>
                     <div class="mt-5 grid gap-3">
                         <Link
@@ -326,7 +328,7 @@ function submitBalance(): void {
                                 class="rounded-lg bg-blue-50 p-2 text-blue-600"
                                 ><ShoppingCart class="size-4"
                             /></span>
-                            Start a new sale
+                            {{ $t('dashboard.start_new_sale') }}
                             <ChevronRight
                                 class="ml-auto size-4 text-slate-300" /></Link
                         ><Link
@@ -336,7 +338,7 @@ function submitBalance(): void {
                                 class="rounded-lg bg-violet-50 p-2 text-violet-600"
                                 ><Package class="size-4"
                             /></span>
-                            Add a product
+                            {{ $t('dashboard.add_product') }}
                             <ChevronRight class="ml-auto size-4 text-slate-300"
                         /></Link>
                     </div>

@@ -19,7 +19,7 @@ defineOptions({
     layout: {
         breadcrumbs: [
             {
-                title: 'Security settings',
+                title: 'settings.security_settings',
                 href: edit(),
             },
         ],
@@ -28,15 +28,15 @@ defineOptions({
 </script>
 
 <template>
-    <Head title="Security settings" />
+    <Head :title="$t('settings.security_settings')" />
 
-    <h1 class="sr-only">Security settings</h1>
+    <h1 class="sr-only">{{ $t('settings.security_settings') }}</h1>
 
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Update password"
-            description="Ensure your account is using a long, random password to stay secure"
+            :title="$t('settings.update_password')"
+            :description="$t('settings.update_password_description')"
         />
 
         <Form
@@ -53,42 +53,42 @@ defineOptions({
             class="space-y-5"
             v-slot="{ errors, processing }"
         >
-            <FormSection title="Password" description="Use a unique password to keep your account secure.">
+            <FormSection :title="$t('auth.password')" :description="$t('settings.password_description')">
             <div class="grid gap-5">
-                <FormField label="Current password" required :error="errors.current_password" hint="Confirm your current password before changing it.">
+                <FormField :label="$t('settings.current_password')" required :error="errors.current_password" :hint="$t('settings.current_password_hint')">
                 <PasswordInput
                     id="current_password"
                     name="current_password"
                     class="mt-1 block w-full"
                     autocomplete="current-password"
-                    placeholder="Current password"
+                    :placeholder="$t('settings.current_password')"
                 />
                 </FormField>
 
-                <FormField label="New password" required :error="errors.password" hint="Choose a unique password that is at least 12 characters.">
+                <FormField :label="$t('settings.new_password')" required :error="errors.password" :hint="$t('settings.new_password_hint')">
                 <PasswordInput
                     id="password"
                     name="password"
                     class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="New password"
+                    :placeholder="$t('settings.new_password')"
                     :passwordrules="props.passwordRules"
                 />
                 </FormField>
 
-                <FormField label="Confirm password" required :error="errors.password_confirmation" hint="Enter the new password again to confirm it.">
+                <FormField :label="$t('auth.confirm_password')" required :error="errors.password_confirmation" :hint="$t('settings.confirm_password_hint')">
                 <PasswordInput
                     id="password_confirmation"
                     name="password_confirmation"
                     class="mt-1 block w-full"
                     autocomplete="new-password"
-                    placeholder="Confirm password"
+                    :placeholder="$t('auth.confirm_password')"
                     :passwordrules="props.passwordRules"
                 />
                 </FormField>
             </div>
             </FormSection>
-            <FormActions label="Save password" :processing="processing" />
+            <FormActions :label="$t('settings.save_password')" :processing="processing" />
         </Form>
     </div>
 </template>
