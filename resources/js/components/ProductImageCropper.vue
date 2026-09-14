@@ -40,7 +40,8 @@ function selectFile(event: Event): void {
     revokePreview();
     previewUrl.value = URL.createObjectURL(file);
     zoom.value = 1;
-    emit('update:modelValue', null);
+    // Keep the selected file as the form value; cropping can replace it later.
+    emit('update:modelValue', file);
 }
 
 function cropImage(): void {

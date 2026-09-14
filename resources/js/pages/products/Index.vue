@@ -16,6 +16,7 @@ type Product = {
     stock: { quantity_base: number } | null;
     color?: string;
     icon?: string;
+    image_url?: string | null;
 };
 type PaginationLink = { url: string | null; label: string; active: boolean };
 
@@ -183,7 +184,8 @@ defineOptions({
                                         <div
                                             class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-xl dark:bg-blue-950/50"
                                         >
-                                            {{ product.icon ?? "📦" }}
+                                            <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full rounded-xl object-cover" />
+                                            <span v-else>{{ product.icon ?? "📦" }}</span>
                                         </div>
                                         <div>
                                             <p class="font-semibold">{{ product.name }}</p>

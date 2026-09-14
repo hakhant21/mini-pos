@@ -32,6 +32,7 @@ type Product = {
     stock: { quantity_base: number } | null;
     units: Unit[];
     icon: string;
+    image_url?: string | null;
     barcode?: string | null;
 };
 type CartItem = Product & {
@@ -228,7 +229,8 @@ function completeSale(): void {
                                 <div
                                     class="flex aspect-[1.4] w-full max-w-full items-center justify-center rounded-lg bg-slate-50 text-4xl dark:bg-slate-800"
                                 >
-                                    {{ product.icon }}
+                                    <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full object-cover" />
+                                    <span v-else>{{ product.icon }}</span>
                                 </div>
                                 <p class="mt-3 break-words whitespace-normal text-sm font-semibold">
                                     {{ product.name }}
@@ -297,7 +299,8 @@ function completeSale(): void {
                             <div
                                 class="flex size-10 items-center justify-center rounded-lg bg-slate-50 text-xl"
                             >
-                                {{ item.icon }}
+                                <img v-if="item.image_url" :src="item.image_url" :alt="item.name" class="size-full rounded-lg object-cover" />
+                                <span v-else>{{ item.icon }}</span>
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="break-words text-sm font-semibold">

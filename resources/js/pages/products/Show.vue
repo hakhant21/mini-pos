@@ -70,12 +70,20 @@ function unitName(unitId: number): string {
             <section
                 class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900"
             >
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <div class="flex size-28 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-50 text-5xl dark:bg-slate-800">
+                        <img v-if="props.product.image_url" :src="props.product.image_url" :alt="props.product.name" class="size-full object-cover" />
+                        <span v-else>📦</span>
+                    </div>
+                    <div class="min-w-0 flex-1">
                 <p class="text-sm text-slate-400">
                     {{ props.product.category.name }} · {{ props.product.sku }}
                 </p>
                 <h1 class="mt-2 break-words text-2xl font-bold">
                     {{ props.product.name }}
                 </h1>
+                    </div>
+                </div>
                 <div class="mt-6 grid gap-4 sm:grid-cols-3">
                     <div>
                         <p class="text-xs text-slate-400">{{ t('products.base_unit') }}</p>
