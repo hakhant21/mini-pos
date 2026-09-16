@@ -10,24 +10,38 @@ use App\Models\Purchase;
 use App\Models\Supplier;
 use App\Services\Inventory\InventoryService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class PurchaseController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorize('viewAny', Purchase::class);
+        $request->validate([
+            'start_date' => ['nullable', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+        ]);
 
-        return Inertia::render('operations/Index', ['section' => 'purchases', 'title' => 'Purchases', 'description' => 'Record supplier orders and receive stock into the store.', 'purchases' => Purchase::with(['supplier', 'user'])->latest('purchased_at')->paginate(20)]);
+        $startDate = $request->date('start_date');
+        $endDate = $request->date('end_date');
+        $purchases = Purchase::with(['supplier', 'user'])
+            ->when($startDate, fn ($query) => $query->whereDate('purchased_at', '>=', $startDate))
+            ->when($endDate, fn ($query) => $query->whereDate('purchased_at', '<=', $endDate))
+            ->latest('purchased_at')
+            ->paginate(20)
+            ->withQueryString();
+
+        return Inertia::render('operations/Index', ['section' => 'purchases', 'title' => 'Purchases', 'description' => 'Record supplier orders and receive stock into the store.', 'purchases' => $purchases, 'filters' => $request->only(['start_date', 'end_date'])]);
     }
 
     public function create(): Response
     {
         $this->authorize('create', Purchase::class);
 
-        return Inertia::render('operations/Index', ['section' => 'purchases', 'title' => 'Create purchase', 'description' => 'Record supplier orders and receive stock into the store.', 'suppliers' => Supplier::where('active', true)->get(['id', 'name']), 'products' => Product::with('units')->where('active', true)->get()]);
+        return Inertia::render('operations/Index', ['section' => 'purchases', 'title' => 'Create purchase', 'description' => 'Record supplier orders and receive stock into the store.', 'suppliers' => Supplier::where('active', true)->get(['id', 'name']), 'products' => Product::with('units.stock')->where('active', true)->get()]);
     }
 
     public function store(StorePurchaseRequest $request, InventoryService $inventory): RedirectResponse
@@ -42,7 +56,7 @@ class PurchaseController extends Controller
                 $unit = ProductUnit::whereKey($item['product_unit_id'])->where('product_id', $item['product_id'])->firstOrFail();
                 $baseQuantity = $item['quantity'] * $unit->conversion;
                 $purchase->items()->create([...$item, 'base_quantity' => $baseQuantity]);
-                $inventory->change(Product::findOrFail($item['product_id']), $baseQuantity, 'purchase', $userId, $purchase);
+                $inventory->change($unit, $baseQuantity, 'purchase', $userId, $purchase);
             }
 
             return $purchase;

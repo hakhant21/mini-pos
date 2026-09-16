@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { Head, Link, router, usePage } from "@inertiajs/vue3";
 import { ChevronDown, Download, Plus, Search, SlidersHorizontal } from "@lucide/vue";
 import { create, edit, index as productsRoute, show } from "@/routes/products";
@@ -12,24 +12,30 @@ type Product = {
     category?: { name: string } | null;
     base_unit?: string | null;
     reorder_level?: number;
-    units: { id: number; name: string; selling_price: number }[];
-    stock: { quantity_base: number } | null;
+    units: { id: number; name: string; selling_price: number; single_unit_price: number }[];
     color?: string;
     icon?: string;
     image_url?: string | null;
 };
+type Category = { id: number; name: string };
 type PaginationLink = { url: string | null; label: string; active: boolean };
 
-const props = defineProps<{ products: { data: Product[]; links?: PaginationLink[] } }>();
+const props = defineProps<{
+    products: { data: Product[]; links?: PaginationLink[] };
+    categories: Category[];
+    filters?: { search?: string; category_id?: number | string };
+}>();
 const page = usePage();
 const { t } = useI18n();
-const query = ref("");
+const query = ref(props.filters?.search ?? "");
+const selectedCategory = ref(String(props.filters?.category_id ?? ""));
 const lowStockOnly = ref(false);
 const showFilters = ref(false);
 const canManageProducts =
     (page.props.auth as { user?: { role?: string } }).user?.role !== "cashier";
 const money = (value: number) =>
     `${new Intl.NumberFormat("en-US").format(value)} ${t("common.currency")}`;
+const totalStock = (product: Product): number => product.units.reduce((total, unit) => total + (unit as { quantity_base?: number }).quantity_base!, 0);
 const visibleProducts = computed(() =>
     props.products.data
         .filter((product) => {
@@ -38,7 +44,7 @@ const visibleProducts = computed(() =>
                 .includes(query.value.toLowerCase());
             const matchesStock =
                 !lowStockOnly.value ||
-                (product.stock?.quantity_base ?? 0) <= (product.reorder_level ?? 0);
+                totalStock(product) <= (product.reorder_level ?? 0);
 
             return matchesQuery && matchesStock;
         })
@@ -66,7 +72,7 @@ function exportProducts(): void {
         ...visibleProducts.value.map((product) => [
             product.name,
             product.sku,
-            String(product.stock?.quantity_base ?? 0),
+            String(totalStock(product)),
         ]),
     ];
     const csv = rows
@@ -78,6 +84,24 @@ function exportProducts(): void {
     link.click();
     URL.revokeObjectURL(link.href);
 }
+
+function filterByCategory(): void {
+    router.visit(
+        productsRoute({
+            query: {
+                search: query.value || undefined,
+                category_id: selectedCategory.value || undefined,
+            },
+        }),
+        { preserveScroll: true },
+    );
+}
+
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
+watch(query, () => {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(filterByCategory, 300);
+});
 
 defineOptions({
     layout: { breadcrumbs: [{ title: "navigation.products", href: productsRoute() }] },
@@ -111,7 +135,7 @@ defineOptions({
                     class="flex flex-col gap-3 border-b border-slate-100 p-4 dark:border-slate-800 sm:flex-row"
                 >
                     <label
-                        class="flex flex-1 items-center gap-2 rounded-xl bg-slate-50 px-3 text-sm text-slate-400 dark:bg-slate-800"
+                        class="order-2 flex w-full items-center gap-2 rounded-xl bg-slate-50 px-3 text-sm text-slate-400 dark:bg-slate-800 sm:w-56 sm:flex-none"
                         ><Search class="size-4" /><input
                             v-model="query"
                             class="w-full border-0 bg-transparent py-2 outline-none placeholder:text-slate-400"
@@ -125,15 +149,16 @@ defineOptions({
                                 ? 'border-blue-300 bg-blue-50 text-blue-600 dark:bg-blue-950/40'
                                 : 'border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
                         "
-                        class="flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium"
+                        class="order-3 flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium"
                     >
                         <SlidersHorizontal class="size-4" /> {{ $t("products.filters") }}
                         <ChevronDown class="size-3.5" />
                     </button>
+                    <select v-model="selectedCategory" class="order-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 sm:w-56" :aria-label="$t('products.category')" @change="filterByCategory"><option value="">{{ $t('products.all_categories') }}</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select>
                     <button
                         type="button"
                         @click="exportProducts"
-                        class="flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                        class="order-4 flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300"
                     >
                         <Download class="size-4" /> {{ $t("products.export") }}
                     </button>
@@ -209,18 +234,18 @@ defineOptions({
                                     </div>
                                 </td>
                                 <td class="font-semibold">
-                                    {{ money(product.units[0]?.selling_price ?? 0) }}
+                                    {{ money(product.units[0]?.single_unit_price ?? 0) }}
                                 </td>
                                 <td>
                                     <span
                                         :class="
-                                            (product.stock?.quantity_base ?? 0) <=
+                                            totalStock(product) <=
                                             (product.reorder_level ?? 0)
                                                 ? 'text-amber-600'
                                                 : 'text-slate-700 dark:text-slate-200'
                                         "
                                         class="font-semibold"
-                                        >{{ product.stock?.quantity_base ?? 0 }}
+                                        >{{ totalStock(product) }}
                                         {{ product.base_unit.toLowerCase() }}s</span
                                     >
                                 </td>

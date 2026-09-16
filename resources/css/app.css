@@ -77,6 +77,10 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+
+    button:not(:disabled) {
+        cursor: pointer;
+    }
 }
 
 /* These pages still contain utility classes from before the token theme. Keep their

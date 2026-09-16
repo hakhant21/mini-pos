@@ -2,6 +2,7 @@
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Sequence;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -30,7 +31,6 @@ test('checkout loads products in pages of twenty', function () {
         ->create([
             'category_id' => $category->id,
             'base_unit' => 'Piece',
-            'purchase_price' => 100,
             'reorder_level' => 1,
             'active' => true,
         ]);
@@ -43,6 +43,38 @@ test('checkout loads products in pages of twenty', function () {
             ->where('categories', [$category->name, $emptyCategory->name])
             ->where('products.per_page', 20),
         );
+});
+
+test('products and inventory can be filtered by category', function () {
+    $user = User::factory()->create(['role' => 'manager']);
+    $includedCategory = Category::create(['name' => 'Included', 'slug' => 'included']);
+    $excludedCategory = Category::create(['name' => 'Excluded', 'slug' => 'excluded']);
+    Product::factory()->create(['category_id' => $includedCategory->id, 'name' => 'Included product', 'sku' => 'INCLUDED', 'base_unit' => 'Piece', 'active' => true]);
+    Product::factory()->create(['category_id' => $excludedCategory->id, 'name' => 'Excluded product', 'sku' => 'EXCLUDED', 'base_unit' => 'Piece', 'active' => true]);
+
+    $this->actingAs($user)->get(route('products.index', ['category_id' => $includedCategory->id]))
+        ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Included product')->where('products.total', 1));
+    $this->actingAs($user)->get(route('inventory.index', ['category_id' => $includedCategory->id]))
+        ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Included product')->where('products.total', 1));
+});
+
+test('products can be filtered by search term', function () {
+    $user = User::factory()->create(['role' => 'manager']);
+    $category = Category::create(['name' => 'Search products', 'slug' => 'search-products']);
+    Product::factory()->create(['category_id' => $category->id, 'name' => 'Searchable Cola', 'sku' => 'COLA-SEARCH', 'base_unit' => 'Piece', 'active' => true]);
+    Product::factory()->create(['category_id' => $category->id, 'name' => 'Other Drink', 'sku' => 'OTHER-SEARCH', 'base_unit' => 'Piece', 'active' => true]);
+
+    $this->actingAs($user)->get(route('products.index', ['search' => 'Searchable']))
+        ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Searchable Cola')->where('products.total', 1));
+});
+
+test('purchases can be filtered by date range', function () {
+    $user = User::factory()->create(['role' => 'manager']);
+    Purchase::create(['user_id' => $user->id, 'invoice_number' => 'IN-RANGE', 'purchased_at' => '2026-09-10 10:00:00', 'subtotal' => 100, 'total' => 100]);
+    Purchase::create(['user_id' => $user->id, 'invoice_number' => 'OUT-RANGE', 'purchased_at' => '2026-09-20 10:00:00', 'subtotal' => 200, 'total' => 200]);
+
+    $this->actingAs($user)->get(route('purchases.index', ['start_date' => '2026-09-09', 'end_date' => '2026-09-11']))
+        ->assertInertia(fn (Assert $page) => $page->where('purchases.data.0.invoice_number', 'IN-RANGE')->where('purchases.total', 1));
 });
 
 test('unknown store operations return not found', function () {

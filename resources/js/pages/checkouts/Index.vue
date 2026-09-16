@@ -21,6 +21,9 @@ type Unit = {
     name: string;
     conversion: number;
     selling_price: number;
+    package_price: number;
+    single_unit_price: number;
+    quantity_base?: number;
     barcode?: string | null;
 };
 type Product = {
@@ -29,11 +32,12 @@ type Product = {
     sku: string;
     category: { name: string };
     base_unit: string;
-    stock: { quantity_base: number } | null;
+    price_mode: string;
     units: Unit[];
     icon: string;
     image_url?: string | null;
     barcode?: string | null;
+    price?: number;
 };
 type CartItem = Product & {
     product_id: number;
@@ -62,6 +66,7 @@ const saleForm = useForm({
     items: [] as {
         product_id: number;
         product_unit_id: number;
+        selling_mode: "Single" | "Package" | "Carton";
         quantity: number;
     }[],
 });
@@ -76,14 +81,79 @@ const filteredProducts = computed(() =>
                 .includes(query.value.toLowerCase()),
     ),
 );
+const totalStock = (product: Product): number =>
+    product.units.reduce((total, unit) => total + (unit.quantity_base ?? 0), 0);
 const money = (value: number) =>
-    `${new Intl.NumberFormat("en-US").format(value)} ${t('common.currency')}`;
+    `${new Intl.NumberFormat("en-US").format(value)} ${t("common.currency")}`;
 function addToCart(product: Product, selectedUnit?: Unit): void {
-    const baseUnit = product.units.find(
-        (unit) => unit.name.toLowerCase() === product.base_unit.toLowerCase(),
-    );
+    const defaultUnit =
+        product.units.find((unit) => unit.name.toLowerCase() === "single") ??
+        product.units.find((unit) => unit.conversion === 1) ??
+        product.units[0];
 
-    checkoutStore.addItem(product, selectedUnit ?? baseUnit ?? null);
+    const unit = selectedUnit ?? defaultUnit ?? null;
+    checkoutStore.addItem(product, unit);
+}
+function productBaseName(product: Product): string {
+    return product.name.replace(/\s+\([^)]*\)$/, "");
+}
+function productVariantLabel(product: Product): string {
+    return product.name.match(/\(([^)]*)\)$/)?.[1] ?? "";
+}
+function unitFormat(unit: Unit, product: Product): string {
+    if (
+        product.price_mode === "single_package_carton" &&
+        ["single", "package", "carton"].includes(unit.name.toLowerCase())
+    ) {
+        return product.base_unit;
+    }
+
+    return unit.name
+        .replace(
+            /\s+(single|package(?:\s*\(\d+\))?|carton(?:\s*\(\d+\))?)$/i,
+            "",
+        )
+        .trim();
+}
+function unitPackage(unit: Unit): string {
+    if (/carton/i.test(unit.name)) return "Carton";
+    if (/package/i.test(unit.name)) return "Package";
+
+    return "Single";
+}
+function formatOptions(product: Product): string[] {
+    return [...new Set(product.units.map((unit) => unitFormat(unit, product)))];
+}
+function packageOptions(product: Product): string[] {
+    const allowedPackages =
+        product.price_mode === "single_package_carton"
+            ? ["Single", "Package", "Carton"]
+            : product.price_mode === "single_package"
+              ? ["Single", "Package"]
+              : ["Single"];
+
+    return allowedPackages.filter(
+        (option) =>
+            option === "Single" ||
+            product.units.some((unit) => unitPackage(unit) === option),
+    );
+}
+function selectedFormat(item: any): string {
+    return item.unit
+        ? unitFormat(item.unit, item.product)
+        : (formatOptions(item.product)[0] ?? "");
+}
+function selectedPackage(item: any): string {
+    return item.selling_mode ?? "Single";
+}
+function changeCartUnit(item: any, format: string, packageName: string): void {
+    const matchingUnits = item.product.units.filter(
+        (unit: Unit) => unitFormat(unit, item.product) === format,
+    );
+    item.unit =
+        matchingUnits.find((unit: Unit) => unitPackage(unit) === packageName) ??
+        (packageName === "Single" ? matchingUnits[0] : null);
+    item.selling_mode = packageName;
 }
 function handleBarcode(): void {
     const value = query.value.trim();
@@ -101,7 +171,7 @@ function handleBarcode(): void {
         barcodeMessage.value = "";
         return;
     }
-    barcodeMessage.value = t('checkout.product_not_found');
+    barcodeMessage.value = t("checkout.product_not_found");
 }
 function handleShortcut(event: KeyboardEvent): void {
     if (event.key === "F2") {
@@ -120,19 +190,17 @@ async function openMobileCart(): Promise<void> {
 onMounted(() => window.addEventListener("keydown", handleShortcut));
 onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
 function unitPrice(item: any): number {
+    if (item.selling_mode === "Single")
+        return item.unit?.single_unit_price ?? 0;
+    if (
+        item.selling_mode === "Package" &&
+        item.product.price_mode === "single_package_carton"
+    )
+        return item.unit?.package_price ?? 0;
+
     return item.unit?.selling_price ?? 0;
 }
 
-function orderedUnits(item: any): Unit[] {
-    const order = ['1L', '750ML', '0.75L', '350ML', '50ML', 'Big Bottle', 'Big bottle', 'Small Bottle', 'Small bottle', 'Long Can', 'Long can', 'Short Can', 'Short can'];
-
-    return [...item.units].sort((first, second) => {
-        const firstPosition = order.indexOf(first.name);
-        const secondPosition = order.indexOf(second.name);
-
-        return (firstPosition === -1 ? order.length : firstPosition) - (secondPosition === -1 ? order.length : secondPosition);
-    });
-}
 function removeFromCart(item: any): void {
     const index = cart.value.indexOf(item);
     if (item.quantity > 1)
@@ -141,7 +209,7 @@ function removeFromCart(item: any): void {
 }
 function completeSale(): void {
     if (cart.value.some((item) => !item.unit)) {
-        unitMessage.value = t('checkout.choose_unit_error');
+        unitMessage.value = t("checkout.choose_unit_error");
         return;
     }
 
@@ -149,6 +217,7 @@ function completeSale(): void {
     saleForm.items = cart.value.map((item) => ({
         product_id: item.product_id,
         product_unit_id: item.unit!.id,
+        selling_mode: item.selling_mode ?? "Single",
         quantity: item.quantity,
     }));
     if (!saleForm.received_amount) {
@@ -173,15 +242,21 @@ function completeSale(): void {
                     ><ArrowLeft class="size-4"
                 /></Link>
                 <div>
-                    <p class="text-sm text-slate-400">{{ $t('checkout.point_of_sale') }}</p>
-                    <h1 class="text-2xl font-bold">{{ $t('checkout.new_sale') }}</h1>
+                    <p class="text-sm text-slate-400">
+                        {{ $t("checkout.point_of_sale") }}
+                    </p>
+                    <h1 class="text-2xl font-bold">
+                        {{ $t("checkout.new_sale") }}
+                    </h1>
                 </div>
                 <span
-                     class="ml-auto rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600"
-                    >{{ $t('checkout.register_open') }}</span
+                    class="ml-auto rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-600"
+                    >{{ $t("checkout.register_open") }}</span
                 >
             </header>
-             <div class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]">
+            <div
+                class="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(320px,390px)]"
+            >
                 <section
                     class="w-full min-w-0 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-5"
                 >
@@ -212,10 +287,17 @@ function completeSale(): void {
                             "
                             class="rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap sm:px-4"
                         >
-                            {{ item === 'all' ? $t('checkout.all_categories') : item }}
+                            {{
+                                item === "all"
+                                    ? $t("checkout.all_categories")
+                                    : item
+                            }}
                         </button>
                     </div>
-                    <InfiniteScroll data="products" items-element="#product-grid">
+                    <InfiniteScroll
+                        data="products"
+                        items-element="#product-grid"
+                    >
                         <div
                             id="product-grid"
                             class="mt-5 grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
@@ -229,36 +311,44 @@ function completeSale(): void {
                                 <div
                                     class="flex aspect-[1.4] w-full max-w-full items-center justify-center rounded-lg bg-slate-50 text-4xl dark:bg-slate-800"
                                 >
-                                    <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full object-cover" />
+                                    <img
+                                        v-if="product.image_url"
+                                        :src="product.image_url"
+                                        :alt="product.name"
+                                        class="size-full object-cover"
+                                    />
                                     <span v-else>{{ product.icon }}</span>
                                 </div>
-                                <p class="mt-3 break-words whitespace-normal text-sm font-semibold">
-                                    {{ product.name }}
-                                </p>
-                                <p class="mt-1 text-xs text-slate-400">
-                                    {{ money(product.units[0]?.selling_price ?? 0) }}
+                                <p
+                                    class="mt-3 break-words whitespace-normal text-sm font-semibold"
+                                >
+                                    {{ productBaseName(product) }}
                                 </p>
                                 <span
-                                    class="mt-3 block text-xs font-medium text-blue-600"
-                                    >{{ t('products.stock_count', { count: product.stock?.quantity_base ?? 0, unit: t('checkout.in_stock') }) }}</span
+                                    v-if="productVariantLabel(product)"
+                                    class="mt-1 inline-flex rounded-md bg-blue-50 px-2 py-1 text-xs font-bold text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
                                 >
+                                    {{ productVariantLabel(product) }}
+                                </span>
                             </button>
                         </div>
                     </InfiniteScroll>
                 </section>
-                 <aside
-                     ref="mobileCart"
-                     id="mobile-cart"
-                     :class="showMobileCart ? 'flex flex-col' : 'hidden'"
-                     class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-9rem)] lg:flex-col"
-                 >
+                <aside
+                    ref="mobileCart"
+                    id="mobile-cart"
+                    :class="showMobileCart ? 'flex flex-col' : 'hidden'"
+                    class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-9rem)] lg:flex-col"
+                >
                     <div
                         class="flex items-center justify-between border-b border-slate-100 p-5 dark:border-slate-800"
                     >
                         <div>
-                            <h2 class="font-bold">{{ $t('checkout.current_sale') }}</h2>
+                            <h2 class="font-bold">
+                                {{ $t("checkout.current_sale") }}
+                            </h2>
                             <p class="mt-1 text-xs text-slate-400">
-                                {{ cart.length }} {{ $t('checkout.items') }}
+                                {{ cart.length }} {{ $t("checkout.items") }}
                             </p>
                         </div>
                         <button
@@ -267,7 +357,7 @@ function completeSale(): void {
                             type="button"
                             class="text-xs font-semibold text-rose-500 hover:text-rose-700"
                         >
-                            {{ $t('checkout.clear') }}
+                            {{ $t("checkout.clear") }}
                         </button>
                     </div>
                     <div
@@ -285,10 +375,10 @@ function completeSale(): void {
                             <p
                                 class="mt-3 text-sm font-semibold text-slate-500"
                             >
-                                {{ $t('checkout.empty') }}
+                                {{ $t("checkout.empty") }}
                             </p>
                             <p class="mt-1 text-xs text-slate-400">
-                                {{ $t('checkout.select_products') }}
+                                {{ $t("checkout.select_products") }}
                             </p>
                         </div>
                         <div
@@ -299,32 +389,81 @@ function completeSale(): void {
                             <div
                                 class="flex size-10 items-center justify-center rounded-lg bg-slate-50 text-xl"
                             >
-                                <img v-if="item.image_url" :src="item.image_url" :alt="item.name" class="size-full rounded-lg object-cover" />
+                                <img
+                                    v-if="item.image_url"
+                                    :src="item.image_url"
+                                    :alt="item.name"
+                                    class="size-full rounded-lg object-cover"
+                                />
                                 <span v-else>{{ item.icon }}</span>
                             </div>
                             <div class="min-w-0 flex-1">
                                 <p class="break-words text-sm font-semibold">
                                     {{ item.name }}
                                 </p>
-                                <label class="mt-1 block text-[10px] font-medium text-slate-400 dark:text-slate-500">{{ $t('checkout.selling_unit') }}</label>
-                                <select
-                                    v-model="item.unit"
-                                    class="mt-1 min-h-8 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
-                                >
-                                    <option :value="null" disabled>{{ $t('checkout.choose_unit') }}</option>
-                                    <option
-                                        v-for="unit in orderedUnits(item)"
-                                        :key="unit.id"
-                                        :value="unit"
+                                <div class="mt-1 grid grid-cols-2 gap-2">
+                                    <label
+                                        class="block text-[10px] font-medium text-slate-400 dark:text-slate-500"
+                                        >{{ $t("checkout.product_unit")
+                                        }}<select
+                                            :value="selectedFormat(item)"
+                                            class="mt-1 min-h-8 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                            @change="
+                                                changeCartUnit(
+                                                    item,
+                                                    (
+                                                        $event.target as HTMLSelectElement
+                                                    ).value,
+                                                    selectedPackage(item),
+                                                )
+                                            "
+                                        >
+                                            <option
+                                                v-for="format in formatOptions(
+                                                    item.product,
+                                                )"
+                                                :key="format"
+                                                :value="format"
+                                            >
+                                                {{ format }}
+                                            </option>
+                                        </select></label
                                     >
-                                        {{ unit.name }}
-                                    </option>
-                                </select>
+                                    <label
+                                        class="block text-[10px] font-medium text-slate-400 dark:text-slate-500"
+                                        >{{ $t("checkout.selling_unit")
+                                        }}<select
+                                            :value="selectedPackage(item)"
+                                            class="mt-1 min-h-8 w-full rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs font-medium text-slate-600 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                                            @change="
+                                                changeCartUnit(
+                                                    item,
+                                                    selectedFormat(item),
+                                                    (
+                                                        $event.target as HTMLSelectElement
+                                                    ).value,
+                                                )
+                                            "
+                                        >
+                                            <option
+                                                v-for="packageName in packageOptions(
+                                                    item.product,
+                                                )"
+                                                :key="packageName"
+                                                :value="packageName"
+                                            >
+                                                {{ packageName }}
+                                            </option>
+                                        </select></label
+                                    >
+                                </div>
                                 <div class="mt-2 flex items-center gap-2">
                                     <button
                                         @click="removeFromCart(item)"
                                         type="button"
-                                        :aria-label="$t('checkout.decrease_quantity')"
+                                        :aria-label="
+                                            $t('checkout.decrease_quantity')
+                                        "
                                         class="rounded-md border border-slate-200 p-1 text-slate-400 transition hover:border-blue-200 hover:text-blue-600 dark:border-slate-700"
                                     >
                                         <Minus class="size-3" /></button
@@ -334,7 +473,9 @@ function completeSale(): void {
                                     ><button
                                         @click="item.quantity++"
                                         type="button"
-                                        :aria-label="$t('checkout.increase_quantity')"
+                                        :aria-label="
+                                            $t('checkout.increase_quantity')
+                                        "
                                         class="rounded-md border border-slate-200 p-1 text-slate-400 transition hover:border-blue-200 hover:text-blue-600 dark:border-slate-700"
                                     >
                                         <Plus class="size-3" />
@@ -360,25 +501,33 @@ function completeSale(): void {
                             </div>
                         </div>
                     </div>
-                    <p v-if="unitMessage" class="mx-5 mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300" role="alert">{{ unitMessage }}</p>
+                    <p
+                        v-if="unitMessage"
+                        class="mx-5 mb-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-700 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+                        role="alert"
+                    >
+                        {{ unitMessage }}
+                    </p>
                     <form
                         @submit.prevent="completeSale"
                         class="shrink-0 space-y-2 border-t border-slate-100 p-3 text-sm dark:border-slate-800"
                     >
                         <div class="flex justify-between text-slate-500">
-                            <span>{{ $t('checkout.subtotal') }}</span
+                            <span>{{ $t("checkout.subtotal") }}</span
                             ><span>{{ money(subtotal) }}</span>
                         </div>
                         <div class="flex justify-between text-slate-500">
-                            <span>{{ $t('checkout.discount') }}</span><span>{{ $t('checkout.zero_amount') }}</span>
+                            <span>{{ $t("checkout.discount") }}</span
+                            ><span>{{ $t("checkout.zero_amount") }}</span>
                         </div>
                         <div class="flex justify-between text-slate-500">
-                            <span>{{ $t('checkout.tax') }}</span><span>{{ $t('checkout.zero_amount') }}</span>
+                            <span>{{ $t("checkout.tax") }}</span
+                            ><span>{{ $t("checkout.zero_amount") }}</span>
                         </div>
                         <div
                             class="flex justify-between border-t border-slate-100 pt-2 text-base font-bold"
                         >
-                            <span>{{ $t('checkout.total') }}</span
+                            <span>{{ $t("checkout.total") }}</span
                             ><span class="text-blue-600">{{
                                 money(subtotal)
                             }}</span>
@@ -395,8 +544,12 @@ function completeSale(): void {
                                     v-model="saleForm.payment_method"
                                     class="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
                                 >
-                                <option value="cash">{{ $t('checkout.cash') }}</option>
-                                <option value="kbzpay">{{ $t('checkout.kbzpay') }}</option>
+                                    <option value="cash">
+                                        {{ $t("checkout.cash") }}
+                                    </option>
+                                    <option value="kbzpay">
+                                        {{ $t("checkout.kbzpay") }}
+                                    </option>
                                 </select>
                             </FormField>
                             <FormField
@@ -411,7 +564,11 @@ function completeSale(): void {
                                     type="number"
                                     min="0"
                                     class="w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-1.5 text-xs dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-                                    :placeholder="$t('checkout.received_amount_placeholder')"
+                                    :placeholder="
+                                        $t(
+                                            'checkout.received_amount_placeholder',
+                                        )
+                                    "
                                 />
                             </FormField>
                         </div>
@@ -428,16 +585,16 @@ function completeSale(): void {
                             class="gap-2 pt-2 [&>button]:min-h-9 [&>button]:px-3 [&>button]:text-xs"
                         />
                     </form>
-                 </aside>
-             </div>
-             <button
-                 type="button"
-                 @click="openMobileCart"
-                 aria-controls="mobile-cart"
-                 class="fixed right-4 bottom-4 z-20 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 lg:hidden"
-             >
-                 {{ $t('checkout.view_cart') }} ({{ cart.length }})
-             </button>
-         </div>
+                </aside>
+            </div>
+            <button
+                type="button"
+                @click="openMobileCart"
+                aria-controls="mobile-cart"
+                class="fixed right-4 bottom-4 z-20 rounded-xl bg-blue-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-blue-600/30 lg:hidden"
+            >
+                {{ $t("checkout.view_cart") }} ({{ cart.length }})
+            </button>
+        </div>
     </div>
 </template>

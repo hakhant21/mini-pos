@@ -5,6 +5,7 @@ namespace App\Http\Controllers\StockAdjustments;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StockAdjustment\StoreStockAdjustmentRequest;
 use App\Models\Product;
+use App\Models\ProductUnit;
 use App\Models\StockAdjustment;
 use App\Services\Inventory\InventoryService;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +19,7 @@ class StockAdjustmentController extends Controller
     {
         $this->authorize('viewAny', StockAdjustment::class);
 
-        return Inertia::render('operations/Index', ['section' => 'adjustments', 'title' => 'Stock adjustments', 'description' => 'Record damaged, expired, missing or counted stock.', 'adjustments' => StockAdjustment::with(['product', 'user'])->latest('adjusted_at')->paginate(20)]);
+        return Inertia::render('operations/Index', ['section' => 'adjustments', 'title' => 'Stock adjustments', 'description' => 'Record damaged, expired, missing or counted stock.', 'adjustments' => StockAdjustment::with(['product', 'user'])->latest('adjusted_at')->paginate(20), 'products' => Product::with(['category', 'units.stock'])->where('active', true)->orderBy('name')->get()]);
     }
 
     public function create(): Response
@@ -35,16 +36,22 @@ class StockAdjustmentController extends Controller
         $userId = $request->user()->id;
         DB::transaction(function () use ($data, $inventory, $userId): void {
             $product = Product::query()->lockForUpdate()->findOrFail($data['product_id']);
-            $change = $data['quantity'] * $data['unit_conversion'];
+            $unit = ProductUnit::query()->where('product_id', $product->id)
+                ->when($data['product_unit_id'] ?? null, fn ($query) => $query->whereKey($data['product_unit_id']))
+                ->when(! ($data['product_unit_id'] ?? null), fn ($query) => $query->where('conversion', $data['unit_conversion']))
+                ->firstOrFail();
+            $data['product_unit_id'] = $unit->id;
+            $data['unit_conversion'] = $unit->conversion;
+            $change = $data['quantity'] * $unit->conversion;
             if ($data['adjustment_type'] === 'decrease') {
                 $change *= -1;
             }
             if ($data['adjustment_type'] === 'count') {
-                $currentQuantity = $product->stock()->lockForUpdate()->value('quantity_base') ?? 0;
+                $currentQuantity = $unit->quantity_base;
                 $change -= $currentQuantity;
             }
             $adjustment = StockAdjustment::create([...$data, 'quantity_base' => abs($change), 'user_id' => $userId, 'adjusted_at' => now()]);
-            $inventory->change($product, $change, 'adjustment', $userId, $adjustment, $data['reason']);
+            $inventory->change($unit, $change, 'adjustment', $userId, $adjustment, $data['reason']);
         });
 
         return to_route('adjustments.index')->with('success', 'Stock adjusted.');
@@ -54,6 +61,6 @@ class StockAdjustmentController extends Controller
     {
         $this->authorize('view', $adjustment);
 
-        return Inertia::render('operations/Index', ['section' => 'adjustments', 'title' => 'Stock adjustment', 'description' => 'Adjustment details.', 'adjustment' => $adjustment->load(['product', 'user'])]);
+        return Inertia::render('operations/Index', ['section' => 'adjustments', 'title' => 'Stock adjustment', 'description' => 'Adjustment details.', 'adjustment' => $adjustment->load(['product', 'unit', 'user'])]);
     }
 }

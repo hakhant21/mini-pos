@@ -15,7 +15,7 @@ class SaleService
     public function cancel(Sale $sale, int $userId, string $reason): Sale
     {
         return DB::transaction(function () use ($sale, $userId, $reason): Sale {
-            $sale = Sale::query()->lockForUpdate()->with('items.product')->findOrFail($sale->id);
+            $sale = Sale::query()->lockForUpdate()->with('items.product', 'items.unit')->findOrFail($sale->id);
             if ($sale->status === 'cancelled') {
                 return $sale;
             }
@@ -23,7 +23,7 @@ class SaleService
                 throw new RuntimeException('Only completed sales can be cancelled.');
             }
             foreach ($sale->items as $item) {
-                $this->inventory->change($item->product, $item->base_quantity, 'sale_cancellation', $userId, $sale, $reason);
+                $this->inventory->change($item->unit, $item->base_quantity, 'sale_cancellation', $userId, $sale, $reason);
             }
             $balance = Balance::query()
                 ->where('user_id', $sale->user_id)

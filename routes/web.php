@@ -18,7 +18,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)->name('dashboard');
     Route::post('balances', [BalanceController::class, 'store'])->name('balances.store');
     Route::resource('products', ProductController::class);
-    Route::patch('products/{product}/quick-update', [ProductController::class, 'quickUpdate'])->name('products.quick-update');
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::resource('suppliers', SupplierController::class)->only(['index', 'store', 'update', 'destroy']);
     Route::get('inventory', [InventoryController::class, 'index'])->name('inventory.index');

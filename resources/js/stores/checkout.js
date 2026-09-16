@@ -19,9 +19,10 @@ export const useCheckoutStore = defineStore('checkout', () => {
     );
 
     function addItem(product, unit) {
+        const sellingMode = unit?.selling_mode ?? 'Single';
         const existing = items.value.find(
             (item) =>
-                item.product_id === product.id && item.unit?.id === unit?.id,
+                item.product_id === product.id && item.unit?.id === unit?.id && item.selling_mode === sellingMode,
         );
         if (existing) existing.quantity += 1;
         else
@@ -30,9 +31,16 @@ export const useCheckoutStore = defineStore('checkout', () => {
                 product_id: product.id,
                 product,
                 unit,
+                selling_mode: sellingMode,
                 quantity: 1,
                 get total() {
-                        return (this.unit?.selling_price ?? 0) * this.quantity;
+                        const price = this.selling_mode === 'Single'
+                            ? (this.unit?.single_unit_price ?? 0)
+                            : this.selling_mode === 'Package' && this.product.price_mode === 'single_package_carton'
+                                ? (this.unit?.package_price ?? 0)
+                                : (this.unit?.selling_price ?? 0);
+
+                        return price * this.quantity;
                 },
             });
     }

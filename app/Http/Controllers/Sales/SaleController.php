@@ -24,7 +24,7 @@ class SaleController extends Controller
             'section' => 'sales',
             'title' => 'Sales history',
             'description' => 'Review completed sales, receipts and payment methods.',
-            'sales' => Sale::with('user')->latest('sold_at')->paginate(20)
+            'sales' => Sale::with('user')->latest('sold_at')->paginate(20),
         ]);
     }
 
@@ -32,15 +32,15 @@ class SaleController extends Controller
     {
         $this->authorize('create', Sale::class);
 
-        $products = Inertia::scroll(fn() => Product::with(['category', 'units', 'stock'])
+        $products = Inertia::scroll(fn () => Product::with(['category', 'units.stock'])
             ->where('active', true)
             ->orderBy('category_id')
             ->orderBy('id')
-            ->paginate(50)
-            ->through(fn(Product $product): array => [
+            ->paginate(20)
+            ->through(fn (Product $product): array => [
                 ...$product->toArray(),
-                'price' => $product->units->first()?->selling_price ?? 0,
-                'icon' => '📦'
+                'price' => $product->units->first()?->single_unit_price ?? 0,
+                'icon' => '📦',
             ]));
 
         return Inertia::render('checkouts/Index', [
@@ -63,9 +63,9 @@ class SaleController extends Controller
 
         return Inertia::render('operations/Index', [
             'section' => 'sales',
-            'title' => 'Sale ' . $sale->invoice_number,
+            'title' => 'Sale '.$sale->invoice_number,
             'description' => 'Receipt and payment details.',
-            'sale' => $sale->load(['user', 'items.product', 'items.unit'])
+            'sale' => $sale->load(['user', 'items.product', 'items.unit']),
         ]);
     }
 
@@ -77,8 +77,8 @@ class SaleController extends Controller
             'sale' => $sale->load([
                 'user',
                 'items.product',
-                'items.unit'
-            ])
+                'items.unit',
+            ]),
         ]);
     }
 

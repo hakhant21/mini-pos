@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Storage;
 
 class Product extends Model
@@ -17,7 +16,7 @@ class Product extends Model
 
     protected $guarded = [];
 
-    protected $appends = ['image_url'];
+    protected $appends = ['image_url', 'stock'];
 
     public function getImageUrlAttribute(): ?string
     {
@@ -34,8 +33,21 @@ class Product extends Model
         return $this->hasMany(ProductUnit::class);
     }
 
-    public function stock(): HasOne
+    public function stocks(): HasMany
     {
-        return $this->hasOne(InventoryStock::class);
+        return $this->hasMany(InventoryStock::class);
+    }
+
+    /**
+     * Expose an aggregate for legacy product-level summaries without storing product stock.
+     * All source values remain owned by the product units.
+     */
+    public function getStockAttribute(): ?array
+    {
+        if (! $this->relationLoaded('units')) {
+            return null;
+        }
+
+        return ['quantity_base' => $this->units->sum('quantity_base')];
     }
 }

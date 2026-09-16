@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\InventoryStock;
+use App\Models\Product;
+use App\Models\ProductUnit;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -18,7 +20,8 @@ class InventoryStockFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'product_id' => Product::factory(),
+            'product_unit_id' => ProductUnit::factory(),
         ];
     }
 }

@@ -35,9 +35,9 @@ return new class extends Migration
             $table->string('name');
             $table->string('sku')->unique();
             $table->string('barcode')->nullable()->unique();
-            $table->string('product_type')->default('standard');
+            $table->string('image')->nullable();
+            $table->string('price_mode')->default('single_package');
             $table->string('base_unit');
-            $table->unsignedBigInteger('purchase_price')->default(0);
             $table->unsignedBigInteger('reorder_level')->default(0);
             $table->boolean('active')->default(true);
             $table->timestamps();
@@ -47,7 +47,13 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->cascadeOnDelete();
             $table->string('name');
             $table->unsignedInteger('conversion')->default(1);
-            $table->unsignedBigInteger('selling_price');
+            $table->unsignedBigInteger('purchase_price')->default(0);
+            $table->unsignedBigInteger('selling_price')->default(0);
+            $table->unsignedBigInteger('package_price')->default(0);
+            $table->unsignedBigInteger('single_unit_price')->default(0);
+            $table->unsignedBigInteger('package_quantity')->default(0);
+            $table->unsignedBigInteger('loose_quantity')->default(0);
+            $table->unsignedBigInteger('quantity_base')->default(0);
             $table->string('barcode')->nullable()->unique();
             $table->boolean('active')->default(true);
             $table->timestamps();
@@ -55,8 +61,8 @@ return new class extends Migration
         });
         Schema::create('inventory_stocks', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->unique()->constrained()->cascadeOnDelete();
-            $table->unsignedBigInteger('quantity_base')->default(0);
+            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('product_unit_id')->unique()->constrained()->cascadeOnDelete();
             $table->timestamps();
         });
         Schema::create('purchases', function (Blueprint $table) {
@@ -93,6 +99,9 @@ return new class extends Migration
             $table->unsignedBigInteger('discount')->default(0);
             $table->unsignedBigInteger('tax')->default(0);
             $table->unsignedBigInteger('total')->default(0);
+            $table->string('status')->default('completed');
+            $table->dateTime('cancelled_at')->nullable();
+            $table->text('cancellation_reason')->nullable();
             $table->timestamps();
         });
         Schema::create('sale_items', function (Blueprint $table) {
@@ -111,6 +120,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('reason');
             $table->string('adjustment_type');
+            $table->foreignId('product_unit_id')->constrained()->restrictOnDelete();
+            $table->unsignedInteger('quantity')->default(0);
+            $table->unsignedInteger('unit_conversion')->default(1);
             $table->unsignedBigInteger('quantity_base');
             $table->text('notes')->nullable();
             $table->dateTime('adjusted_at');
@@ -121,6 +133,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->restrictOnDelete();
             $table->foreignId('user_id')->constrained()->restrictOnDelete();
             $table->string('type');
+            $table->foreignId('product_unit_id')->constrained()->restrictOnDelete();
             $table->bigInteger('quantity_base');
             $table->nullableMorphs('reference');
             $table->text('notes')->nullable();

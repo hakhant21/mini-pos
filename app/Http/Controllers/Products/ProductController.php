@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Product\QuickUpdateProductRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Models\Category;
@@ -22,9 +21,15 @@ class ProductController extends Controller
     {
         $this->authorize('viewAny', Product::class);
         $search = $request->string('search')->trim()->value();
-        $products = Product::with(['category', 'units', 'stock'])->when($search, fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%")->orWhere('barcode', 'like', "%{$search}%")))->latest()->paginate(20)->withQueryString();
+        $categoryId = $request->integer('category_id');
+        $products = Product::with(['category', 'units.stock'])
+            ->when($search, fn ($query) => $query->where(fn ($query) => $query->where('name', 'like', "%{$search}%")->orWhere('sku', 'like', "%{$search}%")->orWhere('barcode', 'like', "%{$search}%")))
+            ->when($categoryId > 0, fn ($query) => $query->where('category_id', $categoryId))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
 
-        return Inertia::render('products/Index', ['products' => $products, 'categories' => Category::query()->where('active', true)->orderBy('name')->get(['id', 'name']), 'filters' => $request->only('search')]);
+        return Inertia::render('products/Index', ['products' => $products, 'categories' => Category::query()->where('active', true)->orderBy('name')->get(['id', 'name']), 'filters' => $request->only(['search', 'category_id'])]);
     }
 
     public function create(): Response
@@ -47,8 +52,10 @@ class ProductController extends Controller
             }
 
             $product = Product::create(collect($data)->except('units')->all());
-            $product->units()->createMany($data['units']);
-            $product->stock()->create(['quantity_base' => 0]);
+            foreach ($data['units'] as $unitData) {
+                $unit = $product->units()->create([...$unitData, 'quantity_base' => ($unitData['package_quantity'] * $unitData['conversion']) + $unitData['loose_quantity']]);
+                $unit->stock()->create(['product_id' => $product->id]);
+            }
         });
 
         return to_route('products.index')->with('success', 'Product created.');
@@ -58,7 +65,7 @@ class ProductController extends Controller
     {
         $this->authorize('view', $product);
 
-        return Inertia::render('products/Show', ['product' => $product->load(['category', 'units', 'stock'])]);
+        return Inertia::render('products/Show', ['product' => $product->load(['category', 'units.stock'])]);
     }
 
     public function edit(Product $product): Response
@@ -71,22 +78,27 @@ class ProductController extends Controller
         return Inertia::render('products/Edit', ['product' => $product, 'categories' => Category::query()->where('active', true)->orderBy('name')->get(['id', 'name'])]);
     }
 
-    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
+    public function update(UpdateProductRequest $request, Product $product, InventoryService $inventory): RedirectResponse
     {
         $this->authorize('update', $product);
         $data = $request->validated();
         $imagePath = $request->file('image')?->store('products', 'public');
         unset($data['image']);
 
-        DB::transaction(function () use ($data, $imagePath, $product): void {
+        DB::transaction(function () use ($data, $imagePath, $product, $inventory, $request): void {
             $oldImage = $product->image;
             if ($imagePath) {
                 $data['image'] = $imagePath;
             }
 
             $product->update(collect($data)->except('units')->all());
-            $product->units()->delete();
-            $product->units()->createMany($data['units']);
+            $submittedUnitIds = collect($data['units'])->pluck('id')->filter()->all();
+            $product->units()->whereNotIn('id', $submittedUnitIds)->delete();
+            foreach ($data['units'] as $unitData) {
+                $unit = $product->units()->updateOrCreate(['id' => $unitData['id'] ?? null], collect($unitData)->except(['id', 'package_quantity', 'loose_quantity'])->all());
+                $unit->stock()->firstOrCreate(['product_id' => $product->id]);
+                $inventory->set($unit, $unitData['package_quantity'], $unitData['loose_quantity'], $request->user()->id, 'Product update');
+            }
 
             if ($imagePath && $oldImage) {
                 Storage::disk('public')->delete($oldImage);
@@ -94,29 +106,6 @@ class ProductController extends Controller
         });
 
         return to_route('products.index')->with('success', 'Product updated.');
-    }
-
-    public function quickUpdate(QuickUpdateProductRequest $request, Product $product, InventoryService $inventory): RedirectResponse
-    {
-        $this->authorize('update', $product);
-        $data = $request->validated();
-
-        DB::transaction(function () use ($data, $inventory, $product, $request): void {
-            $stockUnit = $product->units()->whereKey($data['stock_unit_id'])->firstOrFail();
-            $stock = $product->stock()->lockForUpdate()->firstOrCreate([], ['quantity_base' => 0]);
-            $desiredStock = ($data['package_quantity'] * $stockUnit->conversion) + $data['loose_quantity'];
-            $change = $desiredStock - $stock->quantity_base;
-
-            if ($change !== 0) {
-                $inventory->change($product, $change, 'adjustment', $request->user()->id, null, 'Quick product update');
-            }
-
-            foreach ($data['unit_prices'] as $unitPrice) {
-                $product->units()->whereKey($unitPrice['id'])->update(['selling_price' => $unitPrice['selling_price']]);
-            }
-        });
-
-        return to_route('products.index')->with('success', 'Product stock and prices updated.');
     }
 
     public function destroy(Product $product): RedirectResponse

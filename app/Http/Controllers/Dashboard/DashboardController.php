@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Balance;
-use App\Models\InventoryStock;
 use App\Models\Product;
 use App\Models\Purchase;
 use App\Models\Sale;
@@ -16,7 +15,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $lowStock = InventoryStock::with('product')->whereHas('product', fn ($query) => $query->whereColumn('products.reorder_level', '>', 'inventory_stocks.quantity_base'))->limit(5)->get();
+        $lowStock = Product::query()->with('units')->where('active', true)->get()->filter(fn (Product $product): bool => $product->units->sum('quantity_base') < $product->reorder_level)->take(5);
         $recentSales = Sale::query()->where('status', 'completed')->latest('sold_at')->limit(8)->get();
         $balance = Balance::query()
             ->where('user_id', $request->user()->id)
@@ -35,7 +34,7 @@ class DashboardController extends Controller
             'userName' => $request->user()->name,
             'balance' => $balance?->only(['opening_amount', 'closing_amount', 'total_sale_amount', 'total_change_amount']),
             'sales' => [],
-            'lowStock' => $lowStock->map(fn (InventoryStock $stock): array => ['name' => $stock->product->name, 'sku' => $stock->product->sku, 'stock' => $stock->quantity_base.' '.$stock->product->base_unit, 'level' => $stock->quantity_base <= 5 ? 'Critical' : 'Low'])->values(),
+            'lowStock' => $lowStock->map(fn (Product $product): array => ['name' => $product->name, 'sku' => $product->sku, 'stock' => $product->units->sum('quantity_base').' '.$product->base_unit, 'level' => $product->units->sum('quantity_base') <= 5 ? 'Critical' : 'Low'])->values(),
             'recentSales' => $recentSales->map(fn (Sale $sale): array => ['invoice' => $sale->invoice_number, 'customer' => 'Walk-in customer', 'amount' => number_format($sale->total).' MMK', 'time' => $sale->sold_at->diffForHumans(), 'status' => 'Paid'])->values(),
         ]);
     }
