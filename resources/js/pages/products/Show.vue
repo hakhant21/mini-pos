@@ -34,6 +34,8 @@ type Product = {
 
 const props = defineProps<{ product: Product }>();
 const { t } = useI18n();
+const localizedUnit = (unit: string): string =>
+    t(`products.unit_names.${unit}`);
 const page = usePage();
 const canManageProducts =
     (page.props.auth as { user?: { role?: string } }).user?.role !== "cashier";
@@ -58,7 +60,9 @@ const stockPackageLabel = (unit: Unit): string => {
     const label =
         unit.name.match(/(single|package|carton)$/i)?.[1] ?? unit.name;
 
-    return label.charAt(0).toUpperCase() + label.slice(1).toLowerCase();
+    return localizedUnit(
+        label.charAt(0).toUpperCase() + label.slice(1).toLowerCase(),
+    );
 };
 
 function submit(): void {
@@ -102,7 +106,7 @@ function submit(): void {
                         {{ t("products.base_unit") }}
                     </p>
                     <p class="mt-1 font-semibold">
-                        {{ props.product.base_unit }}
+                        {{ localizedUnit(props.product.base_unit) }}
                     </p>
                 </div>
                 <h2 class="mt-8 font-bold">
@@ -158,7 +162,9 @@ function submit(): void {
                                     <th class="px-4 py-3">
                                         {{
                                             t("products.loose_units", {
-                                                unit: props.product.base_unit,
+                                                unit: localizedUnit(
+                                                    props.product.base_unit,
+                                                ),
                                             })
                                         }}
                                     </th>
@@ -179,7 +185,11 @@ function submit(): void {
                                             {{ unit.package_quantity }}
                                             {{ stockPackageLabel(unit) }} /
                                             {{ unit.loose_quantity }}
-                                            {{ props.product.base_unit }}
+                                            {{
+                                                localizedUnit(
+                                                    props.product.base_unit,
+                                                )
+                                            }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-3">
@@ -321,7 +331,8 @@ function submit(): void {
                                 >{{ t("products.package_price") }}</span
                             ><span
                                 v-if="props.product.price_mode !== 'standard'"
-                                >{{ t("products.single_unit_price") }}</span>
+                                >{{ t("products.single_unit_price") }}</span
+                            >
                         </div>
                         <div
                             v-for="unit in visibleUnits"
@@ -345,7 +356,7 @@ function submit(): void {
                                     {{ unit.package_quantity }}
                                     {{ stockPackageLabel(unit) }} /
                                     {{ unit.loose_quantity }}
-                                    {{ props.product.base_unit }}
+                                    {{ localizedUnit(props.product.base_unit) }}
                                 </small> </span
                             ><strong>{{ money(unit.purchase_price) }}</strong
                             ><strong
@@ -359,7 +370,8 @@ function submit(): void {
                                 >{{ money(unit.package_price) }}</strong
                             ><strong
                                 v-if="props.product.price_mode !== 'standard'"
-                                >{{ money(unit.single_unit_price) }}</strong>
+                                >{{ money(unit.single_unit_price) }}</strong
+                            >
                         </div>
                     </div>
                 </div>

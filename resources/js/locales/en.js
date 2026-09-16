@@ -93,6 +93,15 @@ export default {
         all_categories: "All categories",
         name: "Product",
         stock: "Stock",
+        unit_names: {
+            Bottle: "Bottle",
+            Can: "Can",
+            Piece: "Piece",
+            Stick: "Stick",
+            Single: "Single",
+            Package: "Package",
+            Carton: "Carton",
+        },
         category: "Category",
         selling_units: "Selling units",
         price: "Price",
@@ -107,15 +116,21 @@ export default {
         back_to_products: "Back to products",
         catalog_setup: "Catalog setup",
         catalog_maintenance: "Catalog maintenance",
-        add_product_description: "Create a product once, then control how it is purchased, stocked, and sold.",
-        edit_product_description: "Update pricing, stock thresholds, and selling units for {name}.",
+        add_product_description:
+            "Create a product once, then control how it is purchased, stocked, and sold.",
+        edit_product_description:
+            "Update pricing, stock thresholds, and selling units for {name}.",
         product_details: "Product details",
-        product_details_create_description: "The information staff will use to identify this item at checkout.",
-        product_details_edit_description: "Keep the catalog information accurate for your team.",
+        product_details_create_description:
+            "The information staff will use to identify this item at checkout.",
+        product_details_edit_description:
+            "Keep the catalog information accurate for your team.",
         product_name: "Product name",
         sku: "SKU",
-        sku_create_hint: "Myanmar names are transliterated; enter your own SKU for other languages.",
-        sku_edit_hint: "Myanmar names are transliterated; other languages use your predefined SKU.",
+        sku_create_hint:
+            "Myanmar names are transliterated; enter your own SKU for other languages.",
+        sku_edit_hint:
+            "Myanmar names are transliterated; other languages use your predefined SKU.",
         base_unit: "Base unit",
         base_unit_hint: "The smallest stock unit for this category.",
         purchase_price: "Purchase price",
@@ -123,10 +138,14 @@ export default {
         reorder_level: "Reorder level",
         reorder_level_hint: "Show a low-stock warning at this quantity.",
         product_image: "Product image",
-        image_create_description: "Add a square image to make this product easier to identify.",
-        image_edit_description: "Replace the current image or leave it unchanged.",
-        selling_units_create_description: "Add every unit customers can buy at checkout, such as piece, box, or carton.",
-        selling_units_edit_description: "Review the units and prices available at checkout.",
+        image_create_description:
+            "Add a square image to make this product easier to identify.",
+        image_edit_description:
+            "Replace the current image or leave it unchanged.",
+        selling_units_create_description:
+            "Add every unit customers can buy at checkout, such as piece, box, or carton.",
+        selling_units_edit_description:
+            "Review the units and prices available at checkout.",
         unit_name: "Unit name",
         conversion: "Conversion",
         conversion_hint: "Base units in one selling unit.",
@@ -208,7 +227,8 @@ export default {
         empty: "No products selected",
         clear: "Clear all",
         product_not_found: "Product not found",
-        choose_unit_error: "Choose a selling unit for every product before completing the sale.",
+        choose_unit_error:
+            "Choose a selling unit for every product before completing the sale.",
         back_to_dashboard: "Back to dashboard",
         decrease_quantity: "Decrease quantity",
         increase_quantity: "Increase quantity",
@@ -286,12 +306,18 @@ export default {
         all_categories: "All categories",
         start_date: "Start date",
         end_date: "End date",
-        categories_description: "Organize your products into fast, searchable groups.",
-        suppliers_description: "Keep supplier contacts and purchasing terms in one place.",
-        purchases_description: "Record supplier orders and receive stock into the store.",
-        sales_description: "Review completed sales, receipts and payment methods.",
-        adjustments_description: "Record damaged, expired, missing or counted stock.",
-        reports_description: "Turn store activity into clear, actionable business reports.",
+        categories_description:
+            "Organize your products into fast, searchable groups.",
+        suppliers_description:
+            "Keep supplier contacts and purchasing terms in one place.",
+        purchases_description:
+            "Record supplier orders and receive stock into the store.",
+        sales_description:
+            "Review completed sales, receipts and payment methods.",
+        adjustments_description:
+            "Record damaged, expired, missing or counted stock.",
+        reports_description:
+            "Turn store activity into clear, actionable business reports.",
         base_unit: "Base unit",
         base: "base",
         out_of_stock: "Out of stock",
@@ -367,14 +393,16 @@ export default {
         packages: "Packages",
         loose_units: "Loose {unit}s",
         selling_prices: "Selling prices",
-        enter_stock_hint: "Enter packages and loose {unit}s. Loose quantities are converted automatically.",
+        enter_stock_hint:
+            "Enter packages and loose {unit}s. Loose quantities are converted automatically.",
     },
     welcome: {
         title: "Welcome",
         dashboard: "Dashboard",
         login: "Log in",
         get_started: "Let's get started",
-        introduction: "Laravel has an incredibly rich ecosystem.\nWe suggest starting with the following.",
+        introduction:
+            "Laravel has an incredibly rich ecosystem.\nWe suggest starting with the following.",
         read: "Read the",
         watch: "Watch video tutorials at",
         laracasts: "Laracasts",
@@ -395,13 +423,15 @@ export default {
         appearance_dark: "Dark",
         appearance_system: "System",
         personal_details: "Personal details",
-        personal_details_description: "Update the information associated with your account.",
+        personal_details_description:
+            "Update the information associated with your account.",
         name: "Name",
         name_hint: "Your name as it should appear in the application.",
         full_name: "Full name",
         email_hint: "The email address used to sign in.",
         update_password: "Update password",
-        update_password_description: "Use a strong password to keep your account secure.",
+        update_password_description:
+            "Use a strong password to keep your account secure.",
         password_description: "Choose a new password for your account.",
         current_password: "Current password",
         current_password_hint: "Enter your current password.",
@@ -411,9 +441,11 @@ export default {
         save_password: "Save password",
         delete_account: "Delete account",
         delete_account_description: "Delete your account and all of its data.",
-        delete_warning: "Once your account is deleted, all of its resources and data will be permanently deleted.",
+        delete_warning:
+            "Once your account is deleted, all of its resources and data will be permanently deleted.",
         delete_confirmation: "Are you sure you want to delete your account?",
-        delete_description: "Please enter your password to confirm you permanently want to delete your account.",
+        delete_description:
+            "Please enter your password to confirm you permanently want to delete your account.",
     },
     receipt: {
         title: "Receipt",
