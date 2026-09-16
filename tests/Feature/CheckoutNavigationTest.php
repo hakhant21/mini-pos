@@ -9,13 +9,13 @@ use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests are redirected from store operations', function (string $path) {
     $this->get($path)->assertRedirect(route('login'));
-})->with(['/checkout', '/products', '/inventory', '/reports']);
+})->with(['/checkout', '/products', '/reports']);
 
 test('authenticated users can open checkout and operations', function (string $path) {
     $user = User::factory()->create(['role' => 'manager']);
 
     $this->actingAs($user)->get($path)->assertOk();
-})->with(['/checkout', '/products', '/inventory', '/sales']);
+})->with(['/checkout', '/products', '/sales']);
 
 test('checkout loads products in pages of twenty', function () {
     $user = User::factory()->create(['role' => 'manager']);
@@ -45,7 +45,7 @@ test('checkout loads products in pages of twenty', function () {
         );
 });
 
-test('products and inventory can be filtered by category', function () {
+test('products can be filtered by category', function () {
     $user = User::factory()->create(['role' => 'manager']);
     $includedCategory = Category::create(['name' => 'Included', 'slug' => 'included']);
     $excludedCategory = Category::create(['name' => 'Excluded', 'slug' => 'excluded']);
@@ -53,8 +53,6 @@ test('products and inventory can be filtered by category', function () {
     Product::factory()->create(['category_id' => $excludedCategory->id, 'name' => 'Excluded product', 'sku' => 'EXCLUDED', 'base_unit' => 'Piece', 'active' => true]);
 
     $this->actingAs($user)->get(route('products.index', ['category_id' => $includedCategory->id]))
-        ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Included product')->where('products.total', 1));
-    $this->actingAs($user)->get(route('inventory.index', ['category_id' => $includedCategory->id]))
         ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Included product')->where('products.total', 1));
 });
 
@@ -95,10 +93,10 @@ test('cashiers cannot access store management screens', function (string $path) 
     $user = User::factory()->create(['role' => 'cashier']);
 
     $this->actingAs($user)->get($path)->assertForbidden();
-})->with(['/categories', '/suppliers', '/purchases', '/adjustments', '/reports', '/products/create']);
+})->with(['/categories', '/suppliers', '/purchases', '/reports', '/products/create']);
 
 test('admins can access cashier and management screens', function (string $path) {
     $user = User::factory()->create(['role' => 'admin']);
 
     $this->actingAs($user)->get($path)->assertOk();
-})->with(['/checkout', '/sales', '/products', '/categories', '/suppliers', '/purchases', '/inventory', '/adjustments', '/reports', '/products/create', '/purchases/create', '/adjustments/create']);
+})->with(['/checkout', '/sales', '/products', '/categories', '/suppliers', '/purchases', '/reports', '/products/create', '/purchases/create']);

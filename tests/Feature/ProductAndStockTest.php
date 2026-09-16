@@ -8,16 +8,6 @@ use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Inertia\Testing\AssertableInertia as Assert;
-
-test('stock adjustment create page includes active products', function () {
-    $user = User::factory()->create(['role' => 'admin']);
-    $category = Category::create(['name' => 'Supplies', 'slug' => 'supplies']);
-    Product::create(['category_id' => $category->id, 'name' => 'Gloves', 'sku' => 'GLOVES-001', 'price_mode' => 'single_package', 'base_unit' => 'Piece', 'active' => true]);
-
-    $this->actingAs($user)->get(route('adjustments.create'))
-        ->assertInertia(fn (Assert $page) => $page->component('operations/Index')->where('section', 'adjustments')->has('products', 1));
-});
 
 test('authenticated staff can create a product with selling units', function () {
     $user = User::factory()->create(['role' => 'admin']);
@@ -75,32 +65,6 @@ test('a purchase increases base stock using the selected unit conversion', funct
     $this->assertDatabaseHas('stock_transactions', ['product_id' => $product->id, 'quantity_base' => 24, 'type' => 'purchase']);
 });
 
-test('staff can create a stock adjustment with unit conversion', function () {
-    $user = User::factory()->create(['role' => 'admin']);
-    $category = Category::create(['name' => 'Supplies', 'slug' => 'supplies']);
-    $product = Product::create(['category_id' => $category->id, 'name' => 'Boxes', 'sku' => 'BOX-001', 'base_unit' => 'Piece', 'reorder_level' => 5]);
-    $unit = ProductUnit::create(['product_id' => $product->id, 'name' => 'Box', 'conversion' => 10, 'selling_price' => 1000]);
-    $unit->stock()->create(['product_id' => $product->id]);
-
-    $response = $this->actingAs($user)->post(route('adjustments.store'), [
-        'product_id' => $product->id,
-        'product_unit_id' => $unit->id,
-        'adjustment_type' => 'increase',
-        'quantity' => 7,
-        'unit_conversion' => 10,
-        'reason' => 'Stock Update',
-    ]);
-
-    $response->assertRedirect(route('adjustments.index'));
-    $this->assertDatabaseHas('stock_adjustments', [
-        'product_id' => $product->id,
-        'quantity' => 7,
-        'unit_conversion' => 10,
-        'quantity_base' => 70,
-    ]);
-    $this->assertDatabaseHas('product_units', ['id' => $unit->id, 'quantity_base' => 70]);
-});
-
 test('checkout deducts converted stock and rejects insufficient payment', function () {
     $user = User::factory()->create(['role' => 'cashier']);
     $category = Category::create(['name' => 'Snacks', 'slug' => 'snacks']);
@@ -113,8 +77,35 @@ test('checkout deducts converted stock and rejects insufficient payment', functi
     $this->assertDatabaseHas('product_units', ['id' => $unit->id, 'quantity_base' => 20]);
 
     $response = $this->actingAs($user)->post(route('sales.store'), ['payment_method' => 'cash', 'received_amount' => 5000, 'items' => [['product_id' => $product->id, 'product_unit_id' => $unit->id, 'selling_mode' => 'Package', 'quantity' => 1]]]);
-    $response->assertRedirect();
+    $sale = Sale::query()->latest('id')->firstOrFail();
+    $response->assertRedirect(route('sales.show', $sale));
     $this->assertDatabaseHas('product_units', ['id' => $unit->id, 'quantity_base' => 10]);
+});
+
+test('completed sales can receive additional items on the same invoice', function () {
+    $user = User::factory()->create(['role' => 'cashier']);
+    $category = Category::create(['name' => 'Add-ons', 'slug' => 'add-ons']);
+    $product = Product::create(['category_id' => $category->id, 'name' => 'Add-on product', 'sku' => 'ADD-001', 'base_unit' => 'Piece']);
+    $unit = ProductUnit::create(['product_id' => $product->id, 'name' => 'Piece', 'conversion' => 1, 'selling_price' => 1500, 'single_unit_price' => 1500, 'quantity_base' => 5]);
+    $unit->stock()->create(['product_id' => $product->id]);
+
+    $this->actingAs($user)->post(route('sales.store'), [
+        'payment_method' => 'cash',
+        'received_amount' => 1500,
+        'items' => [['product_id' => $product->id, 'product_unit_id' => $unit->id, 'selling_mode' => 'Single', 'quantity' => 1]],
+    ]);
+    $sale = Sale::query()->latest('id')->firstOrFail();
+
+    $response = $this->actingAs($user)->post(route('sales.items.store', $sale), [
+        'payment_method' => 'cash',
+        'received_amount' => 2000,
+        'items' => [['product_id' => $product->id, 'product_unit_id' => $unit->id, 'selling_mode' => 'Single', 'quantity' => 1]],
+    ]);
+
+    $response->assertRedirect(route('sales.show', $sale));
+    $this->assertDatabaseHas('sales', ['id' => $sale->id, 'subtotal' => 3000, 'total' => 3000, 'received_amount' => 3500, 'change_amount' => 500]);
+    expect($sale->fresh()->items)->toHaveCount(2);
+    $this->assertDatabaseHas('product_units', ['id' => $unit->id, 'quantity_base' => 3]);
 });
 
 test('checkout sells a package unit as a single item at its single-unit price', function () {
@@ -199,14 +190,12 @@ test('a manager can cancel a sale and restore its base stock', function () {
     $this->assertDatabaseHas('product_units', ['id' => $unit->id, 'quantity_base' => 12]);
 });
 
-test('a cashier cannot create purchases or stock adjustments', function () {
+test('a cashier cannot create purchases', function () {
     $cashier = User::factory()->create(['role' => 'cashier']);
 
     $purchaseResponse = $this->actingAs($cashier)->post(route('purchases.store'), []);
-    $adjustmentResponse = $this->actingAs($cashier)->post(route('adjustments.store'), []);
 
     $purchaseResponse->assertForbidden();
-    $adjustmentResponse->assertForbidden();
 });
 
 test('cancelling a sale twice restores stock only once', function () {

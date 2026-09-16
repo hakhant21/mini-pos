@@ -12,7 +12,7 @@ type Product = {
     category?: { name: string } | null;
     base_unit?: string | null;
     reorder_level?: number;
-    units: { id: number; name: string; selling_price: number; single_unit_price: number }[];
+    units: { id: number; name: string; selling_price: number; single_unit_price: number; conversion: number; package_quantity: number; loose_quantity: number }[];
     color?: string;
     icon?: string;
     image_url?: string | null;
@@ -35,7 +35,7 @@ const canManageProducts =
     (page.props.auth as { user?: { role?: string } }).user?.role !== "cashier";
 const money = (value: number) =>
     `${new Intl.NumberFormat("en-US").format(value)} ${t("common.currency")}`;
-const totalStock = (product: Product): number => product.units.reduce((total, unit) => total + (unit as { quantity_base?: number }).quantity_base!, 0);
+const totalStock = (product: Product): number => product.units.reduce((total, unit) => total + (unit.package_quantity * unit.conversion) + unit.loose_quantity, 0);
 const visibleProducts = computed(() =>
     props.products.data
         .filter((product) => {
@@ -190,7 +190,6 @@ defineOptions({
                                 <th class="py-3 font-medium">{{ $t("products.category") }}</th>
                                 <th class="py-3 font-medium">{{ $t("products.selling_units") }}</th>
                                 <th class="py-3 font-medium">{{ $t("products.price") }}</th>
-                                <th class="py-3 font-medium">{{ $t("products.current_stock") }}</th>
                                 <th class="py-3 font-medium">{{ $t("products.status") }}</th>
                                 <th class="py-3" />
                             </tr>
@@ -235,19 +234,6 @@ defineOptions({
                                 </td>
                                 <td class="font-semibold">
                                     {{ money(product.units[0]?.single_unit_price ?? 0) }}
-                                </td>
-                                <td>
-                                    <span
-                                        :class="
-                                            totalStock(product) <=
-                                            (product.reorder_level ?? 0)
-                                                ? 'text-amber-600'
-                                                : 'text-slate-700 dark:text-slate-200'
-                                        "
-                                        class="font-semibold"
-                                        >{{ totalStock(product) }}
-                                        {{ product.base_unit.toLowerCase() }}s</span
-                                    >
                                 </td>
                                 <td>
                                     <span

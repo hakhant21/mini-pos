@@ -60,4 +60,58 @@ class CheckoutService
             return $sale;
         });
     }
+
+    public function append(Sale $sale, array $data, int $userId): Sale
+    {
+        return DB::transaction(function () use ($sale, $data, $userId): Sale {
+            $sale = Sale::query()->lockForUpdate()->findOrFail($sale->id);
+
+            if ($sale->cancelled_at) {
+                throw ValidationException::withMessages(['items' => 'Cancelled sales cannot receive additional items.']);
+            }
+
+            $lines = collect($data['items'])->map(function (array $item): array {
+                $product = Product::query()->lockForUpdate()->findOrFail($item['product_id']);
+                $unit = ProductUnit::query()->whereKey($item['product_unit_id'])->where('product_id', $product->id)->firstOrFail();
+                $sellingMode = $item['selling_mode'] ?? 'Single';
+                $unitPrice = match ($sellingMode) {
+                    'Single' => $unit->single_unit_price,
+                    'Package' => $product->price_mode === 'single_package_carton' ? $unit->package_price : $unit->selling_price,
+                    'Carton' => $unit->selling_price,
+                };
+                $conversion = $sellingMode === 'Single' ? 1 : $unit->conversion;
+
+                return ['product' => $product, 'unit' => $unit, 'product_id' => $product->id, 'product_unit_id' => $unit->id, 'quantity' => $item['quantity'], 'unit_price' => $unitPrice, 'base_quantity' => $item['quantity'] * $conversion];
+            });
+            $additionalTotal = $lines->sum(fn (array $line): int => $line['unit_price'] * $line['quantity']);
+            $receivedAmount = (int) $data['received_amount'];
+
+            if ($receivedAmount < $additionalTotal) {
+                throw ValidationException::withMessages(['received_amount' => 'Received amount is less than the additional total.']);
+            }
+
+            $additionalChange = $receivedAmount - $additionalTotal;
+            $sale->subtotal += $additionalTotal;
+            $sale->total += $additionalTotal;
+            $sale->received_amount += $receivedAmount;
+            $sale->change_amount += $additionalChange;
+            $sale->payment_method = $data['payment_method'];
+            $sale->save();
+
+            $balance = Balance::query()->where('user_id', $userId)->whereDate('created_at', today())->latest('id')->lockForUpdate()->first();
+            if ($balance) {
+                $balance->total_sale_amount += $additionalTotal;
+                $balance->total_change_amount += $additionalChange;
+                $balance->closing_amount = $balance->opening_amount + $balance->total_sale_amount - $balance->total_change_amount;
+                $balance->save();
+            }
+
+            foreach ($lines as $line) {
+                $sale->items()->create(collect($line)->except(['product', 'unit'])->all());
+                $this->inventory->change($line['unit'], -$line['base_quantity'], 'sale', $userId, $sale);
+            }
+
+            return $sale;
+        });
+    }
 }

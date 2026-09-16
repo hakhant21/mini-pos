@@ -15,7 +15,7 @@ class DashboardController extends Controller
 {
     public function __invoke(Request $request): Response
     {
-        $lowStock = Product::query()->with('units')->where('active', true)->get()->filter(fn (Product $product): bool => $product->units->sum('quantity_base') < $product->reorder_level)->take(5);
+        $lowStock = Product::query()->with('units')->where('active', true)->get()->filter(fn (Product $product): bool => $product->units->sum(fn ($unit): int => ($unit->package_quantity * $unit->conversion) + $unit->loose_quantity) < $product->reorder_level)->take(5);
         $recentSales = Sale::query()->where('status', 'completed')->latest('sold_at')->limit(8)->get();
         $balance = Balance::query()
             ->where('user_id', $request->user()->id)
@@ -34,7 +34,7 @@ class DashboardController extends Controller
             'userName' => $request->user()->name,
             'balance' => $balance?->only(['opening_amount', 'closing_amount', 'total_sale_amount', 'total_change_amount']),
             'sales' => [],
-            'lowStock' => $lowStock->map(fn (Product $product): array => ['name' => $product->name, 'sku' => $product->sku, 'stock' => $product->units->sum('quantity_base').' '.$product->base_unit, 'level' => $product->units->sum('quantity_base') <= 5 ? 'Critical' : 'Low'])->values(),
+            'lowStock' => $lowStock->map(fn (Product $product): array => ['name' => $product->name, 'sku' => $product->sku, 'stock' => $product->units->sum(fn ($unit): int => ($unit->package_quantity * $unit->conversion) + $unit->loose_quantity).' '.$product->base_unit, 'level' => $product->units->sum(fn ($unit): int => ($unit->package_quantity * $unit->conversion) + $unit->loose_quantity) <= 5 ? 'Critical' : 'Low'])->values(),
             'recentSales' => $recentSales->map(fn (Sale $sale): array => ['invoice' => $sale->invoice_number, 'customer' => 'Walk-in customer', 'amount' => number_format($sale->total).' MMK', 'time' => $sale->sold_at->diffForHumans(), 'status' => 'Paid'])->values(),
         ]);
     }

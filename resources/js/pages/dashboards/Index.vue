@@ -13,7 +13,6 @@ import {
 } from '@lucide/vue';
 import { dashboard } from '@/routes';
 import { index as checkoutIndex } from '@/routes/checkout';
-import { index as inventoryIndex } from '@/routes/inventory';
 import { index as productIndex } from '@/routes/products';
 import { index as saleIndex } from '@/routes/sales';
 import { store as balanceStore } from '@/routes/balances';
@@ -215,7 +214,7 @@ function submitBalance(): void {
                             </p>
                         </div>
                         <Link
-                            :href="inventoryIndex()"
+                            :href="productIndex()"
                             class="text-xs font-semibold text-blue-600"
                             >{{ $t('common.view_all') }}</Link
                         >

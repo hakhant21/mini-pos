@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Checkout\CompleteCheckoutRequest;
+use App\Http\Requests\Sale\AppendSaleItemsRequest;
 use App\Http\Requests\Sale\CancelSaleRequest;
 use App\Models\Category;
 use App\Models\Product;
@@ -11,6 +12,7 @@ use App\Models\Sale;
 use App\Services\Checkout\CheckoutService;
 use App\Services\Sale\SaleService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -28,7 +30,7 @@ class SaleController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
         $this->authorize('create', Sale::class);
 
@@ -43,9 +45,16 @@ class SaleController extends Controller
                 'icon' => '📦',
             ]));
 
+        $sale = $request->filled('sale_id') ? Sale::query()->findOrFail($request->integer('sale_id')) : null;
+
+        if ($sale) {
+            $this->authorize('view', $sale);
+        }
+
         return Inertia::render('checkouts/Index', [
             'products' => $products,
             'categories' => Category::query()->orderBy('id')->pluck('name')->values(),
+            'sale' => $sale?->only(['id', 'invoice_number', 'payment_method', 'total']),
         ]);
     }
 
@@ -67,6 +76,14 @@ class SaleController extends Controller
             'description' => 'Receipt and payment details.',
             'sale' => $sale->load(['user', 'items.product', 'items.unit']),
         ]);
+    }
+
+    public function appendItems(AppendSaleItemsRequest $request, Sale $sale, CheckoutService $checkout): RedirectResponse
+    {
+        $this->authorize('view', $sale);
+        $checkout->append($sale, $request->validated(), $request->user()->id);
+
+        return to_route('sales.show', $sale)->with('success', 'Items added to sale.');
     }
 
     public function receipt(Sale $sale): Response

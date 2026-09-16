@@ -1,164 +1,1898 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { ArrowLeft, ArrowRight, BarChart3, ClipboardList, FileText, Package, Plus, Search, Trash2, TrendingUp, Truck } from '@lucide/vue';
-import FormActions from '@/components/forms/FormActions.vue';
-import FormField from '@/components/forms/FormField.vue';
-import FormSection from '@/components/forms/FormSection.vue';
-import { dashboard } from '@/routes';
-import { index as categoryIndex, store as categoryStore, update as categoryUpdate, destroy as categoryDestroy } from '@/routes/categories';
-import { index as supplierIndex, store as supplierStore, update as supplierUpdate, destroy as supplierDestroy } from '@/routes/suppliers';
-import { index as purchaseIndex, create as purchaseCreate, store as purchaseStore, show as purchaseShow } from '@/routes/purchases';
-import { show as saleShow, cancel as saleCancel } from '@/routes/sales';
-import { index as inventoryIndex } from '@/routes/inventory';
-import { index as adjustmentIndex, create as adjustmentCreate, store as adjustmentStore, show as adjustmentShow } from '@/routes/adjustments';
-import { index as reportIndex } from '@/routes/reports';
+import { Head, Link, router, useForm } from "@inertiajs/vue3";
+import { computed, ref } from "vue";
+import { useI18n } from "vue-i18n";
+import {
+    ArrowLeft,
+    ArrowRight,
+    BarChart3,
+    ClipboardList,
+    FileText,
+    Package,
+    Plus,
+    Search,
+    Trash2,
+    TrendingUp,
+    Truck,
+} from "@lucide/vue";
+import FormActions from "@/components/forms/FormActions.vue";
+import FormField from "@/components/forms/FormField.vue";
+import FormSection from "@/components/forms/FormSection.vue";
+import { dashboard } from "@/routes";
+import {
+    index as categoryIndex,
+    store as categoryStore,
+    update as categoryUpdate,
+    destroy as categoryDestroy,
+} from "@/routes/categories";
+import {
+    index as supplierIndex,
+    store as supplierStore,
+    update as supplierUpdate,
+    destroy as supplierDestroy,
+} from "@/routes/suppliers";
+import {
+    index as purchaseIndex,
+    create as purchaseCreate,
+    store as purchaseStore,
+    show as purchaseShow,
+} from "@/routes/purchases";
+import {
+    show as saleShow,
+    cancel as saleCancel,
+    create as checkoutCreate,
+} from "@/routes/sales";
+import { index as reportIndex } from "@/routes/reports";
 
 type PaginationLink = { url: string | null; label: string; active: boolean };
-type Page<T> = { data: T[]; links?: PaginationLink[]; from?: number; to?: number; total?: number; current_page?: number; last_page?: number };
+type Page<T> = {
+    data: T[];
+    links?: PaginationLink[];
+    from?: number;
+    to?: number;
+    total?: number;
+    current_page?: number;
+    last_page?: number;
+};
 type CategoryOption = { id: number; name: string };
-type Unit = { id: number; name: string; conversion: number; selling_price?: number; purchase_price?: number; quantity_base?: number; package_quantity?: number; loose_quantity?: number };
-type Product = { id: number; name: string; sku?: string; base_unit?: string; reorder_level?: number; category?: { name: string }; units: Unit[] };
-type RecordItem = { id: number; name: string; description?: string; contact_name?: string; email?: string; phone?: string; address?: string; active?: boolean; products_count?: number };
-type TransactionItem = { id: number; product?: Product; unit?: Unit; quantity: number; unit_cost?: number; unit_price?: number; total?: number };
-type Purchase = { id: number; invoice_number: string; purchased_at: string; supplier?: { name: string } | null; user?: { name: string }; subtotal: number; total: number; notes?: string; items?: TransactionItem[] };
-type Sale = { id: number; invoice_number: string; sold_at: string; payment_method: string; subtotal: number; discount: number; tax: number; total: number; received_amount: number; change_amount?: number; cancelled_at?: string | null; user?: { name: string }; items?: TransactionItem[] };
-type Adjustment = { id: number; adjustment_type: string; quantity: number; quantity_base: number; unit_conversion: number; reason: string; notes?: string; adjusted_at: string; product?: Product; user?: { name: string } };
+type Unit = {
+    id: number;
+    name: string;
+    conversion: number;
+    selling_price?: number;
+    purchase_price?: number;
+    quantity_base?: number;
+    package_quantity?: number;
+    loose_quantity?: number;
+};
+type Product = {
+    id: number;
+    name: string;
+    sku?: string;
+    base_unit?: string;
+    reorder_level?: number;
+    category?: { name: string };
+    units: Unit[];
+};
+type RecordItem = {
+    id: number;
+    name: string;
+    description?: string;
+    contact_name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    active?: boolean;
+    products_count?: number;
+};
+type TransactionItem = {
+    id: number;
+    product?: Product;
+    unit?: Unit;
+    quantity: number;
+    unit_cost?: number;
+    unit_price?: number;
+    total?: number;
+};
+type Purchase = {
+    id: number;
+    invoice_number: string;
+    purchased_at: string;
+    supplier?: { name: string } | null;
+    user?: { name: string };
+    subtotal: number;
+    total: number;
+    notes?: string;
+    items?: TransactionItem[];
+};
+type Sale = {
+    id: number;
+    invoice_number: string;
+    sold_at: string;
+    payment_method: string;
+    subtotal: number;
+    discount: number;
+    tax: number;
+    total: number;
+    received_amount: number;
+    change_amount?: number;
+    cancelled_at?: string | null;
+    user?: { name: string };
+    items?: TransactionItem[];
+};
+type Adjustment = {
+    id: number;
+    adjustment_type: string;
+    quantity: number;
+    quantity_base: number;
+    unit_conversion: number;
+    reason: string;
+    notes?: string;
+    adjusted_at: string;
+    product?: Product;
+    user?: { name: string };
+};
 
-const props = defineProps<{ section: string; title: string; description: string; categories?: Page<RecordItem>; categoryOptions?: CategoryOption[]; suppliers?: any; products?: any; purchases?: Page<Purchase>; purchase?: Purchase; sales?: Page<Sale>; sale?: Sale; adjustments?: Page<Adjustment>; adjustment?: Adjustment; summary?: Record<string, number>; filters?: { from?: string; to?: string; category_id?: number | string; start_date?: string; end_date?: string } }>();
+const props = defineProps<{
+    section: string;
+    title: string;
+    description: string;
+    categories?: Page<RecordItem>;
+    categoryOptions?: CategoryOption[];
+    suppliers?: any;
+    products?: any;
+    purchases?: Page<Purchase>;
+    purchase?: Purchase;
+    sales?: Page<Sale>;
+    sale?: Sale;
+    adjustments?: Page<Adjustment>;
+    adjustment?: Adjustment;
+    summary?: Record<string, number>;
+    filters?: {
+        from?: string;
+        to?: string;
+        category_id?: number | string;
+        start_date?: string;
+        end_date?: string;
+    };
+}>();
 const { t } = useI18n();
-const money = (value = 0) => `${new Intl.NumberFormat('en-US').format(Number(value))} ${t('common.currency')}`;
-const date = (value?: string) => value ? new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(value)) : '—';
-const products = computed(() => Array.isArray(props.products) ? props.products : props.products?.data ?? []);
-const totalStock = (product: Product): number => product.units.reduce((total, unit) => total + (unit.quantity_base ?? 0), 0);
-const inventoryPage = computed<Page<Product>>(() => props.products as Page<Product>);
-const inventoryCategory = ref(String(props.filters?.category_id ?? ''));
-const supplierOptions = computed(() => Array.isArray(props.suppliers) ? props.suppliers : props.suppliers?.data ?? []);
-const adjustmentProductOptions = computed(() => products.value.map((product: Product) => ({ value: product.id, label: `${product.name} (${product.sku ?? '—'})` })));
-const adjustmentUnits = computed(() => products.value.find((product: Product) => product.id === Number(adjustmentForm.product_id))?.units ?? []);
-const view = computed(() => { if (props.purchase) return 'purchases-show'; if (props.sale) return 'sales-show'; if (props.adjustment) return 'adjustments-show'; if (props.section === 'purchases' && props.products !== undefined) return 'purchases-create'; if (props.section === 'adjustments' && props.title === 'Create adjustment' && props.products !== undefined) return 'adjustments-create'; return props.section; });
+const money = (value = 0) =>
+    `${new Intl.NumberFormat("en-US").format(Number(value))} ${t("common.currency")}`;
+const date = (value?: string) =>
+    value
+        ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
+              new Date(value),
+          )
+        : "—";
+const products = computed(() =>
+    Array.isArray(props.products)
+        ? props.products
+        : (props.products?.data ?? []),
+);
+const totalStock = (product: Product): number =>
+    product.units.reduce(
+        (total, unit) =>
+            total +
+            (unit.package_quantity ?? 0) * unit.conversion +
+            (unit.loose_quantity ?? 0),
+        0,
+    );
+const inventoryPage = computed<Page<Product>>(
+    () => props.products as Page<Product>,
+);
+const inventoryCategory = ref(String(props.filters?.category_id ?? ""));
+const adjustmentIndex = (): string => "#";
+const adjustmentCreate = (): string => "#";
+const adjustmentStore = (): { url: string; method: "post" } => ({
+    url: "#",
+    method: "post",
+});
+const adjustmentShow = (_id: number): string => "#";
+const supplierOptions = computed(() =>
+    Array.isArray(props.suppliers)
+        ? props.suppliers
+        : (props.suppliers?.data ?? []),
+);
+const adjustmentProductOptions = computed(() =>
+    products.value.map((product: Product) => ({
+        value: product.id,
+        label: `${product.name} (${product.sku ?? "—"})`,
+    })),
+);
+const adjustmentUnits = computed(
+    () =>
+        products.value.find(
+            (product: Product) =>
+                product.id === Number(adjustmentForm.product_id),
+        )?.units ?? [],
+);
+const view = computed(() => {
+    if (props.purchase) return "purchases-show";
+    if (props.sale) return "sales-show";
+    if (props.adjustment) return "adjustments-show";
+    if (props.section === "purchases" && props.products !== undefined)
+        return "purchases-create";
+    if (
+        props.section === "adjustments" &&
+        props.title === "Create adjustment" &&
+        props.products !== undefined
+    )
+        return "adjustments-create";
+    return props.section;
+});
 const section = view;
 const localizedTitle = computed(() => {
-    const titleKey = view.value === 'purchases-show' ? 'purchase_details' : view.value === 'sales-show' ? 'sale_details' : view.value === 'adjustments-show' ? 'adjustment_details' : view.value === 'purchases-create' ? 'create_purchase' : view.value === 'adjustments-create' ? 'create_adjustment' : view.value;
+    const titleKey =
+        view.value === "purchases-show"
+            ? "purchase_details"
+            : view.value === "sales-show"
+              ? "sale_details"
+              : view.value === "adjustments-show"
+                ? "adjustment_details"
+                : view.value === "purchases-create"
+                  ? "create_purchase"
+                  : view.value === "adjustments-create"
+                    ? "create_adjustment"
+                    : view.value;
     const translatedTitle = t(`operations.${titleKey}`);
 
-    return translatedTitle === `operations.${titleKey}` ? props.title : translatedTitle;
+    return translatedTitle === `operations.${titleKey}`
+        ? props.title
+        : translatedTitle;
 });
 const localizedDescription = computed(() => {
-    const descriptionKey = view.value === 'purchases-show' ? 'purchase_details_description' : view.value === 'sales-show' ? 'sale_details_description' : view.value === 'adjustments-show' ? 'adjustment_details_description' : `${view.value}_description`;
+    const descriptionKey =
+        view.value === "purchases-show"
+            ? "purchase_details_description"
+            : view.value === "sales-show"
+              ? "sale_details_description"
+              : view.value === "adjustments-show"
+                ? "adjustment_details_description"
+                : `${view.value}_description`;
     const translatedDescription = t(`operations.${descriptionKey}`);
 
-    return translatedDescription === `operations.${descriptionKey}` ? props.description : translatedDescription;
+    return translatedDescription === `operations.${descriptionKey}`
+        ? props.description
+        : translatedDescription;
 });
-const query = ref('');
-const filteredProducts = computed(() => products.value.filter((product: Product) => `${product.name} ${product.sku ?? ''}`.toLowerCase().includes(query.value.toLowerCase())));
-const purchaseStartDate = ref(props.filters?.start_date ?? '');
-const purchaseEndDate = ref(props.filters?.end_date ?? '');
+const query = ref("");
+const filteredProducts = computed(() =>
+    products.value.filter((product: Product) =>
+        `${product.name} ${product.sku ?? ""}`
+            .toLowerCase()
+            .includes(query.value.toLowerCase()),
+    ),
+);
+const purchaseStartDate = ref(props.filters?.start_date ?? "");
+const purchaseEndDate = ref(props.filters?.end_date ?? "");
 
-const recordForm = useForm({ name: '', description: '', contact_name: '', email: '', phone: '', address: '' });
+const recordForm = useForm({
+    name: "",
+    description: "",
+    contact_name: "",
+    email: "",
+    phone: "",
+    address: "",
+});
 const editingId = ref<number | null>(null);
-function resetRecord(): void { editingId.value = null; recordForm.reset(); recordForm.clearErrors(); }
-function editRecord(item: RecordItem): void { editingId.value = item.id; recordForm.name = item.name; recordForm.description = item.description ?? ''; recordForm.contact_name = item.contact_name ?? ''; recordForm.email = item.email ?? ''; recordForm.phone = item.phone ?? ''; recordForm.address = item.address ?? ''; }
-function submitRecord(): void { const action = props.section === 'categories' ? (editingId.value ? categoryUpdate(editingId.value) : categoryStore()) : (editingId.value ? supplierUpdate(editingId.value) : supplierStore()); recordForm.submit(action, { onSuccess: resetRecord }); }
-function deleteRecord(id: number): void { router.delete(props.section === 'categories' ? categoryDestroy(id) : supplierDestroy(id)); }
+function resetRecord(): void {
+    editingId.value = null;
+    recordForm.reset();
+    recordForm.clearErrors();
+}
+function editRecord(item: RecordItem): void {
+    editingId.value = item.id;
+    recordForm.name = item.name;
+    recordForm.description = item.description ?? "";
+    recordForm.contact_name = item.contact_name ?? "";
+    recordForm.email = item.email ?? "";
+    recordForm.phone = item.phone ?? "";
+    recordForm.address = item.address ?? "";
+}
+function submitRecord(): void {
+    const action =
+        props.section === "categories"
+            ? editingId.value
+                ? categoryUpdate(editingId.value)
+                : categoryStore()
+            : editingId.value
+              ? supplierUpdate(editingId.value)
+              : supplierStore();
+    recordForm.submit(action, { onSuccess: resetRecord });
+}
+function deleteRecord(id: number): void {
+    router.delete(
+        props.section === "categories"
+            ? categoryDestroy(id)
+            : supplierDestroy(id),
+    );
+}
 
-type PurchaseRow = { product_id: number | ''; product_unit_id: number | ''; quantity: number; unit_cost: number };
-const purchaseForm = useForm({ supplier_id: '' as number | '', invoice_number: '', purchased_at: new Date().toISOString().slice(0, 10), notes: '', items: [{ product_id: '', product_unit_id: '', quantity: 1, unit_cost: 0 }] as PurchaseRow[] });
-function addPurchaseRow(): void { purchaseForm.items.push({ product_id: '', product_unit_id: '', quantity: 1, unit_cost: 0 }); }
-function removePurchaseRow(index: number): void { if (purchaseForm.items.length > 1) purchaseForm.items.splice(index, 1); }
-function unitsFor(productId: number | ''): Unit[] { return products.value.find((product: Product) => product.id === Number(productId))?.units ?? []; }
-function submitPurchase(): void { purchaseForm.submit(purchaseStore(), { onSuccess: () => purchaseForm.reset() }); }
-const purchaseTotal = computed(() => purchaseForm.items.reduce((total, item) => total + Number(item.quantity) * Number(item.unit_cost), 0));
-const adjustmentForm = useForm({ product_id: '' as number | '', product_unit_id: '' as number | '', adjustment_type: 'increase', quantity: 1, unit_conversion: 1, reason: '', notes: '' });
+type PurchaseRow = {
+    product_id: number | "";
+    product_unit_id: number | "";
+    quantity: number;
+    unit_cost: number;
+};
+const purchaseForm = useForm({
+    supplier_id: "" as number | "",
+    invoice_number: "",
+    purchased_at: new Date().toISOString().slice(0, 10),
+    notes: "",
+    items: [
+        { product_id: "", product_unit_id: "", quantity: 1, unit_cost: 0 },
+    ] as PurchaseRow[],
+});
+function addPurchaseRow(): void {
+    purchaseForm.items.push({
+        product_id: "",
+        product_unit_id: "",
+        quantity: 1,
+        unit_cost: 0,
+    });
+}
+function removePurchaseRow(index: number): void {
+    if (purchaseForm.items.length > 1) purchaseForm.items.splice(index, 1);
+}
+function unitsFor(productId: number | ""): Unit[] {
+    return (
+        products.value.find(
+            (product: Product) => product.id === Number(productId),
+        )?.units ?? []
+    );
+}
+function submitPurchase(): void {
+    purchaseForm.submit(purchaseStore(), {
+        onSuccess: () => purchaseForm.reset(),
+    });
+}
+const purchaseTotal = computed(() =>
+    purchaseForm.items.reduce(
+        (total, item) => total + Number(item.quantity) * Number(item.unit_cost),
+        0,
+    ),
+);
+const adjustmentForm = useForm({
+    product_id: "" as number | "",
+    product_unit_id: "" as number | "",
+    adjustment_type: "increase",
+    quantity: 1,
+    unit_conversion: 1,
+    reason: "",
+    notes: "",
+});
 const showAdjustmentModal = ref(false);
-function openAdjustment(product: Product): void { const unit = product.units[0]; adjustmentForm.product_id = product.id; adjustmentForm.product_unit_id = unit?.id ?? ''; adjustmentForm.unit_conversion = unit?.conversion ?? 1; adjustmentForm.adjustment_type = 'increase'; adjustmentForm.quantity = 1; adjustmentForm.reason = ''; adjustmentForm.notes = ''; adjustmentForm.clearErrors(); showAdjustmentModal.value = true; }
-function closeAdjustment(): void { showAdjustmentModal.value = false; adjustmentForm.reset(); adjustmentForm.clearErrors(); }
-function syncAdjustmentUnit(): void { const unit = adjustmentUnits.value.find((item: Unit) => item.id === Number(adjustmentForm.product_unit_id)); if (unit) adjustmentForm.unit_conversion = unit.conversion; }
-function submitAdjustment(): void { adjustmentForm.submit(adjustmentStore()); }
-const cancelForm = useForm({ reason: '' });
-function cancelSale(): void { if (props.sale) cancelForm.submit(saleCancel(props.sale.id)); }
-const reportFrom = ref(props.filters?.from ?? '');
-const reportTo = ref(props.filters?.to ?? '');
-function filterReport(): void { router.visit(reportIndex({ query: { from: reportFrom.value, to: reportTo.value } })); }
-function filterInventory(): void { router.visit(inventoryIndex({ query: { category_id: inventoryCategory.value || undefined } }), { preserveScroll: true }); }
-function filterPurchases(): void { router.visit(purchaseIndex({ query: { start_date: purchaseStartDate.value || undefined, end_date: purchaseEndDate.value || undefined } }), { preserveScroll: true }); }
-function listRange<T>(page?: Page<T>): string { return page?.total ? t('operations.showing_range', { from: page.from ?? 1, to: page.to ?? page.data.length, total: page.total }) : t('operations.no_records'); }
-function statusClass(value: string): string { return value === 'cancelled' || value === 'decrease' ? 'bg-rose-50 text-rose-600' : value === 'count' ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'; }
+function openAdjustment(product: Product): void {
+    const unit = product.units[0];
+    adjustmentForm.product_id = product.id;
+    adjustmentForm.product_unit_id = unit?.id ?? "";
+    adjustmentForm.unit_conversion = unit?.conversion ?? 1;
+    adjustmentForm.adjustment_type = "increase";
+    adjustmentForm.quantity = 1;
+    adjustmentForm.reason = "";
+    adjustmentForm.notes = "";
+    adjustmentForm.clearErrors();
+    showAdjustmentModal.value = true;
+}
+function closeAdjustment(): void {
+    showAdjustmentModal.value = false;
+    adjustmentForm.reset();
+    adjustmentForm.clearErrors();
+}
+function syncAdjustmentUnit(): void {
+    const unit = adjustmentUnits.value.find(
+        (item: Unit) => item.id === Number(adjustmentForm.product_unit_id),
+    );
+    if (unit) adjustmentForm.unit_conversion = unit.conversion;
+}
+function submitAdjustment(): void {
+    adjustmentForm.submit(adjustmentStore());
+}
+const cancelForm = useForm({ reason: "" });
+function cancelSale(): void {
+    if (props.sale) cancelForm.submit(saleCancel(props.sale.id));
+}
+const reportFrom = ref(props.filters?.from ?? "");
+const reportTo = ref(props.filters?.to ?? "");
+function filterReport(): void {
+    router.visit(
+        reportIndex({ query: { from: reportFrom.value, to: reportTo.value } }),
+    );
+}
+function filterInventory(): void {}
+function filterPurchases(): void {
+    router.visit(
+        purchaseIndex({
+            query: {
+                start_date: purchaseStartDate.value || undefined,
+                end_date: purchaseEndDate.value || undefined,
+            },
+        }),
+        { preserveScroll: true },
+    );
+}
+function listRange<T>(page?: Page<T>): string {
+    return page?.total
+        ? t("operations.showing_range", {
+              from: page.from ?? 1,
+              to: page.to ?? page.data.length,
+              total: page.total,
+          })
+        : t("operations.no_records");
+}
+function statusClass(value: string): string {
+    return value === "cancelled" || value === "decrease"
+        ? "text-rose-600"
+        : value === "count"
+          ? "text-amber-600"
+          : " text-emerald-600 dark:text-emerald-400";
+}
 </script>
 
 <template>
     <Head :title="localizedTitle" />
-    <div class="min-h-screen bg-[#f5f7fb] px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8">
+    <div
+        class="min-h-screen bg-[#f5f7fb] px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
+    >
         <div class="mx-auto max-w-[1500px] space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+            <header
+                class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"
+            >
                 <div class="flex items-start gap-3">
-                    <Link v-if="['purchases-create', 'adjustments-create'].includes(section)" :href="section === 'purchases-create' ? purchaseIndex() : adjustmentIndex()" class="mt-1 rounded-xl border border-slate-200 bg-white p-2 text-slate-500"><ArrowLeft class="size-4" /></Link>
-                    <div><p class="text-sm font-medium text-slate-400">{{ $t('operations.store_operations') }}</p><h1 class="mt-1 text-2xl font-bold tracking-tight">{{ localizedTitle }}</h1><p class="mt-2 max-w-2xl text-sm text-slate-500">{{ localizedDescription }}</p></div>
+                    <Link
+                        v-if="
+                            ['purchases-create', 'adjustments-create'].includes(
+                                section,
+                            )
+                        "
+                        :href="
+                            section === 'purchases-create'
+                                ? purchaseIndex()
+                                : adjustmentIndex()
+                        "
+                        class="mt-1 rounded-xl border border-slate-200 bg-white p-2 text-slate-500"
+                        ><ArrowLeft class="size-4"
+                    /></Link>
+                    <div>
+                        <p class="text-sm font-medium text-slate-400">
+                            {{ $t("operations.store_operations") }}
+                        </p>
+                        <h1 class="mt-1 text-2xl font-bold tracking-tight">
+                            {{ localizedTitle }}
+                        </h1>
+                        <p class="mt-2 max-w-2xl text-sm text-slate-500">
+                            {{ localizedDescription }}
+                        </p>
+                    </div>
                 </div>
-                <div class="flex flex-wrap gap-2"><Link v-if="section === 'purchases'" :href="purchaseCreate()" class="action-primary"><Plus class="size-4" /> {{ $t('operations.new_purchase') }}</Link><Link v-if="section === 'adjustments'" :href="adjustmentCreate()" class="action-primary"><Plus class="size-4" /> {{ $t('operations.new_adjustment') }}</Link><Link v-if="section === 'sales'" :href="dashboard()" class="action-secondary">{{ $t('navigation.dashboard') }}</Link></div>
+                <div class="flex flex-wrap gap-2">
+                    <Link
+                        v-if="section === 'purchases'"
+                        :href="purchaseCreate()"
+                        class="action-primary"
+                        ><Plus class="size-4" />
+                        {{ $t("operations.new_purchase") }}</Link
+                    ><Link
+                        v-if="section === 'adjustments'"
+                        :href="adjustmentCreate()"
+                        class="action-primary"
+                        ><Plus class="size-4" />
+                        {{ $t("operations.new_adjustment") }}</Link
+                    ><Link
+                        v-if="section === 'sales'"
+                        :href="dashboard()"
+                        class="action-secondary"
+                        >{{ $t("navigation.dashboard") }}</Link
+                    ><Link
+                        v-if="section === 'sales-show'"
+                        :href="checkoutCreate()"
+                        class="action-secondary"
+                        >{{ $t("checkout.new_sale") }}</Link
+                    ><Link
+                        v-if="
+                            section === 'sales-show' &&
+                            sale &&
+                            !sale.cancelled_at
+                        "
+                        :href="checkoutCreate({ query: { sale_id: sale.id } })"
+                        class="action-primary"
+                        >{{ $t("operations.add_items") }}</Link
+                    >
+                </div>
             </header>
 
-            <FormSection v-if="section === 'categories' || section === 'suppliers'" :title="$t(section === 'categories' ? 'operations.product_categories' : 'operations.supplier_directory')" :description="$t(section === 'categories' ? 'operations.catalog_hint' : 'operations.supplier_hint')">
-                <div v-if="editingId" class="mb-4 flex justify-end"><button type="button" @click="resetRecord" class="action-secondary">{{ $t('operations.cancel_edit') }}</button></div>
-                <form @submit.prevent="submitRecord" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <FormField :label="$t('operations.name')" required :error="recordForm.errors.name"><input v-model="recordForm.name" required autocomplete="off" /></FormField>
-                    <FormField v-if="section === 'categories'" :label="$t('operations.description')" :hint="$t('operations.optional')"><input v-model="recordForm.description" /></FormField>
-                    <template v-else><FormField :label="$t('operations.contact_name')" :hint="$t('operations.optional')"><input v-model="recordForm.contact_name" /></FormField><FormField :label="$t('operations.phone')" :hint="$t('operations.optional')"><input v-model="recordForm.phone" type="tel" /></FormField><FormField :label="$t('operations.email')" :hint="$t('operations.optional')"><input v-model="recordForm.email" type="email" autocomplete="email" /></FormField></template>
-                    <FormActions :label="$t(editingId ? 'operations.save_changes' : 'operations.add_record')" :processing="recordForm.processing" />
+            <FormSection
+                v-if="section === 'categories' || section === 'suppliers'"
+                :title="
+                    $t(
+                        section === 'categories'
+                            ? 'operations.product_categories'
+                            : 'operations.supplier_directory',
+                    )
+                "
+                :description="
+                    $t(
+                        section === 'categories'
+                            ? 'operations.catalog_hint'
+                            : 'operations.supplier_hint',
+                    )
+                "
+            >
+                <div v-if="editingId" class="mb-4 flex justify-end">
+                    <button
+                        type="button"
+                        @click="resetRecord"
+                        class="action-secondary"
+                    >
+                        {{ $t("operations.cancel_edit") }}
+                    </button>
+                </div>
+                <form
+                    @submit.prevent="submitRecord"
+                    class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                >
+                    <FormField
+                        :label="$t('operations.name')"
+                        required
+                        :error="recordForm.errors.name"
+                        ><input
+                            v-model="recordForm.name"
+                            required
+                            autocomplete="off"
+                    /></FormField>
+                    <FormField
+                        v-if="section === 'categories'"
+                        :label="$t('operations.description')"
+                        :hint="$t('operations.optional')"
+                        ><input v-model="recordForm.description"
+                    /></FormField>
+                    <template v-else
+                        ><FormField
+                            :label="$t('operations.contact_name')"
+                            :hint="$t('operations.optional')"
+                            ><input
+                                v-model="recordForm.contact_name" /></FormField
+                        ><FormField
+                            :label="$t('operations.phone')"
+                            :hint="$t('operations.optional')"
+                            ><input
+                                v-model="recordForm.phone"
+                                type="tel" /></FormField
+                        ><FormField
+                            :label="$t('operations.email')"
+                            :hint="$t('operations.optional')"
+                            ><input
+                                v-model="recordForm.email"
+                                type="email"
+                                autocomplete="email" /></FormField
+                    ></template>
+                    <FormActions
+                        :label="
+                            $t(
+                                editingId
+                                    ? 'operations.save_changes'
+                                    : 'operations.add_record',
+                            )
+                        "
+                        :processing="recordForm.processing"
+                    />
                 </form>
-                <p v-if="recordForm.errors.description || recordForm.errors.contact_name || recordForm.errors.email || recordForm.errors.phone" class="error mt-3" role="alert">{{ recordForm.errors.description ?? recordForm.errors.contact_name ?? recordForm.errors.email ?? recordForm.errors.phone }}</p>
-                 <div class="table-wrap"><table><thead><tr><th>{{ $t('operations.name') }}</th><th>{{ $t('operations.details') }}</th><th>{{ $t('operations.status') }}</th><th /></tr></thead><tbody><tr v-for="item in (section === 'categories' ? categories?.data : suppliers?.data)" :key="item.id"><td class="font-semibold">{{ item.name }}</td><td class="text-slate-500">{{ section === 'categories' ? `${item.products_count ?? 0} ${$t('operations.products')}` : item.phone || item.email || $t('operations.no_contact_details') }}</td><td><span :class="item.active === false ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-600'" class="status">{{ $t(item.active === false ? 'operations.archived' : 'operations.active') }}</span></td><td class="text-right"><button @click="editRecord(item)" class="table-link">{{ $t('common.edit') }}</button><button @click="deleteRecord(item.id)" class="table-link text-rose-500">{{ $t(section === 'suppliers' ? 'operations.archive' : 'common.delete') }}</button></td></tr><tr v-if="!(section === 'categories' ? categories?.data.length : suppliers?.data.length)"><td colspan="4" class="empty">{{ $t('operations.no_records') }}</td></tr></tbody></table></div>
+                <p
+                    v-if="
+                        recordForm.errors.description ||
+                        recordForm.errors.contact_name ||
+                        recordForm.errors.email ||
+                        recordForm.errors.phone
+                    "
+                    class="error mt-3"
+                    role="alert"
+                >
+                    {{
+                        recordForm.errors.description ??
+                        recordForm.errors.contact_name ??
+                        recordForm.errors.email ??
+                        recordForm.errors.phone
+                    }}
+                </p>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.name") }}</th>
+                                <th>{{ $t("operations.details") }}</th>
+                                <th>{{ $t("operations.status") }}</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="item in section === 'categories'
+                                    ? categories?.data
+                                    : suppliers?.data"
+                                :key="item.id"
+                            >
+                                <td class="font-semibold">{{ item.name }}</td>
+                                <td class="text-slate-500">
+                                    {{
+                                        section === "categories"
+                                            ? `${item.products_count ?? 0} ${$t("operations.products")}`
+                                            : item.phone ||
+                                              item.email ||
+                                              $t(
+                                                  "operations.no_contact_details",
+                                              )
+                                    }}
+                                </td>
+                                <td>
+                                    <span
+                                        :class="
+                                            item.active === false
+                                                ? 'bg-slate-100 text-slate-500'
+                                                : 'bg-emerald-50 text-emerald-600'
+                                        "
+                                        class="status"
+                                        >{{
+                                            $t(
+                                                item.active === false
+                                                    ? "operations.archived"
+                                                    : "operations.active",
+                                            )
+                                        }}</span
+                                    >
+                                </td>
+                                <td class="text-right">
+                                    <button
+                                        @click="editRecord(item)"
+                                        class="table-link"
+                                    >
+                                        {{ $t("common.edit") }}</button
+                                    ><button
+                                        @click="deleteRecord(item.id)"
+                                        class="table-link text-rose-500"
+                                    >
+                                        {{
+                                            $t(
+                                                section === "suppliers"
+                                                    ? "operations.archive"
+                                                    : "common.delete",
+                                            )
+                                        }}
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr
+                                v-if="
+                                    !(section === 'categories'
+                                        ? categories?.data.length
+                                        : suppliers?.data.length)
+                                "
+                            >
+                                <td colspan="4" class="empty">
+                                    {{ $t("operations.no_records") }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </FormSection>
 
-             <section v-else-if="section === 'purchases'" class="panel"><div class="toolbar"><div><h2 class="font-bold">{{ $t('operations.purchase_orders') }}</h2><p class="mt-1 text-sm text-slate-400">{{ listRange(purchases) }}</p></div><form @submit.prevent="filterPurchases" class="flex flex-wrap items-end gap-2"><FormField :label="$t('operations.start_date')" class="text-xs [&>label]:text-xs"><input v-model="purchaseStartDate" type="date" class="!mt-0 w-auto py-2 text-xs" /></FormField><FormField :label="$t('operations.end_date')" class="text-xs [&>label]:text-xs"><input v-model="purchaseEndDate" type="date" class="!mt-0 w-auto py-2 text-xs" /></FormField><button type="submit" class="action-secondary px-3 py-2 text-xs">{{ $t('operations.apply_filters') }}</button></form></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.invoice') }}</th><th>{{ $t('operations.supplier') }}</th><th>{{ $t('operations.purchased') }}</th><th>{{ $t('operations.total') }}</th><th>{{ $t('operations.recorded_by') }}</th><th /></tr></thead><tbody><tr v-for="item in purchases?.data" :key="item.id"><td><Link :href="purchaseShow(item.id)" class="font-semibold text-blue-600">{{ item.invoice_number }}</Link></td><td>{{ item.supplier?.name ?? $t('operations.direct_purchase') }}</td><td class="text-slate-500">{{ date(item.purchased_at) }}</td><td class="font-semibold">{{ money(item.total) }}</td><td class="text-slate-500">{{ item.user?.name ?? '—' }}</td><td class="text-right"><Link :href="purchaseShow(item.id)" class="table-link">{{ $t('operations.view') }}</Link></td></tr><tr v-if="!purchases?.data.length"><td colspan="6" class="empty">{{ $t('operations.no_purchases') }}</td></tr></tbody></table></div></section>
-
-            <FormSection v-else-if="section === 'purchases-create'" :title="$t('operations.create_purchase')" :description="$t('operations.create_purchase_description')"><form @submit.prevent="submitPurchase" class="space-y-5"><div class="grid gap-4 sm:grid-cols-2"><FormField :label="$t('operations.invoice_number')" required :error="purchaseForm.errors.invoice_number"><input v-model="purchaseForm.invoice_number" required /></FormField><FormField :label="$t('operations.purchased_date')" required :error="purchaseForm.errors.purchased_at"><input v-model="purchaseForm.purchased_at" required type="date" /></FormField><FormField :label="$t('operations.supplier')" :hint="$t('operations.optional')"><select v-model="purchaseForm.supplier_id"><option value="">{{ $t('operations.direct_purchase') }}</option><option v-for="supplier in supplierOptions" :key="supplier.id" :value="supplier.id">{{ supplier.name }}</option></select></FormField><FormField :label="$t('operations.notes')" :hint="$t('operations.optional')"><textarea v-model="purchaseForm.notes" rows="2" /></FormField></div><div class="flex items-center justify-between"><div><h2 class="font-bold">{{ $t('operations.items_received') }}</h2><p class="mt-1 text-sm text-slate-400">{{ $t('operations.selling_unit_hint') }}</p></div><button type="button" @click="addPurchaseRow" class="action-secondary"><Plus class="size-4" />{{ $t('operations.add_item') }}</button></div><div v-for="(item, index) in purchaseForm.items" :key="index" class="grid gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:grid-cols-[1.5fr_1fr_100px_130px_auto]"><FormField :label="$t('operations.product')" required :error="purchaseForm.errors[`items.${index}.product_id`]"><select v-model="item.product_id" required><option value="">{{ $t('operations.select_product') }}</option><option v-for="product in products" :key="product.id" :value="product.id">{{ product.name }} ({{ product.sku }})</option></select></FormField><FormField :label="$t('operations.unit')" required :error="purchaseForm.errors[`items.${index}.product_unit_id`]"><select v-model="item.product_unit_id" required><option value="">{{ $t('operations.select_unit') }}</option><option v-for="unit in unitsFor(item.product_id)" :key="unit.id" :value="unit.id">{{ unit.name }} ×{{ unit.conversion }}</option></select></FormField><FormField :label="$t('operations.quantity')" required :error="purchaseForm.errors[`items.${index}.quantity`]"><input v-model.number="item.quantity" min="1" required type="number" /></FormField><FormField label="Unit cost" required :error="purchaseForm.errors[`items.${index}.unit_cost`]"><input v-model.number="item.unit_cost" min="0" required type="number" /></FormField><button type="button" @click="removePurchaseRow(index)" :disabled="purchaseForm.items.length === 1" class="self-end rounded-lg p-2 text-rose-500 disabled:opacity-30"><Trash2 class="size-4" /></button></div><p v-if="purchaseForm.errors.items" class="error" role="alert">{{ purchaseForm.errors.items }}</p><div class="flex justify-end border-t border-slate-100 pt-4 text-sm font-bold">Total: {{ money(purchaseTotal) }}</div><FormActions label="Record purchase" :processing="purchaseForm.processing" /></form></FormSection>
-
-            <section v-else-if="section === 'purchases-show' && purchase" class="panel"><div class="flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 sm:flex-row"><div><p class="text-sm text-slate-400">{{ date(purchase.purchased_at) }} · {{ purchase.supplier?.name ?? $t('operations.direct_purchase') }}</p><h2 class="mt-1 text-lg font-bold">{{ purchase.invoice_number }}</h2></div><span class="status bg-emerald-50 text-emerald-600">{{ $t('operations.received') }}</span></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.product') }}</th><th>{{ $t('operations.unit') }}</th><th>{{ $t('operations.quantity') }}</th><th>{{ $t('operations.unit_cost') }}</th><th class="text-right">{{ $t('operations.line_total') }}</th></tr></thead><tbody><tr v-for="item in purchase.items" :key="item.id"><td class="font-semibold">{{ item.product?.name }}</td><td>{{ item.unit?.name }}</td><td>{{ item.quantity }}</td><td>{{ money(item.unit_cost) }}</td><td class="text-right font-semibold">{{ money((item.quantity ?? 0) * (item.unit_cost ?? 0)) }}</td></tr></tbody></table></div><div class="mt-5 flex justify-end border-t border-slate-100 pt-5"><div class="text-right"><p class="text-sm text-slate-500">{{ $t('operations.total_received') }}</p><p class="text-2xl font-bold">{{ money(purchase.total) }}</p></div></div></section>
-
-            <section v-else-if="section === 'sales'" class="panel"><div class="toolbar"><div><h2 class="font-bold">{{ $t('operations.sales_history') }}</h2><p class="mt-1 text-sm text-slate-400">{{ listRange(sales) }}</p></div><TrendingUp class="size-5 text-emerald-500" /></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.invoice') }}</th><th>{{ $t('operations.sold_at') }}</th><th>{{ $t('operations.payment') }}</th><th>{{ $t('operations.total') }}</th><th>{{ $t('operations.status') }}</th><th /></tr></thead><tbody><tr v-for="item in sales?.data" :key="item.id"><td><Link :href="saleShow(item.id)" class="font-semibold text-blue-600">{{ item.invoice_number }}</Link></td><td class="text-slate-500">{{ date(item.sold_at) }}</td><td class="capitalize">{{ $t(`operations.payment_methods.${item.payment_method}`) }}</td><td class="font-semibold">{{ money(item.total) }}</td><td><span :class="statusClass(item.cancelled_at ? 'cancelled' : 'completed')" class="status">{{ $t(item.cancelled_at ? 'operations.cancelled' : 'operations.completed') }}</span></td><td class="text-right"><Link :href="saleShow(item.id)" class="table-link">{{ $t('operations.view') }}</Link></td></tr><tr v-if="!sales?.data.length"><td colspan="6" class="empty">{{ $t('operations.no_sales') }}</td></tr></tbody></table></div></section>
-
-             <section v-else-if="section === 'sales-show' && sale" class="grid items-start gap-6 xl:grid-cols-[1fr_320px]"><div class="panel"><div class="flex justify-between border-b border-slate-100 pb-5"><div><p class="text-sm text-slate-400">{{ date(sale.sold_at) }} · {{ sale.user?.name ?? $t('operations.staff_sale') }}</p><h2 class="mt-1 text-lg font-bold">{{ sale.invoice_number }}</h2></div><span :class="statusClass(sale.cancelled_at ? 'cancelled' : 'completed')" class="status">{{ $t(sale.cancelled_at ? 'operations.cancelled' : 'operations.completed') }}</span></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.product') }}</th><th>{{ $t('operations.unit') }}</th><th>{{ $t('operations.qty') }}</th><th class="text-right">{{ $t('operations.amount') }}</th></tr></thead><tbody><tr v-for="item in sale.items" :key="item.id"><td class="font-semibold">{{ item.product?.name }}</td><td>{{ item.unit?.name }}</td><td>{{ item.quantity }}</td><td class="text-right font-semibold">{{ money(item.total ?? (item.quantity * (item.unit_price ?? 0))) }}</td></tr></tbody></table></div></div><aside class="panel space-y-3"><div class="flex justify-between text-sm text-slate-500"><span>{{ $t('checkout.subtotal') }}</span><span>{{ money(sale.subtotal) }}</span></div><div class="flex justify-between text-sm text-slate-500"><span>{{ $t('checkout.discount') }}</span><span>{{ money(sale.discount) }}</span></div><div class="flex justify-between text-sm text-slate-500"><span>{{ $t('checkout.tax') }}</span><span>{{ money(sale.tax) }}</span></div><div class="flex justify-between border-t border-slate-100 pt-3 font-bold"><span>{{ $t('checkout.total') }}</span><span class="text-blue-600">{{ money(sale.total) }}</span></div><div class="border-t border-slate-100 pt-3 text-sm text-slate-500">{{ $t(`operations.payment_methods.${sale.payment_method}`) }} · {{ $t('operations.received_amount') }} {{ money(sale.received_amount) }}</div><form v-if="!sale.cancelled_at" @submit.prevent="cancelSale" class="border-t border-slate-100 pt-4"><FormField :label="$t('operations.cancellation_reason')" required :error="cancelForm.errors.reason"><input v-model="cancelForm.reason" required :placeholder="$t('operations.required')" /></FormField><FormActions :label="$t('operations.cancel_sale')" :processing="cancelForm.processing" /></form></aside></section>
-
-             <section v-else-if="section === 'inventory'" class="panel"><div class="toolbar"><div><h2 class="font-bold">{{ $t('operations.stock_on_hand') }}</h2><p class="mt-1 text-sm text-slate-400">{{ listRange(inventoryPage) }}</p></div><div class="flex flex-wrap items-end gap-2"><label class="order-2 flex w-full flex-none items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 text-sm text-slate-400 sm:w-56"><Search class="size-4" /><input v-model="query" class="w-full border-0 bg-transparent py-2 outline-none" :placeholder="$t('operations.search_stock')" /></label><select v-model="inventoryCategory" class="order-1 w-full rounded-xl border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:w-56" :aria-label="$t('operations.category')" @change="filterInventory"><option value="">{{ $t('operations.all_categories') }}</option><option v-for="category in categoryOptions" :key="category.id" :value="category.id">{{ category.name }}</option></select></div></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.product') }}</th><th>SKU</th><th>{{ $t('operations.category') }}</th><th>{{ $t('operations.base_unit') }}</th><th class="text-right">{{ $t('operations.quantity') }}</th><th>{{ $t('operations.status') }}</th></tr></thead><tbody><tr v-for="product in filteredProducts" :key="product.id"><td class="font-semibold">{{ product.name }}</td><td class="text-slate-500">{{ product.sku ?? '—' }}</td><td>{{ product.category?.name ?? '—' }}</td><td>{{ product.base_unit ?? $t('operations.base') }}</td><td class="text-right font-bold">{{ product.stock?.quantity_base ?? 0 }}</td><td><span :class="(product.stock?.quantity_base ?? 0) === 0 ? 'bg-rose-50 text-rose-600' : (product.stock?.quantity_base ?? 0) <= (product.reorder_level ?? 0) ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600'" class="status">{{ $t((product.stock?.quantity_base ?? 0) === 0 ? 'operations.out_of_stock' : (product.stock?.quantity_base ?? 0) <= (product.reorder_level ?? 0) ? 'operations.low_stock' : 'operations.healthy') }}</span></td></tr></tbody></table></div><div v-if="inventoryPage.links?.length" class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 text-xs text-slate-400 dark:border-slate-800"><span>{{ $t('operations.showing_range', { from: inventoryPage.from ?? 1, to: inventoryPage.to ?? inventoryPage.data.length, total: inventoryPage.total ?? inventoryPage.data.length }) }}</span><div class="flex gap-1"><Link v-for="link in inventoryPage.links" :key="link.label" :href="link.url ?? inventoryIndex()" :class="link.active ? 'bg-blue-600 font-semibold text-white' : 'border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'" class="rounded-lg px-3 py-1.5" v-html="link.label" /></div></div></section>
-
-            <section v-else-if="section === 'adjustments'" class="panel"><div class="toolbar"><div><h2 class="font-bold">{{ $t('operations.stock_adjustments') }}</h2><p class="mt-1 text-sm text-slate-400">{{ listRange(adjustments) }}</p></div><ClipboardList class="size-5 text-amber-500" /></div><div class="table-wrap"><table><thead><tr><th>{{ $t('operations.product') }}</th><th>{{ $t('operations.type') }}</th><th>{{ $t('operations.quantity') }}</th><th>{{ $t('operations.reason') }}</th><th>{{ $t('operations.adjusted_at') }}</th><th /></tr></thead><tbody><tr v-for="item in adjustments?.data" :key="item.id"><td class="font-semibold">{{ item.product?.name }}</td><td><span :class="statusClass(item.adjustment_type)" class="status capitalize">{{ $t(`operations.adjustment_types.${item.adjustment_type}`) }}</span></td><td>{{ item.quantity }} × {{ item.unit_conversion }}</td><td class="text-slate-500">{{ item.reason }}</td><td class="text-slate-500">{{ date(item.adjusted_at) }}</td><td class="text-right"><Link :href="adjustmentShow(item.id)" class="table-link">{{ $t('operations.view') }}</Link></td></tr><tr v-if="!adjustments?.data.length"><td colspan="6" class="empty">{{ $t('operations.no_adjustments') }}</td></tr></tbody></table></div></section>
-
-             <FormSection v-else-if="section === 'adjustments-create'" :title="$t('operations.create_adjustment')" :description="$t('operations.create_adjustment_description')"><form @submit.prevent="submitAdjustment" class="grid gap-4 sm:grid-cols-2"><FormField :label="$t('operations.product')" required :error="adjustmentForm.errors.product_id" class="sm:col-span-2"><select v-model="adjustmentForm.product_id" required><option value="">{{ $t('operations.select_product') }}</option><option v-for="option in adjustmentProductOptions" :key="option.value" :value="option.value">{{ option.label }}</option></select></FormField><FormField :label="$t('operations.adjustment_type')" required :error="adjustmentForm.errors.adjustment_type"><select v-model="adjustmentForm.adjustment_type"><option value="increase">{{ $t('operations.increase_stock') }}</option><option value="decrease">{{ $t('operations.decrease_stock') }}</option><option value="count">{{ $t('operations.set_counted_stock') }}</option></select></FormField><FormField :label="$t('operations.quantity')" required :error="adjustmentForm.errors.quantity"><input v-model.number="adjustmentForm.quantity" min="0" required type="number" /></FormField><FormField :label="$t('operations.unit_conversion')" required :error="adjustmentForm.errors.unit_conversion"><input v-model.number="adjustmentForm.unit_conversion" min="1" required type="number" /></FormField><FormField :label="$t('operations.reason')" required :error="adjustmentForm.errors.reason"><input v-model="adjustmentForm.reason" required maxlength="100" :placeholder="$t('operations.reason_placeholder')" /></FormField><FormField :label="$t('operations.notes')" :error="adjustmentForm.errors.notes" class="sm:col-span-2"><textarea v-model="adjustmentForm.notes" rows="3" /></FormField><FormActions :label="$t('operations.record_adjustment')" :processing="adjustmentForm.processing" /></form></FormSection>
-
-             <section v-else-if="section === 'adjustments-show' && adjustment" class="panel max-w-3xl"><div class="flex justify-between border-b border-slate-100 pb-5"><div><p class="text-sm text-slate-400">{{ date(adjustment.adjusted_at) }} · {{ adjustment.user?.name ?? $t('operations.staff_adjustment') }}</p><h2 class="mt-1 text-lg font-bold">{{ adjustment.product?.name }}</h2></div><span :class="statusClass(adjustment.adjustment_type)" class="status capitalize">{{ $t(`operations.adjustment_types.${adjustment.adjustment_type}`) }}</span></div><dl class="mt-5 grid gap-5 sm:grid-cols-3"><div><dt class="text-xs text-slate-400">{{ $t('operations.quantity_entered') }}</dt><dd class="mt-1 font-semibold">{{ adjustment.quantity }}</dd></div><div><dt class="text-xs text-slate-400">{{ $t('operations.unit_conversion') }}</dt><dd class="mt-1 font-semibold">{{ adjustment.unit_conversion }}</dd></div><div><dt class="text-xs text-slate-400">{{ $t('operations.base_quantity_changed') }}</dt><dd class="mt-1 font-semibold">{{ adjustment.quantity_base }}</dd></div><div class="sm:col-span-3"><dt class="text-xs text-slate-400">{{ $t('operations.reason') }}</dt><dd class="mt-1 font-semibold">{{ adjustment.reason }}</dd></div><div v-if="adjustment.notes" class="sm:col-span-3"><dt class="text-xs text-slate-400">{{ $t('operations.notes') }}</dt><dd class="mt-1 text-sm text-slate-600">{{ adjustment.notes }}</dd></div></dl></section>
-
-            <section v-else-if="section === 'reports'" class="space-y-6"><FormSection :title="$t('operations.reporting_period')" :description="$t('operations.reporting_period_description')"><form @submit.prevent="filterReport" class="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"><FormField :label="$t('operations.from')"><input v-model="reportFrom" type="date" /></FormField><FormField :label="$t('operations.to')"><input v-model="reportTo" type="date" /></FormField><FormActions :label="$t('operations.apply_filters')" /></form></FormSection><div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><article v-for="stat in [{ label: $t('operations.sales_revenue'), value: money(summary?.sales) }, { label: $t('operations.transactions'), value: summary?.transactions ?? 0 }, { label: $t('operations.active_products'), value: summary?.products ?? 0 }, { label: $t('operations.stock_movements'), value: summary?.movements ?? 0 }]" :key="stat.label" class="panel"><p class="text-sm text-slate-500">{{ stat.label }}</p><p class="mt-3 text-2xl font-bold tracking-tight">{{ stat.value }}</p><p class="mt-2 text-xs text-slate-400">{{ $t('operations.selected_reporting_period') }}</p></article></div><div class="panel flex items-start gap-4"><div class="rounded-xl bg-blue-50 p-3 text-blue-600"><FileText class="size-5" /></div><div><h2 class="font-bold">{{ $t('operations.operations_snapshot') }}</h2><p class="mt-1 text-sm text-slate-500">{{ $t('operations.operations_snapshot_description') }}</p></div></div></section>
-
-            <section v-else class="panel"><div class="flex items-center gap-4"><div class="rounded-xl bg-blue-50 p-3 text-blue-600"><Package class="size-5" /></div><div><h2 class="font-bold">{{ $t('operations.operations_overview') }}</h2><p class="mt-1 text-sm text-slate-500">{{ $t('operations.operations_overview_description') }}</p></div></div><div class="mt-5 flex flex-wrap gap-2"><Link :href="categoryIndex()" class="action-secondary">{{ $t('navigation.categories') }} <ArrowRight class="size-4" /></Link><Link :href="supplierIndex()" class="action-secondary">{{ $t('navigation.suppliers') }} <Truck class="size-4" /></Link><Link :href="inventoryIndex()" class="action-secondary">{{ $t('navigation.inventory') }} <Package class="size-4" /></Link></div></section>
-            <section v-if="section === 'adjustments' && products.length" class="panel">
-                <div class="toolbar"><div><h2 class="font-bold">{{ $t('operations.products') }}</h2><p class="mt-1 text-sm text-slate-400">Select a product to record a stock adjustment.</p></div><ClipboardList class="size-5 text-amber-500" /></div>
-                <div class="table-wrap"><table><thead><tr><th>{{ $t('operations.product') }}</th><th>SKU</th><th>{{ $t('operations.category') }}</th><th>{{ $t('operations.quantity') }}</th><th /></tr></thead><tbody><tr v-for="product in products" :key="product.id" class="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60" @click="openAdjustment(product)"><td class="font-semibold">{{ product.name }}</td><td class="text-slate-500">{{ product.sku ?? '—' }}</td><td>{{ product.category?.name ?? '—' }}</td><td class="font-semibold">{{ totalStock(product) }} {{ product.base_unit ?? '' }}</td><td class="text-right"><button type="button" class="table-link" @click.stop="openAdjustment(product)">Adjust</button></td></tr></tbody></table></div>
+            <section v-else-if="section === 'purchases'" class="panel">
+                <div class="toolbar">
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.purchase_orders") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-400">
+                            {{ listRange(purchases) }}
+                        </p>
+                    </div>
+                    <form
+                        @submit.prevent="filterPurchases"
+                        class="flex flex-wrap items-end gap-2"
+                    >
+                        <FormField
+                            :label="$t('operations.start_date')"
+                            class="text-xs [&>label]:text-xs"
+                            ><input
+                                v-model="purchaseStartDate"
+                                type="date"
+                                class="!mt-0 w-auto py-2 text-xs" /></FormField
+                        ><FormField
+                            :label="$t('operations.end_date')"
+                            class="text-xs [&>label]:text-xs"
+                            ><input
+                                v-model="purchaseEndDate"
+                                type="date"
+                                class="!mt-0 w-auto py-2 text-xs" /></FormField
+                        ><button
+                            type="submit"
+                            class="action-secondary px-3 py-2 text-xs"
+                        >
+                            {{ $t("operations.apply_filters") }}
+                        </button>
+                    </form>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.invoice") }}</th>
+                                <th>{{ $t("operations.supplier") }}</th>
+                                <th>{{ $t("operations.purchased") }}</th>
+                                <th>{{ $t("operations.total") }}</th>
+                                <th>{{ $t("operations.recorded_by") }}</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in purchases?.data" :key="item.id">
+                                <td>
+                                    <Link
+                                        :href="purchaseShow(item.id)"
+                                        class="font-semibold text-blue-600"
+                                        >{{ item.invoice_number }}</Link
+                                    >
+                                </td>
+                                <td>
+                                    {{
+                                        item.supplier?.name ??
+                                        $t("operations.direct_purchase")
+                                    }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ date(item.purchased_at) }}
+                                </td>
+                                <td class="font-semibold">
+                                    {{ money(item.total) }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ item.user?.name ?? "—" }}
+                                </td>
+                                <td class="text-right">
+                                    <Link
+                                        :href="purchaseShow(item.id)"
+                                        class="table-link"
+                                        >{{ $t("operations.view") }}</Link
+                                    >
+                                </td>
+                            </tr>
+                            <tr v-if="!purchases?.data.length">
+                                <td colspan="6" class="empty">
+                                    {{ $t("operations.no_purchases") }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </section>
-            <div v-if="showAdjustmentModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4" @click.self="closeAdjustment">
-                <section class="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 sm:p-6">
-                    <div class="mb-5 flex items-start justify-between"><div><h2 class="text-lg font-bold">{{ $t('operations.create_adjustment') }}</h2><p class="mt-1 text-sm text-slate-500">{{ products.find((product: Product) => product.id === Number(adjustmentForm.product_id))?.name }}</p></div><button type="button" class="text-2xl text-slate-400" aria-label="Close" @click="closeAdjustment">&times;</button></div>
-                    <form class="grid gap-4 sm:grid-cols-2" @submit.prevent="submitAdjustment"><FormField :label="$t('operations.unit')" required :error="adjustmentForm.errors.product_unit_id"><select v-model="adjustmentForm.product_unit_id" required @change="syncAdjustmentUnit"><option v-for="unit in adjustmentUnits" :key="unit.id" :value="unit.id">{{ unit.name }} ({{ unit.conversion }} {{ products.find((product: Product) => product.id === Number(adjustmentForm.product_id))?.base_unit ?? '' }})</option></select></FormField><FormField :label="$t('operations.adjustment_type')" required :error="adjustmentForm.errors.adjustment_type"><select v-model="adjustmentForm.adjustment_type"><option value="increase">{{ $t('operations.increase_stock') }}</option><option value="decrease">{{ $t('operations.decrease_stock') }}</option><option value="count">{{ $t('operations.set_counted_stock') }}</option></select></FormField><FormField :label="$t('operations.quantity')" required :error="adjustmentForm.errors.quantity"><input v-model.number="adjustmentForm.quantity" min="0" required type="number" /></FormField><FormField :label="$t('operations.unit_conversion')" required :error="adjustmentForm.errors.unit_conversion"><input v-model.number="adjustmentForm.unit_conversion" min="1" required type="number" /></FormField><FormField :label="$t('operations.reason')" required :error="adjustmentForm.errors.reason"><input v-model="adjustmentForm.reason" required maxlength="100" :placeholder="$t('operations.reason_placeholder')" /></FormField><FormField :label="$t('operations.notes')" :error="adjustmentForm.errors.notes" class="sm:col-span-2"><textarea v-model="adjustmentForm.notes" rows="3" /></FormField><div class="flex justify-end gap-2 sm:col-span-2"><button type="button" class="action-secondary" @click="closeAdjustment">{{ $t('common.cancel') }}</button><FormActions :label="$t('operations.record_adjustment')" :processing="adjustmentForm.processing" /></div></form>
+
+            <FormSection
+                v-else-if="section === 'purchases-create'"
+                :title="$t('operations.create_purchase')"
+                :description="$t('operations.create_purchase_description')"
+                ><form @submit.prevent="submitPurchase" class="space-y-5">
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <FormField
+                            :label="$t('operations.invoice_number')"
+                            required
+                            :error="purchaseForm.errors.invoice_number"
+                            ><input
+                                v-model="purchaseForm.invoice_number"
+                                required /></FormField
+                        ><FormField
+                            :label="$t('operations.purchased_date')"
+                            required
+                            :error="purchaseForm.errors.purchased_at"
+                            ><input
+                                v-model="purchaseForm.purchased_at"
+                                required
+                                type="date" /></FormField
+                        ><FormField
+                            :label="$t('operations.supplier')"
+                            :hint="$t('operations.optional')"
+                            ><select v-model="purchaseForm.supplier_id">
+                                <option value="">
+                                    {{ $t("operations.direct_purchase") }}
+                                </option>
+                                <option
+                                    v-for="supplier in supplierOptions"
+                                    :key="supplier.id"
+                                    :value="supplier.id"
+                                >
+                                    {{ supplier.name }}
+                                </option>
+                            </select></FormField
+                        ><FormField
+                            :label="$t('operations.notes')"
+                            :hint="$t('operations.optional')"
+                        >
+                            <textarea v-model="purchaseForm.notes" rows="2" />
+                        </FormField>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="font-bold">
+                                {{ $t("operations.items_received") }}
+                            </h2>
+                            <p class="mt-1 text-sm text-slate-400">
+                                {{ $t("operations.selling_unit_hint") }}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            @click="addPurchaseRow"
+                            class="action-secondary"
+                        >
+                            <Plus class="size-4" />{{
+                                $t("operations.add_item")
+                            }}
+                        </button>
+                    </div>
+                    <div
+                        v-for="(item, index) in purchaseForm.items"
+                        :key="index"
+                        class="grid gap-3 rounded-xl border border-slate-100 bg-slate-50/70 p-3 sm:grid-cols-[1.5fr_1fr_100px_130px_auto]"
+                    >
+                        <FormField
+                            :label="$t('operations.product')"
+                            required
+                            :error="
+                                purchaseForm.errors[`items.${index}.product_id`]
+                            "
+                            ><select v-model="item.product_id" required>
+                                <option value="">
+                                    {{ $t("operations.select_product") }}
+                                </option>
+                                <option
+                                    v-for="product in products"
+                                    :key="product.id"
+                                    :value="product.id"
+                                >
+                                    {{ product.name }} ({{ product.sku }})
+                                </option>
+                            </select></FormField
+                        ><FormField
+                            :label="$t('operations.unit')"
+                            required
+                            :error="
+                                purchaseForm.errors[
+                                    `items.${index}.product_unit_id`
+                                ]
+                            "
+                            ><select v-model="item.product_unit_id" required>
+                                <option value="">
+                                    {{ $t("operations.select_unit") }}
+                                </option>
+                                <option
+                                    v-for="unit in unitsFor(item.product_id)"
+                                    :key="unit.id"
+                                    :value="unit.id"
+                                >
+                                    {{ unit.name }} ×{{ unit.conversion }}
+                                </option>
+                            </select></FormField
+                        ><FormField
+                            :label="$t('operations.quantity')"
+                            required
+                            :error="
+                                purchaseForm.errors[`items.${index}.quantity`]
+                            "
+                            ><input
+                                v-model.number="item.quantity"
+                                min="1"
+                                required
+                                type="number" /></FormField
+                        ><FormField
+                            label="Unit cost"
+                            required
+                            :error="
+                                purchaseForm.errors[`items.${index}.unit_cost`]
+                            "
+                            ><input
+                                v-model.number="item.unit_cost"
+                                min="0"
+                                required
+                                type="number" /></FormField
+                        ><button
+                            type="button"
+                            @click="removePurchaseRow(index)"
+                            :disabled="purchaseForm.items.length === 1"
+                            class="self-end rounded-lg p-2 text-rose-500 disabled:opacity-30"
+                        >
+                            <Trash2 class="size-4" />
+                        </button>
+                    </div>
+                    <p
+                        v-if="purchaseForm.errors.items"
+                        class="error"
+                        role="alert"
+                    >
+                        {{ purchaseForm.errors.items }}
+                    </p>
+                    <div
+                        class="flex justify-end border-t border-slate-100 pt-4 text-sm font-bold"
+                    >
+                        Total: {{ money(purchaseTotal) }}
+                    </div>
+                    <FormActions
+                        label="Record purchase"
+                        :processing="purchaseForm.processing"
+                    /></form
+            ></FormSection>
+
+            <section
+                v-else-if="section === 'purchases-show' && purchase"
+                class="panel"
+            >
+                <div
+                    class="flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 sm:flex-row"
+                >
+                    <div>
+                        <p class="text-sm text-slate-400">
+                            {{ date(purchase.purchased_at) }} ·
+                            {{
+                                purchase.supplier?.name ??
+                                $t("operations.direct_purchase")
+                            }}
+                        </p>
+                        <h2 class="mt-1 text-lg font-bold">
+                            {{ purchase.invoice_number }}
+                        </h2>
+                    </div>
+                    <span class="status bg-emerald-50 text-emerald-600">{{
+                        $t("operations.received")
+                    }}</span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.product") }}</th>
+                                <th>{{ $t("operations.unit") }}</th>
+                                <th>{{ $t("operations.quantity") }}</th>
+                                <th>{{ $t("operations.unit_cost") }}</th>
+                                <th class="text-right">
+                                    {{ $t("operations.line_total") }}
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in purchase.items" :key="item.id">
+                                <td class="font-semibold">
+                                    {{ item.product?.name }}
+                                </td>
+                                <td>{{ item.unit?.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ money(item.unit_cost) }}</td>
+                                <td class="text-right font-semibold">
+                                    {{
+                                        money(
+                                            (item.quantity ?? 0) *
+                                                (item.unit_cost ?? 0),
+                                        )
+                                    }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div
+                    class="mt-5 flex justify-end border-t border-slate-100 pt-5"
+                >
+                    <div class="text-right">
+                        <p class="text-sm text-slate-500">
+                            {{ $t("operations.total_received") }}
+                        </p>
+                        <p class="text-2xl font-bold">
+                            {{ money(purchase.total) }}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section v-else-if="section === 'sales'" class="panel">
+                <div class="toolbar">
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.sales_history") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-400">
+                            {{ listRange(sales) }}
+                        </p>
+                    </div>
+                    <TrendingUp class="size-5 text-emerald-500" />
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.invoice") }}</th>
+                                <th>{{ $t("operations.sold_at") }}</th>
+                                <th>{{ $t("operations.payment") }}</th>
+                                <th>{{ $t("operations.total") }}</th>
+                                <th>{{ $t("operations.status") }}</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="item in sales?.data" :key="item.id">
+                                <td>
+                                    <Link
+                                        :href="saleShow(item.id)"
+                                        class="font-semibold text-blue-600"
+                                        >{{ item.invoice_number }}</Link
+                                    >
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ date(item.sold_at) }}
+                                </td>
+                                <td class="capitalize">
+                                    {{
+                                        $t(
+                                            `operations.payment_methods.${item.payment_method}`,
+                                        )
+                                    }}
+                                </td>
+                                <td class="font-semibold">
+                                    {{ money(item.total) }}
+                                </td>
+                                <td>
+                                    <span
+                                        :class="
+                                            statusClass(
+                                                item.cancelled_at
+                                                    ? 'cancelled'
+                                                    : 'completed',
+                                            )
+                                        "
+                                        class="status"
+                                        >{{
+                                            $t(
+                                                item.cancelled_at
+                                                    ? "operations.cancelled"
+                                                    : "operations.completed",
+                                            )
+                                        }}</span
+                                    >
+                                </td>
+                                <td class="text-right">
+                                    <Link
+                                        :href="saleShow(item.id)"
+                                        class="table-link"
+                                        >{{ $t("operations.view") }}</Link
+                                    >
+                                </td>
+                            </tr>
+                            <tr v-if="!sales?.data.length">
+                                <td colspan="6" class="empty">
+                                    {{ $t("operations.no_sales") }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section
+                v-else-if="section === 'sales-show' && sale"
+                class="grid items-start gap-6 xl:grid-cols-[1fr_320px]"
+            >
+                <div class="panel">
+                    <div
+                        class="flex justify-between border-b border-slate-100 pb-5"
+                    >
+                        <div>
+                            <p class="text-sm text-slate-400">
+                                {{ date(sale.sold_at) }} ·
+                                {{
+                                    sale.user?.name ??
+                                    $t("operations.staff_sale")
+                                }}
+                            </p>
+                            <h2 class="mt-1 text-lg font-bold">
+                                {{ sale.invoice_number }}
+                            </h2>
+                        </div>
+                        <span
+                            :class="
+                                statusClass(
+                                    sale.cancelled_at
+                                        ? 'cancelled'
+                                        : 'completed',
+                                )
+                            "
+                            class="status"
+                            >{{
+                                $t(
+                                    sale.cancelled_at
+                                        ? "operations.cancelled"
+                                        : "operations.completed",
+                                )
+                            }}</span
+                        >
+                    </div>
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>{{ $t("operations.product") }}</th>
+                                    <th>{{ $t("operations.unit") }}</th>
+                                    <th>{{ $t("operations.qty") }}</th>
+                                    <th class="text-right">
+                                        {{ $t("operations.amount") }}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in sale.items" :key="item.id">
+                                    <td class="font-semibold">
+                                        {{ item.product?.name }}
+                                    </td>
+                                    <td>{{ item.unit?.name }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td class="text-right font-semibold">
+                                        {{
+                                            money(
+                                                item.total ??
+                                                    item.quantity *
+                                                        (item.unit_price ?? 0),
+                                            )
+                                        }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <aside class="panel space-y-3">
+                    <div class="flex justify-between text-sm text-slate-500">
+                        <span>{{ $t("checkout.subtotal") }}</span
+                        ><span>{{ money(sale.subtotal) }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-slate-500">
+                        <span>{{ $t("checkout.discount") }}</span
+                        ><span>{{ money(sale.discount) }}</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-slate-500">
+                        <span>{{ $t("checkout.tax") }}</span
+                        ><span>{{ money(sale.tax) }}</span>
+                    </div>
+                    <div
+                        class="flex justify-between border-t border-slate-100 pt-3 font-bold"
+                    >
+                        <span>{{ $t("checkout.total") }}</span
+                        ><span class="text-blue-600">{{
+                            money(sale.total)
+                        }}</span>
+                    </div>
+                    <div
+                        class="border-t border-slate-100 pt-3 text-sm text-slate-500"
+                    >
+                        {{
+                            $t(
+                                `operations.payment_methods.${sale.payment_method}`,
+                            )
+                        }}
+                        · {{ $t("operations.received_amount") }}
+                        {{ money(sale.received_amount) }}
+                    </div>
+                    <form
+                        v-if="!sale.cancelled_at"
+                        @submit.prevent="cancelSale"
+                        class="border-t border-slate-100 pt-4"
+                    >
+                        <FormField
+                            :label="$t('operations.cancellation_reason')"
+                            required
+                            :error="cancelForm.errors.reason"
+                            ><input
+                                v-model="cancelForm.reason"
+                                required
+                                :placeholder="
+                                    $t('operations.required')
+                                " /></FormField
+                        ><FormActions
+                            :label="$t('operations.cancel_sale')"
+                            :processing="cancelForm.processing"
+                        />
+                    </form>
+                </aside>
+            </section>
+
+            <section v-else-if="section === 'inventory'" class="panel">
+                <div class="toolbar">
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.stock_on_hand") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-400">
+                            {{ listRange(inventoryPage) }}
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-end gap-2">
+                        <label
+                            class="order-2 flex h-11 w-full flex-none items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 text-sm text-slate-400 sm:w-56"
+                            ><Search class="size-4" /><input
+                                v-model="query"
+                                class="w-full border-0 bg-transparent py-2 outline-none"
+                                :placeholder="
+                                    $t('operations.search_stock')
+                                " /></label
+                        ><select
+                            v-model="inventoryCategory"
+                            class="order-1 h-11 w-full flex-none rounded-xl border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:w-56"
+                            :aria-label="$t('operations.category')"
+                            @change="filterInventory"
+                        >
+                            <option value="">
+                                {{ $t("operations.all_categories") }}
+                            </option>
+                            <option
+                                v-for="category in categoryOptions"
+                                :key="category.id"
+                                :value="category.id"
+                            >
+                                {{ category.name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.product") }}</th>
+                                <th>SKU</th>
+                                <th>{{ $t("operations.category") }}</th>
+                                <th>{{ $t("operations.base_unit") }}</th>
+                                <th class="text-right">
+                                    {{ $t("operations.quantity") }}
+                                </th>
+                                <th>{{ $t("operations.status") }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="product in filteredProducts"
+                                :key="product.id"
+                            >
+                                <td class="font-semibold">
+                                    {{ product.name }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ product.sku ?? "—" }}
+                                </td>
+                                <td>{{ product.category?.name ?? "—" }}</td>
+                                <td>
+                                    {{
+                                        product.base_unit ??
+                                        $t("operations.base")
+                                    }}
+                                </td>
+                                <td class="text-right font-bold">
+                                    {{ product.stock?.quantity_base ?? 0 }}
+                                    {{
+                                        product.base_unit ??
+                                        $t("operations.base")
+                                    }}
+                                </td>
+                                <td>
+                                    <span
+                                        :class="
+                                            (product.stock?.quantity_base ??
+                                                0) === 0
+                                                ? 'bg-rose-50 text-rose-600'
+                                                : (product.stock
+                                                        ?.quantity_base ?? 0) <=
+                                                    (product.reorder_level ?? 0)
+                                                  ? 'bg-amber-50 text-amber-600'
+                                                  : 'bg-emerald-50 text-emerald-600'
+                                        "
+                                        class="status"
+                                        >{{
+                                            $t(
+                                                (product.stock?.quantity_base ??
+                                                    0) === 0
+                                                    ? "operations.out_of_stock"
+                                                    : (product.stock
+                                                            ?.quantity_base ??
+                                                            0) <=
+                                                        (product.reorder_level ??
+                                                            0)
+                                                      ? "operations.low_stock"
+                                                      : "operations.healthy",
+                                            )
+                                        }}</span
+                                    >
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div
+                    v-if="inventoryPage.links?.length"
+                    class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-5 text-xs text-slate-400 dark:border-slate-800"
+                >
+                    <span>{{
+                        $t("operations.showing_range", {
+                            from: inventoryPage.from ?? 1,
+                            to: inventoryPage.to ?? inventoryPage.data.length,
+                            total:
+                                inventoryPage.total ??
+                                inventoryPage.data.length,
+                        })
+                    }}</span>
+                    <div class="flex gap-1">
+                        <Link
+                            v-for="link in inventoryPage.links"
+                            :key="link.label"
+                            :href="link.url ?? '#'"
+                            :class="
+                                link.active
+                                    ? 'bg-blue-600 font-semibold text-white'
+                                    : 'border border-slate-200 text-slate-600 dark:border-slate-700 dark:text-slate-300'
+                            "
+                            class="rounded-lg px-3 py-1.5"
+                            v-html="link.label"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <section v-else-if="section === 'adjustments'" class="panel">
+                <div class="toolbar">
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.stock_adjustments") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-400">
+                            {{ listRange(adjustments) }}
+                        </p>
+                    </div>
+                    <ClipboardList class="size-5 text-amber-500" />
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.product") }}</th>
+                                <th>{{ $t("operations.type") }}</th>
+                                <th>{{ $t("operations.quantity") }}</th>
+                                <th>{{ $t("operations.reason") }}</th>
+                                <th>{{ $t("operations.adjusted_at") }}</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="item in adjustments?.data"
+                                :key="item.id"
+                            >
+                                <td class="font-semibold">
+                                    {{ item.product?.name }}
+                                </td>
+                                <td>
+                                    <span
+                                        :class="
+                                            statusClass(item.adjustment_type)
+                                        "
+                                        class="status capitalize"
+                                        >{{
+                                            $t(
+                                                `operations.adjustment_types.${item.adjustment_type}`,
+                                            )
+                                        }}</span
+                                    >
+                                </td>
+                                <td>
+                                    {{ item.quantity }} ×
+                                    {{ item.unit_conversion }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ item.reason }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ date(item.adjusted_at) }}
+                                </td>
+                                <td class="text-right">
+                                    <Link
+                                        :href="adjustmentShow(item.id)"
+                                        class="table-link"
+                                        >{{ $t("operations.view") }}</Link
+                                    >
+                                </td>
+                            </tr>
+                            <tr v-if="!adjustments?.data.length">
+                                <td colspan="6" class="empty">
+                                    {{ $t("operations.no_adjustments") }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <FormSection
+                v-else-if="section === 'adjustments-create'"
+                :title="$t('operations.create_adjustment')"
+                :description="$t('operations.create_adjustment_description')"
+                ><form
+                    @submit.prevent="submitAdjustment"
+                    class="grid gap-4 sm:grid-cols-2"
+                >
+                    <FormField
+                        :label="$t('operations.product')"
+                        required
+                        :error="adjustmentForm.errors.product_id"
+                        class="sm:col-span-2"
+                        ><select v-model="adjustmentForm.product_id" required>
+                            <option value="">
+                                {{ $t("operations.select_product") }}
+                            </option>
+                            <option
+                                v-for="option in adjustmentProductOptions"
+                                :key="option.value"
+                                :value="option.value"
+                            >
+                                {{ option.label }}
+                            </option>
+                        </select></FormField
+                    ><FormField
+                        :label="$t('operations.adjustment_type')"
+                        required
+                        :error="adjustmentForm.errors.adjustment_type"
+                        ><select v-model="adjustmentForm.adjustment_type">
+                            <option value="increase">
+                                {{ $t("operations.increase_stock") }}
+                            </option>
+                            <option value="decrease">
+                                {{ $t("operations.decrease_stock") }}
+                            </option>
+                            <option value="count">
+                                {{ $t("operations.set_counted_stock") }}
+                            </option>
+                        </select></FormField
+                    ><FormField
+                        :label="$t('operations.quantity')"
+                        required
+                        :error="adjustmentForm.errors.quantity"
+                        ><input
+                            v-model.number="adjustmentForm.quantity"
+                            min="0"
+                            required
+                            type="number" /></FormField
+                    ><FormField
+                        :label="$t('operations.unit_conversion')"
+                        required
+                        :error="adjustmentForm.errors.unit_conversion"
+                        ><input
+                            v-model.number="adjustmentForm.unit_conversion"
+                            min="1"
+                            required
+                            type="number" /></FormField
+                    ><FormField
+                        :label="$t('operations.reason')"
+                        required
+                        :error="adjustmentForm.errors.reason"
+                        ><input
+                            v-model="adjustmentForm.reason"
+                            required
+                            maxlength="100"
+                            :placeholder="
+                                $t('operations.reason_placeholder')
+                            " /></FormField
+                    ><FormField
+                        :label="$t('operations.notes')"
+                        :error="adjustmentForm.errors.notes"
+                        class="sm:col-span-2"
+                    >
+                        <textarea
+                            v-model="adjustmentForm.notes"
+                            rows="3"
+                        /></FormField
+                    ><FormActions
+                        :label="$t('operations.record_adjustment')"
+                        :processing="adjustmentForm.processing"
+                    /></form
+            ></FormSection>
+
+            <section
+                v-else-if="section === 'adjustments-show' && adjustment"
+                class="panel max-w-3xl"
+            >
+                <div
+                    class="flex justify-between border-b border-slate-100 pb-5"
+                >
+                    <div>
+                        <p class="text-sm text-slate-400">
+                            {{ date(adjustment.adjusted_at) }} ·
+                            {{
+                                adjustment.user?.name ??
+                                $t("operations.staff_adjustment")
+                            }}
+                        </p>
+                        <h2 class="mt-1 text-lg font-bold">
+                            {{ adjustment.product?.name }}
+                        </h2>
+                    </div>
+                    <span
+                        :class="statusClass(adjustment.adjustment_type)"
+                        class="status capitalize"
+                        >{{
+                            $t(
+                                `operations.adjustment_types.${adjustment.adjustment_type}`,
+                            )
+                        }}</span
+                    >
+                </div>
+                <dl class="mt-5 grid gap-5 sm:grid-cols-3">
+                    <div>
+                        <dt class="text-xs text-slate-400">
+                            {{ $t("operations.quantity_entered") }}
+                        </dt>
+                        <dd class="mt-1 font-semibold">
+                            {{ adjustment.quantity }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400">
+                            {{ $t("operations.unit_conversion") }}
+                        </dt>
+                        <dd class="mt-1 font-semibold">
+                            {{ adjustment.unit_conversion }}
+                        </dd>
+                    </div>
+                    <div>
+                        <dt class="text-xs text-slate-400">
+                            {{ $t("operations.base_quantity_changed") }}
+                        </dt>
+                        <dd class="mt-1 font-semibold">
+                            {{ adjustment.quantity_base }}
+                        </dd>
+                    </div>
+                    <div class="sm:col-span-3">
+                        <dt class="text-xs text-slate-400">
+                            {{ $t("operations.reason") }}
+                        </dt>
+                        <dd class="mt-1 font-semibold">
+                            {{ adjustment.reason }}
+                        </dd>
+                    </div>
+                    <div v-if="adjustment.notes" class="sm:col-span-3">
+                        <dt class="text-xs text-slate-400">
+                            {{ $t("operations.notes") }}
+                        </dt>
+                        <dd class="mt-1 text-sm text-slate-600">
+                            {{ adjustment.notes }}
+                        </dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section v-else-if="section === 'reports'" class="space-y-6">
+                <FormSection
+                    :title="$t('operations.reporting_period')"
+                    :description="$t('operations.reporting_period_description')"
+                    ><form
+                        @submit.prevent="filterReport"
+                        class="grid gap-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+                    >
+                        <FormField :label="$t('operations.from')"
+                            ><input
+                                v-model="reportFrom"
+                                type="date" /></FormField
+                        ><FormField :label="$t('operations.to')"
+                            ><input v-model="reportTo" type="date" /></FormField
+                        ><FormActions
+                            :label="$t('operations.apply_filters')"
+                        /></form
+                ></FormSection>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <article
+                        v-for="stat in [
+                            {
+                                label: $t('operations.sales_revenue'),
+                                value: money(summary?.sales),
+                            },
+                            {
+                                label: $t('operations.transactions'),
+                                value: summary?.transactions ?? 0,
+                            },
+                            {
+                                label: $t('operations.active_products'),
+                                value: summary?.products ?? 0,
+                            },
+                            {
+                                label: $t('operations.stock_movements'),
+                                value: summary?.movements ?? 0,
+                            },
+                        ]"
+                        :key="stat.label"
+                        class="panel"
+                    >
+                        <p class="text-sm text-slate-500">{{ stat.label }}</p>
+                        <p class="mt-3 text-2xl font-bold tracking-tight">
+                            {{ stat.value }}
+                        </p>
+                        <p class="mt-2 text-xs text-slate-400">
+                            {{ $t("operations.selected_reporting_period") }}
+                        </p>
+                    </article>
+                </div>
+                <div class="panel flex items-start gap-4">
+                    <div class="rounded-xl bg-blue-50 p-3 text-blue-600">
+                        <FileText class="size-5" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.operations_snapshot") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-500">
+                            {{
+                                $t("operations.operations_snapshot_description")
+                            }}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section v-else class="panel">
+                <div class="flex items-center gap-4">
+                    <div class="rounded-xl bg-blue-50 p-3 text-blue-600">
+                        <Package class="size-5" />
+                    </div>
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.operations_overview") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-500">
+                            {{
+                                $t("operations.operations_overview_description")
+                            }}
+                        </p>
+                    </div>
+                </div>
+                <div class="mt-5 flex flex-wrap gap-2">
+                    <Link :href="categoryIndex()" class="action-secondary"
+                        >{{ $t("navigation.categories") }}
+                        <ArrowRight class="size-4" /></Link>
+                    ><Link :href="supplierIndex()" class="action-secondary"
+                        >{{ $t("navigation.suppliers") }}
+                        <Truck class="size-4" /></Link>
+                </div>
+            </section>
+            <section
+                v-if="section === 'adjustments' && products.length"
+                class="panel"
+            >
+                <div class="toolbar">
+                    <div>
+                        <h2 class="font-bold">
+                            {{ $t("operations.products") }}
+                        </h2>
+                        <p class="mt-1 text-sm text-slate-400">
+                            Select a product to record a stock adjustment.
+                        </p>
+                    </div>
+                    <ClipboardList class="size-5 text-amber-500" />
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ $t("operations.product") }}</th>
+                                <th>SKU</th>
+                                <th>{{ $t("operations.category") }}</th>
+                                <th>{{ $t("operations.quantity") }}</th>
+                                <th />
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr
+                                v-for="product in products"
+                                :key="product.id"
+                                class="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                                @click="openAdjustment(product)"
+                            >
+                                <td class="font-semibold">
+                                    {{ product.name }}
+                                </td>
+                                <td class="text-slate-500">
+                                    {{ product.sku ?? "—" }}
+                                </td>
+                                <td>{{ product.category?.name ?? "—" }}</td>
+                                <td class="font-semibold">
+                                    {{ totalStock(product) }}
+                                    {{ product.base_unit ?? "" }}
+                                </td>
+                                <td class="text-right">
+                                    <button
+                                        type="button"
+                                        class="table-link"
+                                        @click.stop="openAdjustment(product)"
+                                    >
+                                        Adjust
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            <div
+                v-if="showAdjustmentModal"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+                @click.self="closeAdjustment"
+            >
+                <section
+                    class="w-full max-w-2xl rounded-2xl bg-white p-5 shadow-2xl dark:bg-slate-900 sm:p-6"
+                >
+                    <div class="mb-5 flex items-start justify-between">
+                        <div>
+                            <h2 class="text-lg font-bold">
+                                {{ $t("operations.create_adjustment") }}
+                            </h2>
+                            <p class="mt-1 text-sm text-slate-500">
+                                {{
+                                    products.find(
+                                        (product: Product) =>
+                                            product.id ===
+                                            Number(adjustmentForm.product_id),
+                                    )?.name
+                                }}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            class="text-2xl text-slate-400"
+                            aria-label="Close"
+                            @click="closeAdjustment"
+                        >
+                            &times;
+                        </button>
+                    </div>
+                    <form
+                        class="grid gap-4 sm:grid-cols-2"
+                        @submit.prevent="submitAdjustment"
+                    >
+                        <FormField
+                            :label="$t('operations.unit')"
+                            required
+                            :error="adjustmentForm.errors.product_unit_id"
+                            ><select
+                                v-model="adjustmentForm.product_unit_id"
+                                required
+                                @change="syncAdjustmentUnit"
+                            >
+                                <option
+                                    v-for="unit in adjustmentUnits"
+                                    :key="unit.id"
+                                    :value="unit.id"
+                                >
+                                    {{ unit.name }} ({{ unit.conversion }}
+                                    {{
+                                        products.find(
+                                            (product: Product) =>
+                                                product.id ===
+                                                Number(
+                                                    adjustmentForm.product_id,
+                                                ),
+                                        )?.base_unit ?? ""
+                                    }})
+                                </option>
+                            </select></FormField
+                        ><FormField
+                            :label="$t('operations.adjustment_type')"
+                            required
+                            :error="adjustmentForm.errors.adjustment_type"
+                            ><select v-model="adjustmentForm.adjustment_type">
+                                <option value="increase">
+                                    {{ $t("operations.increase_stock") }}
+                                </option>
+                                <option value="decrease">
+                                    {{ $t("operations.decrease_stock") }}
+                                </option>
+                                <option value="count">
+                                    {{ $t("operations.set_counted_stock") }}
+                                </option>
+                            </select></FormField
+                        ><FormField
+                            :label="$t('operations.quantity')"
+                            required
+                            :error="adjustmentForm.errors.quantity"
+                            ><input
+                                v-model.number="adjustmentForm.quantity"
+                                min="0"
+                                required
+                                type="number" /></FormField
+                        ><FormField
+                            :label="$t('operations.unit_conversion')"
+                            required
+                            :error="adjustmentForm.errors.unit_conversion"
+                            ><input
+                                v-model.number="adjustmentForm.unit_conversion"
+                                min="1"
+                                required
+                                type="number" /></FormField
+                        ><FormField
+                            :label="$t('operations.reason')"
+                            required
+                            :error="adjustmentForm.errors.reason"
+                            ><input
+                                v-model="adjustmentForm.reason"
+                                required
+                                maxlength="100"
+                                :placeholder="
+                                    $t('operations.reason_placeholder')
+                                " /></FormField
+                        ><FormField
+                            :label="$t('operations.notes')"
+                            :error="adjustmentForm.errors.notes"
+                            class="sm:col-span-2"
+                        >
+                            <textarea v-model="adjustmentForm.notes" rows="3" />
+                        </FormField>
+                        <div class="flex justify-end gap-2 sm:col-span-2">
+                            <button
+                                type="button"
+                                class="action-secondary"
+                                @click="closeAdjustment"
+                            >
+                                {{ $t("common.cancel") }}</button
+                            ><FormActions
+                                :label="$t('operations.record_adjustment')"
+                                :processing="adjustmentForm.processing"
+                            />
+                        </div>
+                    </form>
                 </section>
             </div>
-         </div>
-     </div>
+        </div>
+    </div>
 </template>
 
 <style>
 @reference "../../../css/app.css";
-.panel { @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900; }
-.action-primary { @apply inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50; }
-.action-secondary { @apply inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-blue-950/40; }
-[class*="space-y-1.5"] input, [class*="space-y-1.5"] select, [class*="space-y-1.5"] textarea { @apply mt-2 w-full rounded-xl border-slate-200 bg-white px-3 py-2.5 text-sm font-normal text-slate-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100; }
-.error { @apply text-sm font-medium text-rose-600; }
-.toolbar { @apply flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-center; }
-.table-wrap { @apply mt-5 overflow-x-auto; }
-table { @apply w-full min-w-[680px] text-left text-sm; }
-th { @apply bg-slate-50 px-4 py-3 text-xs font-medium tracking-wide text-slate-400 uppercase first:rounded-l-lg last:rounded-r-lg dark:bg-slate-800; }
-td { @apply border-b border-slate-100 px-4 py-4 align-middle dark:border-slate-800; }
-.table-link { @apply mr-3 text-xs font-semibold text-blue-600 hover:underline; }
-.status { @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold; }
-.empty { @apply py-12 text-center text-sm text-slate-400; }
+.panel {
+    @apply rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm sm:p-6 dark:border-slate-800 dark:bg-slate-900;
+}
+.action-primary {
+    @apply inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50;
+}
+.action-secondary {
+    @apply inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-blue-200 hover:bg-blue-50 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:bg-blue-950/40;
+}
+[class*="space-y-1.5"] input,
+[class*="space-y-1.5"] select,
+[class*="space-y-1.5"] textarea {
+    @apply mt-2 w-full rounded-xl border-slate-200 bg-white px-3 py-2.5 text-sm font-normal text-slate-700 outline-none transition focus:border-blue-400 focus:ring-2 focus:ring-blue-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100;
+}
+.error {
+    @apply text-sm font-medium text-rose-600;
+}
+.toolbar {
+    @apply flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 dark:border-slate-800 sm:flex-row sm:items-center;
+}
+.table-wrap {
+    @apply mt-5 overflow-x-auto;
+}
+table {
+    @apply w-full min-w-[680px] text-left text-sm;
+}
+th {
+    @apply bg-slate-50 px-4 py-3 text-xs font-medium tracking-wide text-slate-400 uppercase first:rounded-l-lg last:rounded-r-lg dark:bg-slate-800;
+}
+td {
+    @apply border-b border-slate-100 px-4 py-4 align-middle dark:border-slate-800;
+}
+.table-link {
+    @apply mr-3 text-xs font-semibold text-blue-600 hover:underline;
+}
+.status {
+    @apply inline-flex rounded-full px-2.5 py-1 text-xs font-semibold;
+}
+.empty {
+    @apply py-12 text-center text-sm text-slate-400;
+}
 </style>

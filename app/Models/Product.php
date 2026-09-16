@@ -30,7 +30,7 @@ class Product extends Model
 
     public function units(): HasMany
     {
-        return $this->hasMany(ProductUnit::class);
+        return $this->hasMany(ProductUnit::class)->orderBy('id');
     }
 
     public function stocks(): HasMany
@@ -48,6 +48,6 @@ class Product extends Model
             return null;
         }
 
-        return ['quantity_base' => $this->units->sum('quantity_base')];
+        return ['quantity_base' => $this->units->sum(fn (ProductUnit $unit): int => ($unit->package_quantity * $unit->conversion) + $unit->loose_quantity)];
     }
 }

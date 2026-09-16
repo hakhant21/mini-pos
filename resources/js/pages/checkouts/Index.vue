@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { Head, InfiniteScroll, Link, useForm } from "@inertiajs/vue3";
 import { storeToRefs } from "pinia";
+import { toast } from "vue-sonner";
 import { useCheckoutStore } from "@/Stores/checkout";
 import {
     ArrowLeft,
@@ -14,6 +15,7 @@ import {
 } from "@lucide/vue";
 import { dashboard } from "@/routes";
 import { store as saleStore } from "@/routes/sales";
+import { store as saleItemsStore } from "@/routes/sales/items";
 import FormActions from "@/components/forms/FormActions.vue";
 import FormField from "@/components/forms/FormField.vue";
 type Unit = {
@@ -24,6 +26,8 @@ type Unit = {
     package_price: number;
     single_unit_price: number;
     quantity_base?: number;
+    package_quantity?: number;
+    loose_quantity?: number;
     barcode?: string | null;
 };
 type Product = {
@@ -32,6 +36,7 @@ type Product = {
     sku: string;
     category: { name: string };
     base_unit: string;
+    reorder_level?: number;
     price_mode: string;
     units: Unit[];
     icon: string;
@@ -44,10 +49,13 @@ type CartItem = Product & {
     product: Product;
     unit: Unit | null;
     quantity: number;
+    selling_mode: "Single" | "Package" | "Carton";
 };
+type SellingMode = CartItem["selling_mode"];
 const props = defineProps<{
     products: { data: Product[] };
     categories: string[];
+    sale?: { id: number; invoice_number: string; payment_method: string; total: number } | null;
 }>();
 const { t } = useI18n();
 const query = ref("");
@@ -55,11 +63,12 @@ const category = ref("all");
 const barcodeMessage = ref("");
 const unitMessage = ref("");
 const showMobileCart = ref(false);
-const mobileCart = ref<HTMLElement | null>(null);
 const checkoutStore = useCheckoutStore();
-const { items: cart, subtotal } = storeToRefs(checkoutStore);
+const isAppending = computed(() => Boolean(props.sale));
+const { subtotal } = storeToRefs(checkoutStore);
+const cart = computed<CartItem[]>(() => checkoutStore.items as unknown as CartItem[]);
 const saleForm = useForm({
-    payment_method: "cash",
+    payment_method: props.sale?.payment_method ?? "cash",
     received_amount: 0,
     discount: 0,
     tax: 0,
@@ -138,22 +147,24 @@ function packageOptions(product: Product): string[] {
             product.units.some((unit) => unitPackage(unit) === option),
     );
 }
-function selectedFormat(item: any): string {
+function selectedFormat(item: CartItem): string {
     return item.unit
         ? unitFormat(item.unit, item.product)
         : (formatOptions(item.product)[0] ?? "");
 }
-function selectedPackage(item: any): string {
+function selectedPackage(item: CartItem): string {
     return item.selling_mode ?? "Single";
 }
-function changeCartUnit(item: any, format: string, packageName: string): void {
+function changeCartUnit(item: CartItem, format: string, packageName: string): void {
     const matchingUnits = item.product.units.filter(
         (unit: Unit) => unitFormat(unit, item.product) === format,
     );
     item.unit =
         matchingUnits.find((unit: Unit) => unitPackage(unit) === packageName) ??
         (packageName === "Single" ? matchingUnits[0] : null);
-    item.selling_mode = packageName;
+    item.selling_mode = (['Single', 'Package', 'Carton'] as string[]).includes(packageName)
+        ? packageName as SellingMode
+        : 'Single';
 }
 function handleBarcode(): void {
     const value = query.value.trim();
@@ -182,14 +193,12 @@ function handleShortcut(event: KeyboardEvent): void {
     }
     if (event.key === "F8" && cart.value.length) completeSale();
 }
-async function openMobileCart(): Promise<void> {
+function openMobileCart(): void {
     showMobileCart.value = true;
-    await nextTick();
-    mobileCart.value?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 onMounted(() => window.addEventListener("keydown", handleShortcut));
 onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
-function unitPrice(item: any): number {
+function unitPrice(item: CartItem): number {
     if (item.selling_mode === "Single")
         return item.unit?.single_unit_price ?? 0;
     if (
@@ -201,7 +210,29 @@ function unitPrice(item: any): number {
     return item.unit?.selling_price ?? 0;
 }
 
-function removeFromCart(item: any): void {
+function availableQuantity(item: CartItem): number {
+    const unit = item.unit;
+    if (!unit) return 0;
+
+    const quantityBase = (unit.package_quantity ?? 0) * unit.conversion + (unit.loose_quantity ?? 0);
+    return item.selling_mode === "Single"
+        ? quantityBase
+        : Math.floor(quantityBase / unit.conversion);
+}
+
+function stockMessage(item: CartItem): string {
+    const available = availableQuantity(item);
+    if (available === 0) return t("checkout.out_of_stock");
+    if (item.quantity > available) return t("checkout.insufficient_stock");
+    const threshold = item.selling_mode === "Single"
+        ? item.reorder_level ?? 0
+        : Math.ceil((item.reorder_level ?? 0) / (item.unit?.conversion ?? 1));
+    if (threshold > 0 && available <= threshold) return t("checkout.low_stock");
+
+    return "";
+}
+
+function removeFromCart(item: CartItem): void {
     const index = cart.value.indexOf(item);
     if (item.quantity > 1)
         checkoutStore.updateQuantity(index, item.quantity - 1);
@@ -210,6 +241,13 @@ function removeFromCart(item: any): void {
 function completeSale(): void {
     if (cart.value.some((item) => !item.unit)) {
         unitMessage.value = t("checkout.choose_unit_error");
+        toast.error(unitMessage.value);
+        return;
+    }
+
+    const stockIssue = cart.value.find((item) => stockMessage(item));
+    if (stockIssue) {
+        toast.error(`${stockIssue.name}: ${stockMessage(stockIssue)}`);
         return;
     }
 
@@ -223,8 +261,15 @@ function completeSale(): void {
     if (!saleForm.received_amount) {
         saleForm.received_amount = subtotal.value;
     }
-    saleForm.post(saleStore().url, {
-        onSuccess: () => checkoutStore.clearCart(),
+    saleForm.post(isAppending.value ? saleItemsStore(props.sale!.id).url : saleStore().url, {
+        onSuccess: () => {
+            checkoutStore.clearCart();
+            toast.success(t("checkout.sale_success"));
+        },
+        onError: (errors) => {
+            const message = errors.items ?? Object.values(errors)[0] ?? t("checkout.sale_error");
+            toast.error(message);
+        },
     });
 }
 </script>
@@ -246,7 +291,7 @@ function completeSale(): void {
                         {{ $t("checkout.point_of_sale") }}
                     </p>
                     <h1 class="text-2xl font-bold">
-                        {{ $t("checkout.new_sale") }}
+                        {{ isAppending ? $t("checkout.add_items") : $t("checkout.new_sale") }}
                     </h1>
                 </div>
                 <span
@@ -334,11 +379,16 @@ function completeSale(): void {
                         </div>
                     </InfiniteScroll>
                 </section>
+                <div
+                    v-if="showMobileCart"
+                    class="fixed inset-0 z-20 bg-slate-950/40 lg:hidden"
+                    aria-hidden="true"
+                    @click="showMobileCart = false"
+                />
                 <aside
-                    ref="mobileCart"
                     id="mobile-cart"
-                    :class="showMobileCart ? 'flex flex-col' : 'hidden'"
-                    class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:sticky lg:top-5 lg:flex lg:h-[calc(100vh-9rem)] lg:flex-col"
+                    :class="showMobileCart ? 'fixed inset-x-3 top-16 bottom-3 z-30 flex max-h-[calc(100vh-5rem)] flex-col' : 'hidden'"
+                    class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:static lg:inset-auto lg:z-auto lg:flex lg:h-[calc(100vh-9rem)] lg:max-h-none lg:flex-col"
                 >
                     <div
                         class="flex items-center justify-between border-b border-slate-100 p-5 dark:border-slate-800"
@@ -351,14 +401,23 @@ function completeSale(): void {
                                 {{ cart.length }} {{ $t("checkout.items") }}
                             </p>
                         </div>
-                        <button
-                            v-if="cart.length"
-                            @click="checkoutStore.clearCart()"
-                            type="button"
-                            class="text-xs font-semibold text-rose-500 hover:text-rose-700"
-                        >
-                            {{ $t("checkout.clear") }}
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <button
+                                v-if="cart.length"
+                                @click="checkoutStore.clearCart()"
+                                type="button"
+                                class="text-xs font-semibold text-rose-500 hover:text-rose-700"
+                            >
+                                {{ $t("checkout.clear") }}
+                            </button>
+                            <button
+                                type="button"
+                                class="text-xs font-semibold text-slate-500 lg:hidden"
+                                @click="showMobileCart = false"
+                            >
+                                {{ $t("common.close") }}
+                            </button>
+                        </div>
                     </div>
                     <div
                         class="max-h-[40rem] min-h-48 scroll-smooth overflow-y-auto divide-y divide-slate-100 p-5 overscroll-contain dark:divide-slate-800 lg:max-h-none lg:min-h-0 lg:flex-1"
@@ -457,6 +516,12 @@ function completeSale(): void {
                                         </select></label
                                     >
                                 </div>
+                                <p class="mt-2 text-[11px] font-medium text-slate-400">
+                                    {{ $t("checkout.available_stock") }}: {{ availableQuantity(item) }} {{ item.selling_mode }}
+                                </p>
+                                <p v-if="stockMessage(item)" class="mt-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                                    {{ stockMessage(item) }}
+                                </p>
                                 <div class="mt-2 flex items-center gap-2">
                                     <button
                                         @click="removeFromCart(item)"
@@ -580,7 +645,7 @@ function completeSale(): void {
                             {{ saleForm.errors.items }}
                         </p>
                         <FormActions
-                            :label="$t('checkout.complete')"
+                            :label="$t(isAppending ? 'checkout.add_items' : 'checkout.complete')"
                             :processing="saleForm.processing"
                             class="gap-2 pt-2 [&>button]:min-h-9 [&>button]:px-3 [&>button]:text-xs"
                         />

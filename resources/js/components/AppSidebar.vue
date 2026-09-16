@@ -2,8 +2,6 @@
 import { Link, usePage } from "@inertiajs/vue3";
 import {
     BarChart3,
-    Boxes,
-    ClipboardList,
     FolderTree,
     LayoutGrid,
     PackagePlus,
@@ -29,8 +27,6 @@ import {
 import { dashboard } from "@/routes";
 import { index as checkoutIndex } from "@/routes/checkout";
 import { index as categoryIndex } from "@/routes/categories";
-import { index as adjustmentIndex } from "@/routes/adjustments";
-import { index as inventoryIndex } from "@/routes/inventory";
 import { index as productIndex } from "@/routes/products";
 import { index as purchaseIndex } from "@/routes/purchases";
 import { index as reportIndex } from "@/routes/reports";
@@ -45,15 +41,9 @@ const allNavItems: NavItem[] = [
     { title: "navigation.checkout", href: checkoutIndex(), icon: ShoppingCart },
     { title: "navigation.categories", href: categoryIndex(), icon: FolderTree },
     { title: "navigation.products", href: productIndex(), icon: Store },
-    { title: "navigation.inventory", href: inventoryIndex(), icon: Boxes },
     { title: "navigation.purchases", href: purchaseIndex(), icon: PackagePlus },
     { title: "navigation.suppliers", href: supplierIndex(), icon: Truck },
     { title: "navigation.sales", href: saleIndex(), icon: ReceiptText },
-    {
-        title: "navigation.adjustments",
-        href: adjustmentIndex(),
-        icon: ClipboardList,
-    },
     { title: "navigation.reports", href: reportIndex(), icon: BarChart3 },
 ];
 
