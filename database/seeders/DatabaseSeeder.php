@@ -1950,7 +1950,7 @@ class DatabaseSeeder extends Seeder
             ]);
 
             foreach ($units as $unit) {
-                $createdUnit = $product->units()->create([...$unit, 'package_quantity' => 0, 'loose_quantity' => 0, 'quantity_base' => 0]);
+                $createdUnit = $product->units()->create([...$unit, 'conversion' => $unit['conversion'] ?? 1, 'package_quantity' => 0, 'loose_quantity' => 0, 'quantity_base' => 0]);
                 $createdUnit->stock()->create(['product_id' => $product->id]);
             }
         }
