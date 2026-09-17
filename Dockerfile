@@ -39,10 +39,16 @@ RUN apt-get update \
     unzip \
     git \
     $PHPIZE_DEPS \
-    && docker-php-ext-install -j"$(nproc)" bcmath intl mbstring opcache pdo_sqlite zip \
-    && pecl channel-update pecl.php.net \
-    && pecl install redis-6.3.0 \
+    && docker-php-ext-install -j"$(nproc)" bcmath mbstring pdo_sqlite zip opcache intl \
+    && git clone --depth 1 --branch 6.3.0 https://github.com/phpredis/phpredis.git /tmp/phpredis \
+    && cd /tmp/phpredis \
+    && phpize \
+    && ./configure \
+    && make -j"$(nproc)" \
+    && make install \
     && docker-php-ext-enable redis \
+    && cd / \
+    && rm -rf /tmp/phpredis \
     && apt-get purge -y --auto-remove $PHPIZE_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
