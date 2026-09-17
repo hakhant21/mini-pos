@@ -33,6 +33,8 @@ services:
             target: nginx
         ports:
             - "${APP_PORT:-8000}:80"
+        volumes:
+            - app_storage:/var/www/html/storage
         depends_on:
             - app
         restart: unless-stopped
