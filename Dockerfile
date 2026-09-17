@@ -37,9 +37,13 @@ RUN apt-get update \
     curl \
     supervisor \
     unzip \
+    git \
+    $PHPIZE_DEPS \
     && docker-php-ext-install -j"$(nproc)" bcmath intl mbstring opcache pdo_sqlite zip \
-    && pecl install redis \
+    && pecl channel-update pecl.php.net \
+    && pecl install redis-6.3.0 \
     && docker-php-ext-enable redis \
+    && apt-get purge -y --auto-remove $PHPIZE_DEPS \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer /usr/bin/composer /usr/bin/composer
