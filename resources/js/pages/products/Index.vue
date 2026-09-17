@@ -1,7 +1,13 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { Head, Link, router, usePage } from "@inertiajs/vue3";
-import { ChevronDown, Download, Plus, Search, SlidersHorizontal } from "@lucide/vue";
+import { computed, reactive, ref, watch } from "vue";
+import { Head, Link, router, usePage, useRemember } from "@inertiajs/vue3";
+import {
+    ChevronDown,
+    Download,
+    Plus,
+    Search,
+    SlidersHorizontal,
+} from "@lucide/vue";
 import { create, edit, index as productsRoute, show } from "@/routes/products";
 import { useI18n } from "vue-i18n";
 
@@ -12,13 +18,22 @@ type Product = {
     category?: { name: string } | null;
     base_unit?: string | null;
     reorder_level?: number;
-    units: { id: number; name: string; selling_price: number; single_unit_price: number; conversion: number; package_quantity: number; loose_quantity: number }[];
+    units: {
+        id: number;
+        name: string;
+        selling_price: number;
+        single_unit_price: number;
+        conversion: number;
+        package_quantity: number;
+        loose_quantity: number;
+    }[];
     color?: string;
     icon?: string;
     image_url?: string | null;
 };
 type Category = { id: number; name: string };
 type PaginationLink = { url: string | null; label: string; active: boolean };
+type ProductFilters = { query: string; category: string; lowStockOnly: boolean };
 
 const props = defineProps<{
     products: { data: Product[]; links?: PaginationLink[] };
@@ -27,28 +42,43 @@ const props = defineProps<{
 }>();
 const page = usePage();
 const { t } = useI18n();
-const query = ref(props.filters?.search ?? "");
-const selectedCategory = ref(String(props.filters?.category_id ?? ""));
-const lowStockOnly = ref(false);
+const filters = useRemember(
+    reactive<ProductFilters>({
+        query: props.filters?.search ?? "",
+        category: String(props.filters?.category_id ?? ""),
+        lowStockOnly: false,
+    }),
+    "Products/Index/filters",
+) as ProductFilters;
 const showFilters = ref(false);
 const canManageProducts =
     (page.props.auth as { user?: { role?: string } }).user?.role !== "cashier";
 const money = (value: number) =>
     `${new Intl.NumberFormat("en-US").format(value)} ${t("common.currency")}`;
-const totalStock = (product: Product): number => product.units.reduce((total, unit) => total + (unit.package_quantity * unit.conversion) + unit.loose_quantity, 0);
+const totalStock = (product: Product): number =>
+    product.units.reduce(
+        (total, unit) =>
+            total +
+            unit.package_quantity * unit.conversion +
+            unit.loose_quantity,
+        0,
+    );
 const visibleProducts = computed(() =>
     props.products.data
         .filter((product) => {
             const matchesQuery = `${product.name} ${product.sku}`
                 .toLowerCase()
-                .includes(query.value.toLowerCase());
+                .includes(filters.query.toLowerCase());
             const matchesStock =
-                !lowStockOnly.value ||
+                !filters.lowStockOnly ||
                 totalStock(product) <= (product.reorder_level ?? 0);
 
             return matchesQuery && matchesStock;
         })
-        .map((product) => ({ ...product, base_unit: String(product.base_unit ?? "unit") })),
+        .map((product) => ({
+            ...product,
+            base_unit: String(product.base_unit ?? "unit"),
+        })),
 );
 
 function openProduct(productId: number, event: MouseEvent): void {
@@ -59,7 +89,10 @@ function openProduct(productId: number, event: MouseEvent): void {
     router.visit(show(productId).url);
 }
 
-function openProductWithKeyboard(productId: number, event: KeyboardEvent): void {
+function openProductWithKeyboard(
+    productId: number,
+    event: KeyboardEvent,
+): void {
     if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         router.visit(show(productId).url);
@@ -76,7 +109,9 @@ function exportProducts(): void {
         ]),
     ];
     const csv = rows
-        .map((row) => row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","))
+        .map((row) =>
+            row.map((value) => `"${value.replaceAll('"', '""')}"`).join(","),
+        )
         .join("\n");
     const link = document.createElement("a");
     link.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
@@ -89,22 +124,34 @@ function filterByCategory(): void {
     router.visit(
         productsRoute({
             query: {
-                search: query.value || undefined,
-                category_id: selectedCategory.value || undefined,
+                search: filters.query || undefined,
+                category_id: filters.category || undefined,
             },
         }),
         { preserveScroll: true },
     );
 }
 
+function clearFilters(): void {
+    filters.query = "";
+    filters.category = "";
+    filters.lowStockOnly = false;
+    router.visit(productsRoute(), { preserveScroll: true });
+}
+
 let searchTimer: ReturnType<typeof setTimeout> | undefined;
-watch(query, () => {
-    if (searchTimer) clearTimeout(searchTimer);
-    searchTimer = setTimeout(filterByCategory, 300);
-});
+watch(
+    () => filters.query,
+    () => {
+        if (searchTimer) clearTimeout(searchTimer);
+        searchTimer = setTimeout(filterByCategory, 300);
+    },
+);
 
 defineOptions({
-    layout: { breadcrumbs: [{ title: "navigation.products", href: productsRoute() }] },
+    layout: {
+        breadcrumbs: [{ title: "navigation.products", href: productsRoute() }],
+    },
 });
 </script>
 
@@ -114,18 +161,23 @@ defineOptions({
         class="min-h-screen bg-[#f5f7fb] px-4 py-6 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-6 lg:px-8"
     >
         <div class="mx-auto max-w-[1500px] space-y-6">
-            <header class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+            <header
+                class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center"
+            >
                 <div>
                     <p class="text-sm font-medium text-slate-400">
                         {{ $t("products.catalog_inventory") }}
                     </p>
-                    <h1 class="mt-1 text-2xl font-bold">{{ $t("navigation.products") }}</h1>
+                    <h1 class="mt-1 text-2xl font-bold">
+                        {{ $t("navigation.products") }}
+                    </h1>
                 </div>
                 <Link
                     v-if="canManageProducts"
                     :href="create()"
                     class="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-600/20"
-                    ><Plus class="size-4" /> {{ $t("products.add_product") }}</Link
+                    ><Plus class="size-4" />
+                    {{ $t("products.add_product") }}</Link
                 >
             </header>
             <section
@@ -137,7 +189,7 @@ defineOptions({
                     <label
                         class="order-2 flex w-full items-center gap-2 rounded-xl bg-slate-50 px-3 text-sm text-slate-400 dark:bg-slate-800 sm:w-56 sm:flex-none"
                         ><Search class="size-4" /><input
-                            v-model="query"
+                            v-model="filters.query"
                             class="w-full border-0 bg-transparent py-2 outline-none placeholder:text-slate-400"
                             :placeholder="$t('products.search_placeholder')"
                     /></label>
@@ -151,10 +203,34 @@ defineOptions({
                         "
                         class="order-3 flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium"
                     >
-                        <SlidersHorizontal class="size-4" /> {{ $t("products.filters") }}
+                        <SlidersHorizontal class="size-4" />
+                        {{ $t("products.filters") }}
                         <ChevronDown class="size-3.5" />
                     </button>
-                    <select v-model="selectedCategory" class="order-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 sm:w-56" :aria-label="$t('products.category')" @change="filterByCategory"><option value="">{{ $t('products.all_categories') }}</option><option v-for="category in categories" :key="category.id" :value="category.id">{{ category.name }}</option></select>
+                    <select
+                        v-model="filters.category"
+                        class="order-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 sm:w-56"
+                        :aria-label="$t('products.category')"
+                        @change="filterByCategory"
+                    >
+                        <option value="">
+                            {{ $t("products.all_categories") }}
+                        </option>
+                        <option
+                            v-for="category in categories"
+                            :key="category.id"
+                            :value="category.id"
+                        >
+                            {{ category.name }}
+                        </option>
+                    </select>
+                    <button
+                        type="button"
+                        class="order-5 rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300"
+                        @click="clearFilters"
+                    >
+                        {{ $t("common.clear_filters") }}
+                    </button>
                     <button
                         type="button"
                         @click="exportProducts"
@@ -169,9 +245,9 @@ defineOptions({
                 >
                     <button
                         type="button"
-                        @click="lowStockOnly = !lowStockOnly"
+                        @click="filters.lowStockOnly = !filters.lowStockOnly"
                         :class="
-                            lowStockOnly
+                            filters.lowStockOnly
                                 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300'
                                 : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
                         "
@@ -186,41 +262,69 @@ defineOptions({
                             class="bg-slate-50 text-xs tracking-wide text-slate-400 uppercase dark:bg-slate-800"
                         >
                             <tr>
-                                <th class="px-5 py-3 font-medium">{{ $t("products.name") }}</th>
-                                <th class="py-3 font-medium">{{ $t("products.category") }}</th>
-                                <th class="py-3 font-medium">{{ $t("products.selling_units") }}</th>
-                                <th class="py-3 font-medium">{{ $t("products.price") }}</th>
-                                <th class="py-3 font-medium">{{ $t("products.status") }}</th>
+                                <th class="px-5 py-3 font-medium">
+                                    {{ $t("products.name") }}
+                                </th>
+                                <th class="py-3 font-medium">
+                                    {{ $t("products.category") }}
+                                </th>
+                                <th class="py-3 font-medium">
+                                    {{ $t("products.selling_units") }}
+                                </th>
+                                <th class="py-3 font-medium">
+                                    {{ $t("products.price") }}
+                                </th>
+                                <th class="py-3 font-medium">
+                                    {{ $t("products.status") }}
+                                </th>
                                 <th class="py-3" />
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody
+                            class="divide-y divide-slate-100 dark:divide-slate-800"
+                        >
                             <tr
                                 v-for="product in visibleProducts"
                                 :key="product.id"
                                 tabindex="0"
                                 class="cursor-pointer hover:bg-slate-50/70 focus:bg-slate-50/70 focus:outline-none dark:hover:bg-slate-800/60 dark:focus:bg-slate-800/60"
                                 @click="openProduct(product.id, $event)"
-                                @keydown="openProductWithKeyboard(product.id, $event)"
+                                @keydown="
+                                    openProductWithKeyboard(product.id, $event)
+                                "
                             >
                                 <td class="px-5 py-4">
                                     <div class="flex items-center gap-3">
                                         <div
                                             class="flex size-11 items-center justify-center rounded-xl bg-blue-50 text-xl dark:bg-blue-950/50"
                                         >
-                                            <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full rounded-xl object-cover" />
-                                            <span v-else>{{ product.icon ?? "📦" }}</span>
+                                            <img
+                                                v-if="product.image_url"
+                                                :src="product.image_url"
+                                                :alt="product.name"
+                                                class="size-full rounded-xl object-cover"
+                                            />
+                                            <span v-else>{{
+                                                product.icon ?? "📦"
+                                            }}</span>
                                         </div>
                                         <div>
-                                            <p class="font-semibold">{{ product.name }}</p>
-                                            <p class="mt-0.5 text-xs text-slate-400">
+                                            <p class="font-semibold">
+                                                {{ product.name }}
+                                            </p>
+                                            <p
+                                                class="mt-0.5 text-xs text-slate-400"
+                                            >
                                                 {{ product.sku }}
                                             </p>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="text-slate-500">
-                                    {{ product.category?.name ?? $t("products.uncategorized") }}
+                                    {{
+                                        product.category?.name ??
+                                        $t("products.uncategorized")
+                                    }}
                                 </td>
                                 <td>
                                     <div class="flex flex-wrap gap-1">
@@ -233,7 +337,12 @@ defineOptions({
                                     </div>
                                 </td>
                                 <td class="font-semibold">
-                                    {{ money(product.units[0]?.single_unit_price ?? 0) }}
+                                    {{
+                                        money(
+                                            product.units[0]
+                                                ?.single_unit_price ?? 0,
+                                        )
+                                    }}
                                 </td>
                                 <td>
                                     <span
@@ -270,7 +379,11 @@ defineOptions({
                 <div
                     class="flex items-center justify-between border-t border-slate-100 px-5 py-4 text-xs text-slate-400 dark:border-slate-800"
                 >
-                        <span>{{ $t("products.products_on_page", { count: props.products.data.length }) }}</span>
+                    <span>{{
+                        $t("products.products_on_page", {
+                            count: props.products.data.length,
+                        })
+                    }}</span>
                     <div class="flex gap-1">
                         <Link
                             v-for="link in props.products.links"

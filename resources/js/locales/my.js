@@ -34,6 +34,7 @@ export default {
         language_english: "အင်္ဂလိပ်",
         currency: "kyat",
         currency_amount: "{amount} kyat",
+        clear_filters: "စစ်ထုတ်မှုရှင်းမည်",
     },
     auth: {
         login: "ဝင်ရောက်မည်",

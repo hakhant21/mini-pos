@@ -34,6 +34,7 @@ export default {
         language_english: "English",
         currency: "kyat",
         currency_amount: "{amount} kyat",
+        clear_filters: "Clear",
     },
     auth: {
         login: "Log in",
@@ -367,6 +368,7 @@ export default {
         from: "From",
         to: "To",
         apply_filters: "Apply filters",
+        clear_filters: "Clear filters",
         sales_revenue: "Sales revenue",
         transactions: "Transactions",
         active_products: "Active products",

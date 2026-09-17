@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
+import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { Head, InfiniteScroll, Link, useForm } from "@inertiajs/vue3";
+import { Head, InfiniteScroll, Link, useForm, useRemember } from "@inertiajs/vue3";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
 import { useCheckoutStore } from "@/stores/checkout";
@@ -52,6 +52,7 @@ type CartItem = Product & {
     selling_mode: "Single" | "Package" | "Carton";
 };
 type SellingMode = CartItem["selling_mode"];
+type CheckoutFilters = { query: string; category: string };
 const props = defineProps<{
     products: { data: Product[] };
     categories: string[];
@@ -63,8 +64,10 @@ const props = defineProps<{
     } | null;
 }>();
 const { t, te } = useI18n();
-const query = ref("");
-const category = ref("all");
+const filters = useRemember(
+    reactive<CheckoutFilters>({ query: "", category: "all" }),
+    "Checkout/Index/filters",
+) as CheckoutFilters;
 const barcodeMessage = ref("");
 const unitMessage = ref("");
 const showMobileCart = ref(false);
@@ -90,13 +93,17 @@ const categories = computed<string[]>(() => ["all", ...props.categories]);
 const filteredProducts = computed(() =>
     props.products.data.filter(
         (product) =>
-            (category.value === "all" ||
-                product.category.name === category.value) &&
+            (filters.category === "all" ||
+                product.category.name === filters.category) &&
             `${product.name} ${product.sku}`
                 .toLowerCase()
-                .includes(query.value.toLowerCase()),
+                .includes(filters.query.toLowerCase()),
     ),
 );
+function clearFilters(): void {
+    filters.query = "";
+    filters.category = "all";
+}
 const totalStock = (product: Product): number =>
     product.units.reduce((total, unit) => total + (unit.quantity_base ?? 0), 0);
 const money = (value: number) =>
@@ -180,7 +187,7 @@ function changeCartUnit(
         : "Single";
 }
 function handleBarcode(): void {
-    const value = query.value.trim();
+    const value = filters.query.trim();
     if (!value) return;
     const product = props.products.data.find(
         (item) =>
@@ -191,7 +198,7 @@ function handleBarcode(): void {
     const unit = product?.units.find((item) => item.barcode === value);
     if (product) {
         addToCart(product, unit);
-        query.value = "";
+        filters.query = "";
         barcodeMessage.value = "";
         return;
     }
@@ -385,7 +392,7 @@ function completeSale(): void {
                     <label
                         class="flex min-w-0 items-center gap-3 rounded-xl border border-slate-200 px-4 text-sm text-slate-400 dark:border-slate-700"
                         ><Search class="size-5" /><input
-                            v-model="query"
+                            v-model="filters.query"
                             data-checkout-search
                             @keydown.enter="handleBarcode"
                             class="min-w-0 w-full border-0 bg-transparent py-3 outline-none"
@@ -401,9 +408,9 @@ function completeSale(): void {
                         <button
                             v-for="item in categories"
                             :key="item"
-                            @click="category = item"
+                            @click="filters.category = item"
                             :class="
-                                category === item
+                                filters.category === item
                                     ? 'bg-blue-600 text-white'
                                     : 'bg-slate-50 text-slate-500 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
                             "
@@ -416,6 +423,7 @@ function completeSale(): void {
                             }}
                         </button>
                     </div>
+                    <button type="button" class="mt-3 rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300" @click="clearFilters">{{ $t("common.clear_filters") }}</button>
                     <InfiniteScroll
                         data="products"
                         items-element="#product-grid"

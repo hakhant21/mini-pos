@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Head, Link, router, useForm } from "@inertiajs/vue3";
-import { computed, ref } from "vue";
+import { Head, Link, router, useForm, useRemember } from "@inertiajs/vue3";
+import { computed, reactive, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import {
     ArrowLeft,
@@ -71,7 +71,7 @@ type Product = {
     sku?: string;
     base_unit?: string;
     reorder_level?: number;
-    category?: { name: string };
+    category?: { id?: number; name: string };
     units: Unit[];
 };
 type RecordItem = {
@@ -132,6 +132,9 @@ type Adjustment = {
     product?: Product;
     user?: { name: string };
 };
+type InventoryFilters = { query: string; category: string };
+type DateFilters = { start: string; end: string };
+type ReportFilters = { from: string; to: string };
 
 const props = defineProps<{
     section: string;
@@ -181,7 +184,10 @@ const totalStock = (product: Product): number =>
 const inventoryPage = computed<Page<Product>>(
     () => props.products as Page<Product>,
 );
-const inventoryCategory = ref(String(props.filters?.category_id ?? ""));
+const inventoryFilters = useRemember(
+    reactive<InventoryFilters>({ query: "", category: String(props.filters?.category_id ?? "") }),
+    "Operations/Inventory/filters",
+) as InventoryFilters;
 const adjustmentIndex = (): string => "#";
 const adjustmentCreate = (): string => "#";
 const adjustmentStore = (): { url: string; method: "post" } => ({
@@ -256,16 +262,18 @@ const localizedDescription = computed(() => {
         ? props.description
         : translatedDescription;
 });
-const query = ref("");
 const filteredProducts = computed(() =>
     products.value.filter((product: Product) =>
         `${product.name} ${product.sku ?? ""}`
             .toLowerCase()
-            .includes(query.value.toLowerCase()),
+            .includes(inventoryFilters.query.toLowerCase()) &&
+        (!inventoryFilters.category || product.category?.id === Number(inventoryFilters.category)),
     ),
 );
-const purchaseStartDate = ref(props.filters?.start_date ?? "");
-const purchaseEndDate = ref(props.filters?.end_date ?? "");
+const purchaseFilters = useRemember(
+    reactive<DateFilters>({ start: props.filters?.start_date ?? "", end: props.filters?.end_date ?? "" }),
+    "Operations/Purchases/filters",
+) as DateFilters;
 
 const recordForm = useForm({
     name: "",
@@ -393,11 +401,13 @@ const cancelForm = useForm({ reason: "" });
 function cancelSale(): void {
     if (props.sale) cancelForm.submit(saleCancel(props.sale.id));
 }
-const reportFrom = ref(props.filters?.from ?? "");
-const reportTo = ref(props.filters?.to ?? "");
+const reportFilters = useRemember(
+    reactive<ReportFilters>({ from: props.filters?.from ?? "", to: props.filters?.to ?? "" }),
+    "Operations/Reports/filters",
+) as ReportFilters;
 function filterReport(): void {
     router.visit(
-        reportIndex({ query: { from: reportFrom.value, to: reportTo.value } }),
+        reportIndex({ query: { from: reportFilters.from, to: reportFilters.to } }),
     );
 }
 function filterInventory(): void {}
@@ -405,12 +415,26 @@ function filterPurchases(): void {
     router.visit(
         purchaseIndex({
             query: {
-                start_date: purchaseStartDate.value || undefined,
-                end_date: purchaseEndDate.value || undefined,
+                start_date: purchaseFilters.start || undefined,
+                end_date: purchaseFilters.end || undefined,
             },
         }),
         { preserveScroll: true },
     );
+}
+function clearPurchaseFilters(): void {
+    purchaseFilters.start = "";
+    purchaseFilters.end = "";
+    router.visit(purchaseIndex(), { preserveScroll: true });
+}
+function clearReportFilters(): void {
+    reportFilters.from = "";
+    reportFilters.to = "";
+    router.visit(reportIndex(), { preserveScroll: true });
+}
+function clearInventoryFilters(): void {
+    inventoryFilters.query = "";
+    inventoryFilters.category = "";
 }
 function listRange<T>(page?: Page<T>): string {
     return page?.total
@@ -695,14 +719,14 @@ function statusClass(value: string): string {
                             :label="$t('operations.start_date')"
                             class="text-xs [&>label]:text-xs"
                             ><input
-                                v-model="purchaseStartDate"
+                                 v-model="purchaseFilters.start"
                                 type="date"
                                 class="!mt-0 w-auto py-2 text-xs" /></FormField
                         ><FormField
                             :label="$t('operations.end_date')"
                             class="text-xs [&>label]:text-xs"
                             ><input
-                                v-model="purchaseEndDate"
+                                 v-model="purchaseFilters.end"
                                 type="date"
                                 class="!mt-0 w-auto py-2 text-xs" /></FormField
                         ><button
@@ -710,7 +734,7 @@ function statusClass(value: string): string {
                             class="action-secondary px-3 py-2 text-xs"
                         >
                             {{ $t("operations.apply_filters") }}
-                        </button>
+                        </button><button type="button" class="action-secondary px-3 py-2 text-xs" @click="clearPurchaseFilters">{{ $t("common.clear_filters") }}</button>
                     </form>
                 </div>
                 <div class="table-wrap">
@@ -1214,13 +1238,13 @@ function statusClass(value: string): string {
                         <label
                             class="order-2 flex h-11 w-full flex-none items-center gap-2 rounded-xl bg-slate-50 px-3 py-1.5 text-sm text-slate-400 sm:w-56"
                             ><Search class="size-4" /><input
-                                v-model="query"
+                                 v-model="inventoryFilters.query"
                                 class="w-full border-0 bg-transparent py-2 outline-none"
                                 :placeholder="
                                     $t('operations.search_stock')
                                 " /></label
                         ><select
-                            v-model="inventoryCategory"
+                             v-model="inventoryFilters.category"
                             class="order-1 h-11 w-full flex-none rounded-xl border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 sm:w-56"
                             :aria-label="$t('operations.category')"
                             @change="filterInventory"
@@ -1235,7 +1259,7 @@ function statusClass(value: string): string {
                             >
                                 {{ category.name }}
                             </option>
-                        </select>
+                        </select><button type="button" class="action-secondary h-11 px-3 text-xs" @click="clearInventoryFilters">{{ $t("common.clear_filters") }}</button>
                     </div>
                 </div>
                 <div class="table-wrap">
@@ -1580,13 +1604,13 @@ function statusClass(value: string): string {
                     >
                         <FormField :label="$t('operations.from')"
                             ><input
-                                v-model="reportFrom"
+                                 v-model="reportFilters.from"
                                 type="date" /></FormField
                         ><FormField :label="$t('operations.to')"
-                            ><input v-model="reportTo" type="date" /></FormField
+                            ><input v-model="reportFilters.to" type="date" /></FormField
                         ><FormActions
                             :label="$t('operations.apply_filters')"
-                        /></form
+                        /><button type="button" class="action-secondary px-3 py-2 text-xs" @click="clearReportFilters">{{ $t("common.clear_filters") }}</button></form
                 ></FormSection>
                 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                     <article
