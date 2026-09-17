@@ -10,7 +10,8 @@ RUN php artisan wayfinder:generate --with-form
 
 FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS frontend
 
-ENV WAYFINDER_COMMAND=true
+ENV DOCKER_BUILD=1 \
+    WAYFINDER_COMMAND=true
 
 WORKDIR /app
 
