@@ -13,9 +13,9 @@
 
 Demo အကောင့်များ:
 
-| အမျိုးအစား | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@gmail.com` | `password` |
+| အမျိုးအစား | Email               | Password   |
+| ------- | ------------------- | ---------- |
+| Admin   | `admin@gmail.com`   | `password` |
 | Cashier | `cashier@gmail.com` | `password` |
 
 Demo အကောင့်များကို ထုတ်လုပ်မှုစနစ်တွင် မသုံးပါနှင့်။
@@ -154,14 +154,14 @@ Light၊ Dark သို့မဟုတ် System theme ကို ရွေးန
 
 ## ၁၁။ အသုံးပြုသူအခွင့်အရေး
 
-| လုပ်ဆောင်ချက် | Admin | Manager | Cashier |
-|---|:---:|:---:|:---:|
-| Dashboard၊ Checkout၊ Sales ကြည့်ခြင်း | ရ | ရ | ရ |
-| Product ထည့်/ပြင်/Archive | ရ | ရ | မရ |
-| Category နှင့် Supplier စီမံခြင်း | ရ | ရ | မရ |
-| Purchase နှင့် Inventory စီမံခြင်း | ရ | ရ | မရ |
-| Reports ကြည့်ခြင်း | ရ | ရ | မရ |
-| Sale Cancel | ရ | ရ | မရ |
-| Sale Add items | ရ | ရ | ရ |
+| လုပ်ဆောင်ချက်                          | Admin | Manager | Cashier |
+| -------------------------------- ----| :---: | :-----: | :-----: |
+| Dashboard၊ Checkout၊ Sales ကြည့်ခြင်း    |   ရ   |    ရ    |    ရ    |
+| Product ထည့်/ပြင်/Archive              |   ရ   |    ရ    |   မရ    |
+| Category နှင့် Supplier စီမံခြင်း           |   ရ   |    ရ    |   မရ    |
+| Purchase နှင့် Inventory စီမံခြင်း          |   ရ   |    ရ    |   မရ    |
+| Reports ကြည့်ခြင်း                      |   ရ   |    ရ    |   မရ    |
+| Sale Cancel                          |   ရ   |    ရ    |   မရ    |
+| Sale Add items                       |   ရ   |    ရ    |    ရ    |
 
 Cashier အတွက် လိုအပ်သော Checkout နှင့် Sales လုပ်ငန်းများကိုသာ အသုံးပြုနိုင်အောင် ကန့်သတ်ထားပါသည်။
