@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n';
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useLocaleStore } from '@/Stores/locale';
-import type { BreadcrumbItem } from '@/types';
+import { useI18n } from "vue-i18n";
+import Breadcrumbs from "@/components/Breadcrumbs.vue";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useLocaleStore } from "@/stores/locale";
+import type { BreadcrumbItem } from "@/types";
 
 withDefaults(
     defineProps<{
@@ -39,8 +39,8 @@ function changeLocale(value: string): void {
             :aria-label="$t('common.language')"
             class="rounded-lg border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
         >
-            <option value="my">{{ $t('common.language_myanmar') }}</option>
-            <option value="en">{{ $t('common.language_english') }}</option>
+            <option value="my">{{ $t("common.language_myanmar") }}</option>
+            <option value="en">{{ $t("common.language_english") }}</option>
         </select>
     </header>
 </template>

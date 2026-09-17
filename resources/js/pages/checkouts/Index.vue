@@ -4,7 +4,7 @@ import { useI18n } from "vue-i18n";
 import { Head, InfiniteScroll, Link, useForm } from "@inertiajs/vue3";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
-import { useCheckoutStore } from "@/Stores/checkout";
+import { useCheckoutStore } from "@/stores/checkout";
 import {
     ArrowLeft,
     Minus,
@@ -55,7 +55,12 @@ type SellingMode = CartItem["selling_mode"];
 const props = defineProps<{
     products: { data: Product[] };
     categories: string[];
-    sale?: { id: number; invoice_number: string; payment_method: string; total: number } | null;
+    sale?: {
+        id: number;
+        invoice_number: string;
+        payment_method: string;
+        total: number;
+    } | null;
 }>();
 const { t, te } = useI18n();
 const query = ref("");
@@ -66,7 +71,9 @@ const showMobileCart = ref(false);
 const checkoutStore = useCheckoutStore();
 const isAppending = computed(() => Boolean(props.sale));
 const { subtotal } = storeToRefs(checkoutStore);
-const cart = computed<CartItem[]>(() => checkoutStore.items as unknown as CartItem[]);
+const cart = computed<CartItem[]>(
+    () => checkoutStore.items as unknown as CartItem[],
+);
 const saleForm = useForm({
     payment_method: props.sale?.payment_method ?? "cash",
     received_amount: 0,
@@ -155,16 +162,22 @@ function selectedFormat(item: CartItem): string {
 function selectedPackage(item: CartItem): string {
     return item.selling_mode ?? "Single";
 }
-function changeCartUnit(item: CartItem, format: string, packageName: string): void {
+function changeCartUnit(
+    item: CartItem,
+    format: string,
+    packageName: string,
+): void {
     const matchingUnits = item.product.units.filter(
         (unit: Unit) => unitFormat(unit, item.product) === format,
     );
     item.unit =
         matchingUnits.find((unit: Unit) => unitPackage(unit) === packageName) ??
         (packageName === "Single" ? matchingUnits[0] : null);
-    item.selling_mode = (['Single', 'Package', 'Carton'] as string[]).includes(packageName)
-        ? packageName as SellingMode
-        : 'Single';
+    item.selling_mode = (["Single", "Package", "Carton"] as string[]).includes(
+        packageName,
+    )
+        ? (packageName as SellingMode)
+        : "Single";
 }
 function handleBarcode(): void {
     const value = query.value.trim();
@@ -214,7 +227,9 @@ function availableQuantity(item: CartItem): number {
     const unit = item.unit;
     if (!unit) return 0;
 
-    const quantityBase = (unit.package_quantity ?? 0) * unit.conversion + (unit.loose_quantity ?? 0);
+    const quantityBase =
+        (unit.package_quantity ?? 0) * unit.conversion +
+        (unit.loose_quantity ?? 0);
     return item.selling_mode === "Single"
         ? quantityBase
         : Math.floor(quantityBase / unit.conversion);
@@ -271,9 +286,12 @@ function stockMessage(item: CartItem): string {
     const available = availableQuantity(item);
     if (available === 0) return t("checkout.out_of_stock");
     if (item.quantity > available) return t("checkout.insufficient_stock");
-    const threshold = item.selling_mode === "Single"
-        ? item.reorder_level ?? 0
-        : Math.ceil((item.reorder_level ?? 0) / (item.unit?.conversion ?? 1));
+    const threshold =
+        item.selling_mode === "Single"
+            ? (item.reorder_level ?? 0)
+            : Math.ceil(
+                  (item.reorder_level ?? 0) / (item.unit?.conversion ?? 1),
+              );
     if (threshold > 0 && available <= threshold) return t("checkout.low_stock");
 
     return "";
@@ -308,16 +326,24 @@ function completeSale(): void {
     if (!saleForm.received_amount) {
         saleForm.received_amount = subtotal.value;
     }
-    saleForm.post(isAppending.value ? saleItemsStore(props.sale!.id).url : saleStore().url, {
-        onSuccess: () => {
-            checkoutStore.clearCart();
-            toast.success(t("checkout.sale_success"));
+    saleForm.post(
+        isAppending.value
+            ? saleItemsStore(props.sale!.id).url
+            : saleStore().url,
+        {
+            onSuccess: () => {
+                checkoutStore.clearCart();
+                toast.success(t("checkout.sale_success"));
+            },
+            onError: (errors) => {
+                const message =
+                    errors.items ??
+                    Object.values(errors)[0] ??
+                    t("checkout.sale_error");
+                toast.error(message);
+            },
         },
-        onError: (errors) => {
-            const message = errors.items ?? Object.values(errors)[0] ?? t("checkout.sale_error");
-            toast.error(message);
-        },
-    });
+    );
 }
 </script>
 <template>
@@ -338,7 +364,11 @@ function completeSale(): void {
                         {{ $t("checkout.point_of_sale") }}
                     </p>
                     <h1 class="text-2xl font-bold">
-                        {{ isAppending ? $t("checkout.add_items") : $t("checkout.new_sale") }}
+                        {{
+                            isAppending
+                                ? $t("checkout.add_items")
+                                : $t("checkout.new_sale")
+                        }}
                     </h1>
                 </div>
                 <span
@@ -434,7 +464,11 @@ function completeSale(): void {
                 />
                 <aside
                     id="mobile-cart"
-                    :class="showMobileCart ? 'fixed inset-x-3 top-16 bottom-3 z-30 flex max-h-[calc(100vh-5rem)] flex-col' : 'hidden'"
+                    :class="
+                        showMobileCart
+                            ? 'fixed inset-x-3 top-16 bottom-3 z-30 flex max-h-[calc(100vh-5rem)] flex-col'
+                            : 'hidden'
+                    "
                     class="rounded-2xl border border-slate-200/80 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 lg:static lg:inset-auto lg:z-auto lg:flex lg:h-[calc(100vh-9rem)] lg:max-h-none lg:flex-col"
                 >
                     <div
@@ -563,10 +597,16 @@ function completeSale(): void {
                                         </select></label
                                     >
                                 </div>
-                                <p class="mt-2 text-[11px] font-medium text-slate-400">
-                                    {{ $t("checkout.available_stock") }}: {{ availableStock(item) }}
+                                <p
+                                    class="mt-2 text-[11px] font-medium text-slate-400"
+                                >
+                                    {{ $t("checkout.available_stock") }}:
+                                    {{ availableStock(item) }}
                                 </p>
-                                <p v-if="stockMessage(item)" class="mt-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+                                <p
+                                    v-if="stockMessage(item)"
+                                    class="mt-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400"
+                                >
                                     {{ stockMessage(item) }}
                                 </p>
                                 <div class="mt-2 flex items-center gap-2">
@@ -692,7 +732,13 @@ function completeSale(): void {
                             {{ saleForm.errors.items }}
                         </p>
                         <FormActions
-                            :label="$t(isAppending ? 'checkout.add_items' : 'checkout.complete')"
+                            :label="
+                                $t(
+                                    isAppending
+                                        ? 'checkout.add_items'
+                                        : 'checkout.complete',
+                                )
+                            "
                             :processing="saleForm.processing"
                             class="gap-2 pt-2 [&>button]:min-h-9 [&>button]:px-3 [&>button]:text-xs"
                         />
