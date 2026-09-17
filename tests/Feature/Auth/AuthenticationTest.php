@@ -11,12 +11,15 @@ test('login screen can be rendered', function () {
 });
 
 test('login screen uses HTTPS asset URLs behind a TLS proxy', function () {
+    $assetHost = parse_url(config('app.url'), PHP_URL_HOST);
+
     $response = $this->withHeaders([
         'X-Forwarded-Proto' => 'https',
     ])->get(route('login'));
 
     $response->assertOk();
-    $response->assertSee('https://localhost/build/', false);
+    $response->assertSee("https://{$assetHost}/build/", false);
+    $response->assertDontSee("http://{$assetHost}/build/", false);
 });
 
 test('users can authenticate using the login screen', function () {
