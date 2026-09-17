@@ -4,10 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
-import { defineConfig, lazyPlugins } from 'vite-plus';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
-    plugins: lazyPlugins(() => [
+    plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
@@ -29,8 +29,9 @@ export default defineConfig({
         }),
         wayfinder({
             formVariants: true,
+            command: process.env.WAYFINDER_COMMAND ?? 'php artisan wayfinder:generate',
         }),
-    ]),
+    ],
     server: {
         watch: {
             ignored: [

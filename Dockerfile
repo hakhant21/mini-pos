@@ -3,12 +3,14 @@ FROM --platform=$BUILDPLATFORM composer:2 AS wayfinder
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-interaction --no-progress --no-scripts --optimize-autoloader
+RUN composer install --no-interaction --no-progress --no-scripts --optimize-autoloader
 
 COPY . .
 RUN php artisan wayfinder:generate --with-form
 
 FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS frontend
+
+ENV WAYFINDER_COMMAND=true
 
 WORKDIR /app
 
