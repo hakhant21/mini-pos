@@ -8,6 +8,7 @@ use App\Models\Sale;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Inertia\Testing\AssertableInertia as Assert;
 
 test('authenticated staff can create a product with selling units', function () {
     $user = User::factory()->create(['role' => 'admin']);
@@ -49,6 +50,28 @@ test('staff can create a product with an image', function () {
 
     expect($product->image)->not->toBeNull();
     Storage::disk('public')->assertExists($product->image);
+});
+
+test('product edit exposes a host-relative image URL', function () {
+    Storage::fake('public');
+    $user = User::factory()->create(['role' => 'admin']);
+    $category = Category::create(['name' => 'Edit images', 'slug' => 'edit-images']);
+    Storage::disk('public')->put('products/edit-image.jpg', 'image contents');
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'Editable product',
+        'sku' => 'EDIT-IMAGE-001',
+        'base_unit' => 'Piece',
+        'reorder_level' => 0,
+        'image' => 'products/edit-image.jpg',
+    ]);
+    $product->units()->create(['name' => 'Piece', 'conversion' => 1]);
+
+    $this->actingAs($user)->get(route('products.edit', $product))
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('products/Edit')
+            ->where('product.image_url', '/storage/products/edit-image.jpg'),
+        );
 });
 
 test('a purchase increases base stock using the selected unit conversion', function () {
