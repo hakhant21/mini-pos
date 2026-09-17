@@ -28,6 +28,8 @@ if [ ! -f "$seed_marker" ]; then
     touch "$seed_marker"
 fi
 
+php artisan storage:link
+
 php artisan config:cache --no-interaction
 
 exec "$@"
