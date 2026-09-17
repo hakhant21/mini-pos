@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+.git
+.github
+.agents
+.ai
+node_modules
+vendor
+database/*.sqlite-shm
+database/*.sqlite-wal
+public/hot
+storage/logs/*.log
