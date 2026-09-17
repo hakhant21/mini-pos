@@ -238,6 +238,8 @@ export default {
         all_categories: "All",
         in_stock: "in stock",
         available_stock: "Available stock",
+        stock_count: "{count} {unit}",
+        stock_packages: "{count} {unit}s",
         low_stock: "Low stock",
         out_of_stock: "Out of stock",
         insufficient_stock: "Not enough stock",

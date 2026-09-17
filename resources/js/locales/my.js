@@ -238,6 +238,8 @@ export default {
         all_categories: "အားလုံး",
         in_stock: "လက်ကျန်",
         available_stock: "လက်ကျန်",
+        stock_count: "{count} {unit}",
+        stock_packages: "{count} {unit}",
         low_stock: "လက်ကျန်နည်းနေသည်",
         out_of_stock: "လက်ကျန်မရှိပါ",
         insufficient_stock: "လက်ကျန်မလုံလောက်ပါ",

@@ -18,7 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UserSeeder::class);
 
-        $categories = collect(['Alcohol', 'Beer', 'Soft Drink', 'Cigarettes', 'Cheroots', 'Snacks', 'Other'])->mapWithKeys(fn (string $name) => [$name => Category::create(['name' => $name, 'slug' => str($name)->slug()])]);
+        $categories = collect(['Alcohol', 'Beer', 'Soft Drink', 'Cigarettes', 'Cheroots', 'Snacks', 'Other'])->mapWithKeys(fn(string $name) => [$name => Category::create(['name' => $name, 'slug' => str($name)->slug()])]);
 
         $products = [
             [
@@ -1906,37 +1906,75 @@ class DatabaseSeeder extends Seeder
             $isTobacco = $isCigarette || $isCheroot;
             $priceMode = $isTobacco ? 'single_package_carton' : 'single_package';
             $baseUnit = $isAlcohol || $isBeer || $isSoftDrink ? 'Bottle' : ($isTobacco ? 'Stick' : 'Piece');
+
             if ($isAlcohol) {
                 $alcoholSizes = [
-                    ['label' => '1L', 'purchase_price' => 10000, 'selling_price' => 12000],
-                    ['label' => '750ML', 'purchase_price' => 8000, 'selling_price' => 10000],
-                    ['label' => '350ML', 'purchase_price' => 4500, 'selling_price' => 6000],
-                    ['label' => '50ML', 'purchase_price' => 1000, 'selling_price' => 1500],
+                    ['label' => '1L'],
+                    ['label' => '750ML'],
+                    ['label' => '350ML'],
+                    ['label' => '50ML'],
                 ];
-                $units = collect($alcoholSizes)->flatMap(fn (array $size): array => [
-                    ['name' => $size['label'].' Package', 'conversion' => 12, 'purchase_price' => $size['purchase_price'] * 12, 'selling_price' => $size['selling_price'] * 12, 'package_price' => $size['selling_price'] * 12, 'single_unit_price' => $size['selling_price']],
+                $units = collect($alcoholSizes)->flatMap(fn(array $size): array => [
+                    [
+                        'name' => $size['label'] . ' Package',
+                        'conversion' => 12,
+                        'purchase_price' => 0,
+                        'selling_price' => 0,
+                        'package_price' => 0,
+                        'single_unit_price' => 0,
+                    ],
                 ])->all();
             } elseif ($isBeer) {
                 $beerFormats = [
-                    ['name' => 'Big Bottle', 'purchase_price' => 1500, 'selling_price' => 2000],
-                    ['name' => 'Small Bottle', 'purchase_price' => 1300, 'selling_price' => 1800],
-                    ['name' => 'Long Can', 'purchase_price' => 1700, 'selling_price' => 2200],
-                    ['name' => 'Short Can', 'purchase_price' => 1100, 'selling_price' => 1500],
+                    ['name' => 'Big Bottle'],
+                    ['name' => 'Small Bottle'],
+                    ['name' => 'Long Can'],
+                    ['name' => 'Short Can'],
                 ];
-                $units = collect($beerFormats)->flatMap(fn (array $format): array => [
-                    ['name' => $format['name'].' Package', 'conversion' => 24, 'purchase_price' => $format['purchase_price'] * 24, 'selling_price' => $format['selling_price'] * 24, 'package_price' => $format['selling_price'] * 24, 'single_unit_price' => $format['selling_price']],
+                $units = collect($beerFormats)->flatMap(fn(array $format): array => [
+                    [
+                        'name' => $format['name'] . ' Package',
+                        'conversion' => 24,
+                        'purchase_price' => 0,
+                        'selling_price' => 0,
+                        'package_price' => 0,
+                        'single_unit_price' => 0,
+                    ],
                 ])->all();
             } elseif ($isSoftDrink) {
                 $units = [
-                    ['name' => 'Package', 'conversion' => 24, 'purchase_price' => 12000, 'selling_price' => 12000, 'package_price' => 12000, 'single_unit_price' => 500],
+                    [
+                        'name' => 'Package',
+                        'conversion' => 24,
+                        'purchase_price' => 0,
+                        'selling_price' => 0,
+                        'package_price' => 0,
+                        'single_unit_price' => 0,
+                    ],
                 ];
             } elseif ($isCigarette || $isCheroot) {
                 $units = [
-                    ['name' => 'Package', 'conversion' => 20, 'purchase_price' => 14000, 'selling_price' => 18000, 'package_price' => 1800, 'single_unit_price' => 100],
-                    ['name' => 'Carton', 'conversion' => 200, 'purchase_price' => 14000, 'selling_price' => 18000, 'package_price' => 1800, 'single_unit_price' => 100],
+                    [
+                        'name' => 'Package',
+                        'conversion' => 20,
+                        'purchase_price' => 0,
+                        'selling_price' => 0,
+                        'package_price' => 0,
+                        'single_unit_price' => 0,
+                    ],
+                    [
+                        'name' => 'Carton',
+                        'conversion' => 200,
+                        'purchase_price' => 0,
+                        'selling_price' => 0,
+                        'package_price' => 0,
+                        'single_unit_price' => 0,
+                    ],
                 ];
             } else {
-                $units = [['name' => 'Piece', 'conversion' => 1, 'selling_price' => 0, 'single_unit_price' => 0]];
+                $units = [
+                    ['name' => 'Piece', 'conversion' => 1, 'purchase_price' => 0, 'selling_price' => 0, 'package_price' => 0, 'single_unit_price' => 0]
+                ];
             }
 
             $product = Product::create([
@@ -1950,7 +1988,17 @@ class DatabaseSeeder extends Seeder
             ]);
 
             foreach ($units as $unit) {
-                $createdUnit = $product->units()->create([...$unit, 'conversion' => $unit['conversion'] ?? 1, 'purchase_price' => 0, 'selling_price' => 0, 'package_price' => 0, 'single_unit_price' => 0, 'package_quantity' => 0, 'loose_quantity' => 0, 'quantity_base' => 0]);
+                $createdUnit = $product->units()->create([
+                    ...$unit,
+                    'conversion' => $unit['conversion'] ?? 1,
+                    'purchase_price' => 0,
+                    'selling_price' => 0,
+                    'package_price' => 0,
+                    'single_unit_price' => 0,
+                    'package_quantity' => 0,
+                    'loose_quantity' => 0,
+                    'quantity_base' => 0
+                ]);
                 $createdUnit->stock()->create(['product_id' => $product->id]);
             }
         }

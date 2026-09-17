@@ -57,7 +57,7 @@ const props = defineProps<{
     categories: string[];
     sale?: { id: number; invoice_number: string; payment_method: string; total: number } | null;
 }>();
-const { t } = useI18n();
+const { t, te } = useI18n();
 const query = ref("");
 const category = ref("all");
 const barcodeMessage = ref("");
@@ -218,6 +218,53 @@ function availableQuantity(item: CartItem): number {
     return item.selling_mode === "Single"
         ? quantityBase
         : Math.floor(quantityBase / unit.conversion);
+}
+
+function translatedUnitName(unitName: string): string {
+    const translationKey = `products.unit_names.${unitName}`;
+
+    return te(translationKey) ? t(translationKey) : unitName;
+}
+
+function availableStock(item: CartItem): string {
+    const unit = item.unit;
+    if (!unit) return "";
+
+    const quantityBase =
+        (unit.package_quantity ?? 0) * unit.conversion +
+        (unit.loose_quantity ?? 0);
+    const baseUnit = translatedUnitName(item.product.base_unit);
+
+    if (item.selling_mode === "Single") {
+        return t("checkout.stock_count", {
+            count: quantityBase,
+            unit: baseUnit,
+        });
+    }
+
+    const packages = Math.floor(quantityBase / unit.conversion);
+    const loose = quantityBase % unit.conversion;
+    const stockParts: string[] = [];
+
+    if (packages > 0) {
+        stockParts.push(
+            t("checkout.stock_packages", {
+                count: packages,
+                unit: translatedUnitName(item.selling_mode),
+            }),
+        );
+    }
+
+    if (loose > 0 || stockParts.length === 0) {
+        stockParts.push(
+            t("checkout.stock_count", {
+                count: loose,
+                unit: baseUnit,
+            }),
+        );
+    }
+
+    return stockParts.join(` ${t("common.and")} `);
 }
 
 function stockMessage(item: CartItem): string {
@@ -517,7 +564,7 @@ function completeSale(): void {
                                     >
                                 </div>
                                 <p class="mt-2 text-[11px] font-medium text-slate-400">
-                                    {{ $t("checkout.available_stock") }}: {{ availableQuantity(item) }} {{ item.selling_mode }}
+                                    {{ $t("checkout.available_stock") }}: {{ availableStock(item) }}
                                 </p>
                                 <p v-if="stockMessage(item)" class="mt-1 text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                                     {{ stockMessage(item) }}
