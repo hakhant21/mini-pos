@@ -30,12 +30,13 @@ FROM php:8.4-fpm-bookworm AS app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        libicu-dev \
-        libonig-dev \
-        libzip-dev \
-        curl \
-        supervisor \
-        unzip \
+    libicu-dev \
+    libonig-dev \
+    libzip-dev \
+    libsqlite3-dev \
+    curl \
+    supervisor \
+    unzip \
     && docker-php-ext-install -j"$(nproc)" bcmath intl mbstring opcache pdo_sqlite zip \
     && pecl install redis \
     && docker-php-ext-enable redis \
