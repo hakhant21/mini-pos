@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from '@lucide/vue';
-import { computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { useLocaleStore } from '@/Stores/locale';
-import AppLogo from '@/components/AppLogo.vue';
-import AppLogoIcon from '@/components/AppLogoIcon.vue';
-import Breadcrumbs from '@/components/Breadcrumbs.vue';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Link, usePage } from "@inertiajs/vue3";
+import { BookOpen, Folder, LayoutGrid, Menu, Search } from "@lucide/vue";
+import { computed } from "vue";
+import { useI18n } from "vue-i18n";
+import { useLocaleStore } from "@/stores/locale";
+import AppLogo from "@/components/AppLogo.vue";
+import AppLogoIcon from "@/components/AppLogoIcon.vue";
+import Breadcrumbs from "@/components/Breadcrumbs.vue";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from "@/components/ui/dropdown-menu";
 import {
     NavigationMenu,
     NavigationMenuItem,
     NavigationMenuList,
     navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+} from "@/components/ui/navigation-menu";
 import {
     Sheet,
     SheetContent,
     SheetHeader,
     SheetTitle,
     SheetTrigger,
-} from '@/components/ui/sheet';
+} from "@/components/ui/sheet";
 import {
     Tooltip,
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from '@/components/ui/tooltip';
-import UserMenuContent from '@/components/UserMenuContent.vue';
-import { useCurrentUrl } from '@/composables/useCurrentUrl';
-import { getInitials } from '@/composables/useInitials';
-import { toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
-import type { BreadcrumbItem, NavItem } from '@/types';
+} from "@/components/ui/tooltip";
+import UserMenuContent from "@/components/UserMenuContent.vue";
+import { useCurrentUrl } from "@/composables/useCurrentUrl";
+import { getInitials } from "@/composables/useInitials";
+import { toUrl } from "@/lib/utils";
+import { dashboard } from "@/routes";
+import type { BreadcrumbItem, NavItem } from "@/types";
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
@@ -59,11 +59,11 @@ function changeLocale(value: string): void {
 }
 
 const activeItemStyles =
-    'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
+    "text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100";
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'navigation.dashboard',
+        title: "navigation.dashboard",
         href: dashboard(),
         icon: LayoutGrid,
     },
@@ -71,13 +71,13 @@ const mainNavItems: NavItem[] = [
 
 const rightNavItems: NavItem[] = [
     {
-        title: 'common.repository',
-        href: 'https://github.com/laravel/vue-starter-kit',
+        title: "common.repository",
+        href: "https://github.com/laravel/vue-starter-kit",
         icon: Folder,
     },
     {
-        title: 'common.documentation',
-        href: 'https://laravel.com/docs/starter-kits#vue',
+        title: "common.documentation",
+        href: "https://laravel.com/docs/starter-kits#vue",
         icon: BookOpen,
     },
 ];
@@ -86,7 +86,9 @@ const rightNavItems: NavItem[] = [
 <template>
     <div>
         <div class="border-sidebar-border/80 border-b">
-            <div class="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
+            <div
+                class="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl"
+            >
                 <!-- Mobile Menu -->
                 <div class="lg:hidden">
                     <Sheet>
@@ -101,9 +103,9 @@ const rightNavItems: NavItem[] = [
                             </Button>
                         </SheetTrigger>
                         <SheetContent side="left" class="w-[300px] p-6">
-                            <SheetTitle class="sr-only"
-                                >{{ $t('common.navigation_menu') }}</SheetTitle
-                            >
+                            <SheetTitle class="sr-only">{{
+                                $t("common.navigation_menu")
+                            }}</SheetTitle>
                             <SheetHeader class="flex justify-start text-left">
                                 <AppLogoIcon
                                     class="size-6 fill-current text-black dark:text-white"
@@ -208,8 +210,12 @@ const rightNavItems: NavItem[] = [
                         :aria-label="$t('common.language')"
                         class="rounded-lg border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
                     >
-                        <option value="my">{{ $t('common.language_myanmar') }}</option>
-                        <option value="en">{{ $t('common.language_english') }}</option>
+                        <option value="my">
+                            {{ $t("common.language_myanmar") }}
+                        </option>
+                        <option value="en">
+                            {{ $t("common.language_english") }}
+                        </option>
                     </select>
                     <div class="relative flex items-center space-x-1">
                         <Button
