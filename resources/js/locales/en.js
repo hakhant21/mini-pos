@@ -246,6 +246,13 @@ export default {
         insufficient_stock: "Not enough stock",
         sale_success: "Sale completed successfully.",
         sale_error: "Unable to complete sale.",
+        no_exact_match: "No exact product, SKU or barcode match",
+        no_products_match: "No products match this search.",
+        cart_ready: "Cart is ready",
+        tap_to_add: "Tap any blue unit button to add products instantly.",
+        total_amount: "Total amount",
+        return_amount: "Return amount",
+        scan_barcode: "Scan barcode",
     },
     operations: {
         search_product: "Search products...",

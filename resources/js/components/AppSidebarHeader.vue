@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from "vue";
+import { usePage } from "@inertiajs/vue3";
 import { useI18n } from "vue-i18n";
 import Breadcrumbs from "@/components/Breadcrumbs.vue";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -16,6 +18,8 @@ withDefaults(
 
 const localeStore = useLocaleStore();
 const { locale } = useI18n();
+const page = usePage();
+const isCheckout = computed(() => page.url.startsWith("/checkout"));
 
 function changeLocale(value: string): void {
     localeStore.setLocale(value);
@@ -33,6 +37,13 @@ function changeLocale(value: string): void {
                 <Breadcrumbs :breadcrumbs="breadcrumbs" />
             </template>
         </div>
+        <div class="flex items-center gap-3">
+        <span
+            v-if="isCheckout"
+            class="hidden rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-emerald-500 sm:inline-flex"
+        >
+            Register open
+        </span>
         <select
             :value="locale"
             @change="changeLocale(($event.target as HTMLSelectElement).value)"
@@ -42,5 +53,6 @@ function changeLocale(value: string): void {
             <option value="my">{{ $t("common.language_myanmar") }}</option>
             <option value="en">{{ $t("common.language_english") }}</option>
         </select>
+        </div>
     </header>
 </template>
