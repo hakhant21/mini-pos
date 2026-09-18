@@ -173,6 +173,12 @@ function handleBarcode(): void {
     barcodeMessage.value = t("checkout.no_exact_match");
 }
 
+function clearFilters(): void {
+    filters.query = "";
+    filters.category = "all";
+    barcodeMessage.value = "";
+}
+
 function changeQuantity(item: CartItem, amount: number): void {
     const index = cart.value.indexOf(item);
     checkoutStore.updateQuantity(index, item.quantity + amount);
@@ -245,6 +251,14 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                             @click="filters.category = category"
                         >
                             {{ category === "all" ? t("checkout.all_categories") : category }}
+                        </button>
+                        <button
+                            v-if="filters.query || filters.category !== 'all'"
+                            type="button"
+                            class="h-8 shrink-0 rounded-lg border border-[#30415c] px-3 text-[11px] font-bold text-slate-500 transition hover:border-slate-500 hover:text-white"
+                            @click="clearFilters"
+                        >
+                            {{ t("common.clear_filters") }}
                         </button>
                     </div>
                 </div>
