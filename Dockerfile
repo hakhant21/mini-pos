@@ -36,6 +36,7 @@ RUN apt-get update \
     libsqlite3-dev \
     curl \
     supervisor \
+    nano \
     unzip \
     git \
     $PHPIZE_DEPS \
