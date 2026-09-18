@@ -253,7 +253,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                     <div id="product-grid" class="pos-scroll mt-4 grid min-h-0 h-full grid-cols-2 content-start gap-4 overflow-y-auto pr-2 sm:grid-cols-3 lg:grid-cols-4">
                     <article v-for="product in filteredProducts" :key="product.id" class="flex min-w-0 flex-col rounded-xl border border-[#263752] bg-[#101f33] p-3 transition hover:border-[#3e669a] hover:bg-[#12243b]">
                         <div class="flex h-[116px] shrink-0 items-center justify-center overflow-hidden rounded-lg border border-[#263752] bg-[#0b182a]">
-                            <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full object-contain p-2" />
+                            <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="size-full object-contain" />
                             <span v-else class="text-5xl leading-none" aria-hidden="true">{{ product.icon }}</span>
                         </div>
                         <div class="min-w-0 py-2.5">
