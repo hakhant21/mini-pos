@@ -1,26 +1,9 @@
-FROM composer:2 AS composer
-
-FROM --platform=$BUILDPLATFORM php:8.4-cli-bookworm AS wayfinder
-
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    libicu-dev \
-    libonig-dev \
-    libzip-dev \
-    libsqlite3-dev \
-    unzip \
-    git \
-    $PHPIZE_DEPS \
-    && docker-php-ext-install -j"$(nproc)" bcmath mbstring pdo_sqlite zip intl \
-    && apt-get purge -y --auto-remove $PHPIZE_DEPS \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY --from=composer /usr/bin/composer /usr/bin/composer
+FROM --platform=$BUILDPLATFORM composer:2 AS wayfinder
 
 WORKDIR /app
 
 COPY composer.json composer.lock ./
-RUN composer install --no-interaction --no-progress --no-scripts --optimize-autoloader
+RUN composer install --no-interaction --no-progress --no-scripts --optimize-autoloader --ignore-platform-req=ext-intl
 
 COPY . .
 RUN php artisan wayfinder:generate --with-form
@@ -40,6 +23,8 @@ COPY --from=wayfinder /app/resources/js/actions ./resources/js/actions
 COPY --from=wayfinder /app/resources/js/routes ./resources/js/routes
 COPY --from=wayfinder /app/resources/js/wayfinder ./resources/js/wayfinder
 RUN npm run build
+
+FROM composer:2 AS composer
 
 FROM php:8.4-fpm-bookworm AS app
 
