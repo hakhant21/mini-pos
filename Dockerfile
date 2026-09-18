@@ -6,7 +6,8 @@ COPY composer.json composer.lock ./
 RUN composer install --no-interaction --no-progress --no-scripts --optimize-autoloader --ignore-platform-req=ext-intl
 
 COPY . .
-RUN php artisan wayfinder:generate --with-form
+RUN rm -f bootstrap/cache/*.php \
+    && php artisan wayfinder:generate --with-form
 
 FROM --platform=$BUILDPLATFORM node:22-bookworm-slim AS frontend
 

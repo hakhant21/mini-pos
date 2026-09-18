@@ -266,16 +266,16 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                                 :key="unit.id"
                                 type="button"
                                 :disabled="!isUnitAvailable(unit)"
-                                class="unit-tile min-w-0 rounded-lg border px-2 py-2 text-center transition duration-100 active:scale-[0.96] disabled:cursor-not-allowed disabled:grayscale"
+                                class="unit-tile min-w-0 rounded-lg border px-1.5 py-1 text-center transition duration-100 active:scale-[0.96] disabled:cursor-not-allowed disabled:grayscale"
                                 :class="[
                                     !isUnitAvailable(unit) ? 'border-[#30415c] bg-[#17263d] text-slate-500 opacity-40' : unitIndex === 0 ? 'border-[#1677ff] bg-[#1677ff] text-white shadow-md shadow-blue-950/20 hover:bg-[#2584ff]' : 'border-[#3b506e] bg-[#17263d] text-slate-100 hover:border-[#6e8db9] hover:bg-[#1c304b]',
                                     product.units.length === 3 && unitIndex === 2 ? 'col-span-2' : '',
                                 ]"
                                 @click="addToCart(product, unit)"
                             >
-                                <span class="block truncate text-[11px] font-semibold leading-4">{{ !isUnitAvailable(unit) ? t("checkout.out_of_stock") : unitLabel(unit, product) }}</span>
-                                <span v-if="isUnitAvailable(unit)" class="mt-0.5 block truncate text-[13px] font-black leading-4">{{ formatMoney(unitPrice(unit)) }}</span>
-                                <span class="mt-0.5 block truncate text-[9px] font-medium leading-3" :class="unitIndex === 0 && isUnitAvailable(unit) ? 'text-blue-100' : 'text-slate-400'">{{ stockLabel(unit) }}</span>
+                                <span class="block truncate text-[10px] font-semibold leading-4">{{ !isUnitAvailable(unit) ? t("checkout.out_of_stock") : unitLabel(unit, product) }}</span>
+                                <span v-if="isUnitAvailable(unit)" class="mt-0.5 block truncate text-xs font-black leading-4">{{ formatMoney(unitPrice(unit)) }}</span>
+                                <span class="mt-0.5 block truncate text-[8px] font-medium leading-3" :class="unitIndex === 0 && isUnitAvailable(unit) ? 'text-blue-100' : 'text-slate-400'">{{ stockLabel(unit) }}</span>
                             </button>
                         </div>
                     </article>
