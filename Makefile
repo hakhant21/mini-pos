@@ -1,4 +1,4 @@
-.PHONY: build rebuild pull up down restart logs shell migrate seed seed-production
+.PHONY: build rebuild pull up down clean purge restart logs shell migrate seed seed-production
 
 build:
 	docker compose build && docker compose up -d
@@ -14,6 +14,12 @@ up:
 
 down:
 	docker compose down
+
+clean:
+	docker compose down -v
+
+purge:
+	docker system prune -a --volumes
 
 restart:
 	docker compose restart
