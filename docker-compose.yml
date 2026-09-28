@@ -39,7 +39,7 @@ services:
             - app
         restart: unless-stopped
         healthcheck:
-            test: ["CMD", "wget", "--spider", "--quiet", "http://localhost/login"]
+            test: ["CMD", "wget", "--spider", "--quiet", "http://127.0.0.1/login"]
             interval: 30s
             timeout: 5s
             retries: 3
