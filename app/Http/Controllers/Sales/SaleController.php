@@ -34,11 +34,21 @@ class SaleController extends Controller
     {
         $this->authorize('create', Sale::class);
 
+        $search = $request->string('search')->trim()->value();
+        $category = $request->string('category')->trim()->value();
         $products = Inertia::scroll(fn () => Product::with(['category', 'units.stock'])
             ->where('active', true)
+            ->when($search, fn ($query) => $query->where(function ($query) use ($search): void {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('sku', 'like', "%{$search}%")
+                    ->orWhere('barcode', 'like', "%{$search}%")
+                    ->orWhereHas('units', fn ($query) => $query->where('barcode', 'like', "%{$search}%"));
+            }))
+            ->when($category && $category !== 'all', fn ($query) => $query->whereHas('category', fn ($query) => $query->where('name', $category)))
             ->orderBy('category_id')
             ->orderBy('id')
             ->paginate(20)
+            ->withQueryString()
             ->through(fn (Product $product): array => [
                 ...$product->toArray(),
                 'price' => $product->units->first()?->single_unit_price ?? 0,
@@ -54,6 +64,7 @@ class SaleController extends Controller
         return Inertia::render('checkouts/Index', [
             'products' => $products,
             'categories' => Category::query()->orderBy('id')->pluck('name')->values(),
+            'filters' => ['query' => $search, 'category' => $category ?: 'all'],
             'sale' => $sale?->only(['id', 'invoice_number', 'payment_method', 'total']),
         ]);
     }

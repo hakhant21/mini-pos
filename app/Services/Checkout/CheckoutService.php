@@ -26,7 +26,11 @@ class CheckoutService
                     'Package' => $product->price_mode === 'single_package_carton' ? $unit->package_price : $unit->selling_price,
                     'Carton' => $unit->selling_price,
                 };
-                $conversion = $sellingMode === 'Single' ? 1 : $unit->conversion;
+                $conversion = match ($sellingMode) {
+                    'Single' => 1,
+                    'Carton' => str_ends_with(strtolower($unit->name), 'carton') ? $unit->conversion : $unit->conversion * 10,
+                    default => $unit->conversion,
+                };
 
                 return ['product' => $product, 'unit' => $unit, 'product_id' => $product->id, 'product_unit_id' => $unit->id, 'quantity' => $item['quantity'], 'unit_price' => $unitPrice, 'base_quantity' => $item['quantity'] * $conversion];
             });
@@ -79,7 +83,11 @@ class CheckoutService
                     'Package' => $product->price_mode === 'single_package_carton' ? $unit->package_price : $unit->selling_price,
                     'Carton' => $unit->selling_price,
                 };
-                $conversion = $sellingMode === 'Single' ? 1 : $unit->conversion;
+                $conversion = match ($sellingMode) {
+                    'Single' => 1,
+                    'Carton' => str_ends_with(strtolower($unit->name), 'carton') ? $unit->conversion : $unit->conversion * 10,
+                    default => $unit->conversion,
+                };
 
                 return ['product' => $product, 'unit' => $unit, 'product_id' => $product->id, 'product_unit_id' => $unit->id, 'quantity' => $item['quantity'], 'unit_price' => $unitPrice, 'base_quantity' => $item['quantity'] * $conversion];
             });

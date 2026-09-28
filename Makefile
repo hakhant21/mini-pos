@@ -1,4 +1,4 @@
-.PHONY: build rebuild pull up down restart logs shell migrate seed
+.PHONY: build rebuild pull up down restart logs shell migrate seed seed-production
 
 build:
 	docker compose build && docker compose up -d
@@ -29,3 +29,6 @@ migrate:
 
 seed:
 	docker compose exec app php artisan db:seed --force
+
+seed-production:
+	docker compose exec -e APP_ENV=production app php artisan db:seed --force

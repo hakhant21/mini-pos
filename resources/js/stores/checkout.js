@@ -1,12 +1,12 @@
-import { computed, ref } from 'vue';
-import { defineStore } from 'pinia';
+import { computed, ref } from "vue";
+import { defineStore } from "pinia";
 
-export const useCheckoutStore = defineStore('checkout', () => {
+export const useCheckoutStore = defineStore("checkout", () => {
     const items = ref(/** @type {Array<Record<string, any>>} */ ([]));
     const discount = ref(0);
     const tax = ref(0);
     const receivedAmount = ref(0);
-    const paymentMethod = ref('cash');
+    const paymentMethod = ref("cash");
 
     const subtotal = computed(() =>
         items.value.reduce((total, item) => total + item.total, 0),
@@ -18,11 +18,12 @@ export const useCheckoutStore = defineStore('checkout', () => {
         Math.max(0, receivedAmount.value - grandTotal.value),
     );
 
-    function addItem(product, unit) {
-        const sellingMode = unit?.selling_mode ?? 'Single';
+    function addItem(product, unit, sellingMode = "Single") {
         const existing = items.value.find(
             (item) =>
-                item.product_id === product.id && item.unit?.id === unit?.id && item.selling_mode === sellingMode,
+                item.product_id === product.id &&
+                item.unit?.id === unit?.id &&
+                item.selling_mode === sellingMode,
         );
         if (existing) existing.quantity += 1;
         else
@@ -34,13 +35,16 @@ export const useCheckoutStore = defineStore('checkout', () => {
                 selling_mode: sellingMode,
                 quantity: 1,
                 get total() {
-                        const price = this.selling_mode === 'Single'
+                    const price =
+                        this.selling_mode === "Single"
                             ? (this.unit?.single_unit_price ?? 0)
-                            : this.selling_mode === 'Package' && this.product.price_mode === 'single_package_carton'
-                                ? (this.unit?.package_price ?? 0)
-                                : (this.unit?.selling_price ?? 0);
+                            : this.selling_mode === "Package" &&
+                                this.product.price_mode ===
+                                    "single_package_carton"
+                              ? (this.unit?.package_price ?? 0)
+                              : (this.unit?.selling_price ?? 0);
 
-                        return price * this.quantity;
+                    return price * this.quantity;
                 },
             });
     }

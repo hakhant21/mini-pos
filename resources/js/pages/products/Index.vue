@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, nextTick, reactive, ref } from "vue";
 import { Head, Link, router, usePage, useRemember } from "@inertiajs/vue3";
 import {
     ChevronDown,
@@ -51,6 +51,8 @@ const filters = useRemember(
     "Products/Index/filters",
 ) as ProductFilters;
 const showFilters = ref(false);
+const searchInput = ref<HTMLInputElement | null>(null);
+const isComposing = ref(false);
 const canManageProducts =
     (page.props.auth as { user?: { role?: string } }).user?.role !== "cashier";
 const money = (value: number) =>
@@ -121,6 +123,12 @@ function exportProducts(): void {
 }
 
 function filterByCategory(): void {
+    const filterRequest = ++latestFilterRequest;
+    const input = searchInput.value;
+    const restoreFocus = document.activeElement === input;
+    const selectionStart = filters.query.length;
+    const selectionEnd = filters.query.length;
+
     router.visit(
         productsRoute({
             query: {
@@ -128,8 +136,36 @@ function filterByCategory(): void {
                 category_id: filters.category || undefined,
             },
         }),
-        { preserveScroll: true },
+        {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                if (!restoreFocus || filterRequest !== latestFilterRequest) return;
+
+                void nextTick(() => {
+                    const restore = (): void => {
+                        searchInput.value?.focus();
+                        searchInput.value?.setSelectionRange(
+                            selectionStart,
+                            selectionEnd,
+                        );
+                    };
+
+                    restore();
+                });
+            },
+        },
     );
+}
+
+function filterByCategoryOnKeyup(event: KeyboardEvent): void {
+    if (isComposing.value || event.isComposing) return;
+    filterByCategory();
+}
+
+function finishComposition(): void {
+    isComposing.value = false;
+    filterByCategory();
 }
 
 function clearFilters(): void {
@@ -139,14 +175,7 @@ function clearFilters(): void {
     router.visit(productsRoute(), { preserveScroll: true });
 }
 
-let searchTimer: ReturnType<typeof setTimeout> | undefined;
-watch(
-    () => filters.query,
-    () => {
-        if (searchTimer) clearTimeout(searchTimer);
-        searchTimer = setTimeout(filterByCategory, 300);
-    },
-);
+let latestFilterRequest = 0;
 
 defineOptions({
     layout: {
@@ -189,7 +218,11 @@ defineOptions({
                     <label
                         class="order-2 flex w-full items-center gap-2 rounded-xl bg-slate-50 px-3 text-sm text-slate-400 dark:bg-slate-800 sm:w-56 sm:flex-none"
                         ><Search class="size-4" /><input
+                            ref="searchInput"
                             v-model="filters.query"
+                            @compositionstart="isComposing = true"
+                            @compositionend="finishComposition"
+                            @keyup="filterByCategoryOnKeyup"
                             class="w-full border-0 bg-transparent py-2 outline-none placeholder:text-slate-400"
                             :placeholder="$t('products.search_placeholder')"
                     /></label>

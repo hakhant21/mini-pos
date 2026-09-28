@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(UserSeeder::class);
 
-        $categories = collect(['Alcohol', 'Beer', 'Soft Drink', 'Cigarettes', 'Cheroots', 'Snacks', 'Other'])->mapWithKeys(fn(string $name) => [$name => Category::create(['name' => $name, 'slug' => str($name)->slug()])]);
+        $categories = collect(['Alcohol', 'Beer', 'Soft Drink', 'Cigarettes', 'Cheroots', 'Snacks', 'Other'])->mapWithKeys(fn (string $name) => [$name => Category::updateOrCreate(['slug' => str($name)->slug()], ['name' => $name, 'active' => true])]);
+        $isProduction = config('app.env') === 'production';
 
         $products = [
             [
@@ -1909,19 +1910,21 @@ class DatabaseSeeder extends Seeder
 
             if ($isAlcohol) {
                 $alcoholSizes = [
-                    ['label' => '1L'],
-                    ['label' => '750ML'],
-                    ['label' => '350ML'],
-                    ['label' => '50ML'],
+                    ['label' => '1L', 'purchase_price' => 120000, 'selling_price' => 144000, 'single_unit_price' => 12000],
+                    ['label' => '750ML', 'purchase_price' => 96000, 'selling_price' => 120000, 'single_unit_price' => 10000],
+                    ['label' => '350ML', 'purchase_price' => 54000, 'selling_price' => 72000, 'single_unit_price' => 6000],
+                    ['label' => '50ML', 'purchase_price' => 12000, 'selling_price' => 18000, 'single_unit_price' => 1500],
                 ];
-                $units = collect($alcoholSizes)->flatMap(fn(array $size): array => [
+                $units = collect($alcoholSizes)->flatMap(fn (array $size): array => [
                     [
-                        'name' => $size['label'] . ' Package',
+                        'name' => $size['label'].' Package',
                         'conversion' => 12,
-                        'purchase_price' => 0,
-                        'selling_price' => 0,
-                        'package_price' => 0,
-                        'single_unit_price' => 0,
+                        'purchase_price' => $size['purchase_price'],
+                        'selling_price' => $size['selling_price'],
+                        'package_price' => $size['selling_price'],
+                        'single_unit_price' => $size['single_unit_price'],
+                        'package_quantity' => 10,
+                        'loose_quantity' => 0,
                     ],
                 ])->all();
             } elseif ($isBeer) {
@@ -1931,9 +1934,9 @@ class DatabaseSeeder extends Seeder
                     ['name' => 'Long Can'],
                     ['name' => 'Short Can'],
                 ];
-                $units = collect($beerFormats)->flatMap(fn(array $format): array => [
+                $units = collect($beerFormats)->flatMap(fn (array $format): array => [
                     [
-                        'name' => $format['name'] . ' Package',
+                        'name' => $format['name'].' Package',
                         'conversion' => 24,
                         'purchase_price' => 0,
                         'selling_price' => 0,
@@ -1957,49 +1960,68 @@ class DatabaseSeeder extends Seeder
                     [
                         'name' => 'Package',
                         'conversion' => 20,
-                        'purchase_price' => 0,
-                        'selling_price' => 0,
-                        'package_price' => 0,
-                        'single_unit_price' => 0,
-                    ],
-                    [
-                        'name' => 'Carton',
-                        'conversion' => 200,
-                        'purchase_price' => 0,
-                        'selling_price' => 0,
-                        'package_price' => 0,
-                        'single_unit_price' => 0,
+                        'purchase_price' => 14000,
+                        'selling_price' => 18000,
+                        'package_price' => 1800,
+                        'single_unit_price' => 100,
+                        'package_quantity' => 10,
+                        'loose_quantity' => 0,
                     ],
                 ];
             } else {
                 $units = [
-                    ['name' => 'Piece', 'conversion' => 1, 'purchase_price' => 0, 'selling_price' => 0, 'package_price' => 0, 'single_unit_price' => 0]
+                    ['name' => 'Piece', 'conversion' => 1, 'purchase_price' => 0, 'selling_price' => 0, 'package_price' => 0, 'single_unit_price' => 0],
                 ];
             }
 
-            $product = Product::create([
-                'category_id' => $categoryMap[$productData['category_id']]->id,
-                'name' => $productData['name'],
-                'sku' => $productData['sku'],
-                'price_mode' => $priceMode,
-                'base_unit' => $baseUnit,
-                'reorder_level' => 0,
-                'active' => $productData['is_active'],
-            ]);
+            $product = Product::updateOrCreate(
+                ['sku' => $productData['sku']],
+                [
+                    'category_id' => $categoryMap[$productData['category_id']]->id,
+                    'name' => $productData['name'],
+                    'price_mode' => $priceMode,
+                    'base_unit' => $baseUnit,
+                    'reorder_level' => 0,
+                    'active' => $productData['is_active'],
+                ],
+            );
 
             foreach ($units as $unit) {
-                $createdUnit = $product->units()->create([
-                    ...$unit,
+                if ($isProduction) {
+                    $unit['purchase_price'] = 0;
+                    $unit['selling_price'] = 0;
+                    $unit['package_price'] = 0;
+                    $unit['single_unit_price'] = 0;
+                    $unit['package_quantity'] = 0;
+                    $unit['loose_quantity'] = 0;
+                }
+
+                $createdUnit = $product->units()->firstOrCreate(
+                    ['name' => $unit['name']],
+                    [
+                        'conversion' => $unit['conversion'] ?? 1,
+                        'purchase_price' => $unit['purchase_price'] ?? 0,
+                        'selling_price' => $unit['selling_price'] ?? 0,
+                        'package_price' => $unit['package_price'] ?? 0,
+                        'single_unit_price' => $unit['single_unit_price'] ?? 0,
+                        'package_quantity' => $unit['package_quantity'] ?? 0,
+                        'loose_quantity' => $unit['loose_quantity'] ?? 0,
+                        'quantity_base' => (($unit['package_quantity'] ?? 0) * ($unit['conversion'] ?? 1)) + ($unit['loose_quantity'] ?? 0),
+                    ],
+                );
+                $createdUnit->update([
                     'conversion' => $unit['conversion'] ?? 1,
-                    'purchase_price' => 0,
-                    'selling_price' => 0,
-                    'package_price' => 0,
-                    'single_unit_price' => 0,
-                    'package_quantity' => 0,
-                    'loose_quantity' => 0,
-                    'quantity_base' => 0
+                    'purchase_price' => $unit['purchase_price'] ?? 0,
+                    'selling_price' => $unit['selling_price'] ?? 0,
+                    'package_price' => $unit['package_price'] ?? 0,
+                    'single_unit_price' => $unit['single_unit_price'] ?? 0,
+                    ...($isProduction ? [
+                        'package_quantity' => 0,
+                        'loose_quantity' => 0,
+                        'quantity_base' => 0,
+                    ] : []),
                 ]);
-                $createdUnit->stock()->create(['product_id' => $product->id]);
+                $createdUnit->stock()->firstOrCreate(['product_id' => $product->id]);
             }
         }
     }

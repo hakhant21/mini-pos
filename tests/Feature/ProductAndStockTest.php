@@ -167,6 +167,55 @@ test('checkout uses package and carton prices for carton products', function () 
     $this->assertDatabaseHas('sale_items', ['unit_price' => 18000, 'base_quantity' => 200]);
 });
 
+test('one tobacco unit supports single package and carton sales', function () {
+    $user = User::factory()->create(['role' => 'cashier']);
+    $category = Category::create(['name' => 'Tobacco modes', 'slug' => 'tobacco-modes']);
+    $product = Product::create([
+        'category_id' => $category->id,
+        'name' => 'Tobacco modes',
+        'sku' => 'TOBACCO-MODES-001',
+        'price_mode' => 'single_package_carton',
+        'base_unit' => 'Stick',
+    ]);
+    $unit = ProductUnit::create([
+        'product_id' => $product->id,
+        'name' => 'Package',
+        'conversion' => 20,
+        'selling_price' => 18000,
+        'package_price' => 1800,
+        'single_unit_price' => 100,
+        'package_quantity' => 11,
+        'loose_quantity' => 1,
+        'quantity_base' => 221,
+    ]);
+    $unit->stock()->create(['product_id' => $product->id]);
+
+    foreach ([
+        ['mode' => 'Single', 'received' => 100, 'price' => 100, 'base' => 1],
+        ['mode' => 'Package', 'received' => 1800, 'price' => 1800, 'base' => 20],
+        ['mode' => 'Carton', 'received' => 18000, 'price' => 18000, 'base' => 200],
+    ] as $sale) {
+        $this->actingAs($user)->post(route('sales.store'), [
+            'payment_method' => 'cash',
+            'received_amount' => $sale['received'],
+            'items' => [[
+                'product_id' => $product->id,
+                'product_unit_id' => $unit->id,
+                'selling_mode' => $sale['mode'],
+                'quantity' => 1,
+            ]],
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('sale_items', [
+            'product_id' => $product->id,
+            'unit_price' => $sale['price'],
+            'base_quantity' => $sale['base'],
+        ]);
+    }
+
+    expect($unit->fresh()->quantity_base)->toBe(0);
+});
+
 test('checkout updates the users daily balance calculation', function () {
     $user = User::factory()->create(['role' => 'cashier']);
     $category = Category::create(['name' => 'Daily Balance', 'slug' => 'daily-balance']);

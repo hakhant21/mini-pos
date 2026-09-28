@@ -66,6 +66,22 @@ test('products can be filtered by search term', function () {
         ->assertInertia(fn (Assert $page) => $page->where('products.data.0.name', 'Searchable Cola')->where('products.total', 1));
 });
 
+test('checkout filters products by search query and category', function () {
+    $user = User::factory()->create(['role' => 'manager']);
+    $includedCategory = Category::create(['name' => 'Checkout included', 'slug' => 'checkout-included']);
+    $excludedCategory = Category::create(['name' => 'Checkout excluded', 'slug' => 'checkout-excluded']);
+    Product::factory()->create(['category_id' => $includedCategory->id, 'name' => 'Filtered checkout product', 'sku' => 'FILTERED-CHECKOUT', 'base_unit' => 'Piece', 'active' => true]);
+    Product::factory()->create(['category_id' => $excludedCategory->id, 'name' => 'Filtered checkout product', 'sku' => 'FILTERED-OTHER', 'base_unit' => 'Piece', 'active' => true]);
+
+    $this->actingAs($user)->get(route('sales.create', ['search' => 'Filtered', 'category' => $includedCategory->name]))
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('products.data.0.name', 'Filtered checkout product')
+            ->where('products.total', 1)
+            ->where('filters.query', 'Filtered')
+            ->where('filters.category', $includedCategory->name),
+        );
+});
+
 test('purchases can be filtered by date range', function () {
     $user = User::factory()->create(['role' => 'manager']);
     Purchase::create(['user_id' => $user->id, 'invoice_number' => 'IN-RANGE', 'purchased_at' => '2026-09-10 10:00:00', 'subtotal' => 100, 'total' => 100]);

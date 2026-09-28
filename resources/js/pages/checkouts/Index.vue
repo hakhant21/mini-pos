@@ -1,6 +1,19 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from "vue";
-import { Head, InfiniteScroll, useForm, useRemember } from "@inertiajs/vue3";
+import {
+    computed,
+    onBeforeUnmount,
+    onMounted,
+    nextTick,
+    reactive,
+    ref,
+} from "vue";
+import {
+    Head,
+    InfiniteScroll,
+    router,
+    useForm,
+    useRemember,
+} from "@inertiajs/vue3";
 import { storeToRefs } from "pinia";
 import { toast } from "vue-sonner";
 import { useI18n } from "vue-i18n";
@@ -14,7 +27,7 @@ import {
     X,
 } from "@lucide/vue";
 import { useCheckoutStore } from "@/stores/checkout";
-import { store as saleStore } from "@/routes/sales";
+import { create as checkoutRoute, store as saleStore } from "@/routes/sales";
 import { store as saleItemsStore } from "@/routes/sales/items";
 
 type Unit = {
@@ -28,6 +41,8 @@ type Unit = {
     loose_quantity?: number;
     barcode?: string | null;
 };
+type SellingMode = "Single" | "Package" | "Carton";
+type SellingOption = { unit: Unit; mode: SellingMode };
 
 type Product = {
     id: number;
@@ -35,6 +50,7 @@ type Product = {
     sku: string;
     category: { name: string };
     price_mode: string;
+    base_unit: string;
     units: Unit[];
     icon: string;
     image_url?: string | null;
@@ -47,7 +63,7 @@ type CartItem = Product & {
     product: Product;
     unit: Unit | null;
     quantity: number;
-    selling_mode: "Single" | "Package" | "Carton";
+    selling_mode: SellingMode;
 };
 
 type CheckoutFilters = {
@@ -58,6 +74,7 @@ type CheckoutFilters = {
 const props = defineProps<{
     products: { data: Product[] };
     categories: string[];
+    filters?: { query?: string; category?: string };
     sale?: {
         id: number;
         invoice_number: string;
@@ -73,11 +90,15 @@ const cart = computed<CartItem[]>(() => checkoutStore.items as CartItem[]);
 const isAppending = computed(() => Boolean(props.sale));
 const searchInput = ref<HTMLInputElement | null>(null);
 const filters = useRemember(
-    reactive({ query: "", category: "all" }),
+    reactive({
+        query: props.filters?.query ?? "",
+        category: props.filters?.category ?? "all",
+    }),
     "Checkout/Index/filters",
 ) as CheckoutFilters;
 const barcodeMessage = ref("");
 const showMobileCart = ref(false);
+const isComposing = ref(false);
 
 const saleForm = useForm({
     payment_method: props.sale?.payment_method ?? "cash",
@@ -87,7 +108,7 @@ const saleForm = useForm({
     items: [] as {
         product_id: number;
         product_unit_id: number;
-        selling_mode: "Single" | "Package" | "Carton";
+        selling_mode: SellingMode;
         quantity: number;
     }[],
 });
@@ -96,19 +117,59 @@ const categories = computed(() => ["all", ...props.categories]);
 const returnAmount = computed(() =>
     Math.max(0, Number(saleForm.received_amount || 0) - subtotal.value),
 );
-const filteredProducts = computed(() =>
-    props.products.data.filter((product) => {
-        const matchesCategory =
-            filters.category === "all" ||
-            product.category.name === filters.category;
-        const searchable = `${product.name} ${product.sku} ${product.barcode ?? ""} ${product.units.map((unit) => unit.barcode ?? "").join(" ")}`;
+const filteredProducts = computed(() => props.products.data);
 
-        return (
-            matchesCategory &&
-            searchable.toLowerCase().includes(filters.query.toLowerCase())
-        );
-    }),
-);
+let latestFilterRequest = 0;
+function filterProducts(): void {
+    const filterRequest = ++latestFilterRequest;
+    const input = searchInput.value;
+    const restoreFocus = document.activeElement === input;
+    const selectionStart = filters.query.length;
+    const selectionEnd = filters.query.length;
+
+    router.visit(
+        checkoutRoute({
+            query: {
+                search: filters.query || undefined,
+                category: filters.category === "all" ? undefined : filters.category,
+            },
+        }),
+        {
+            preserveState: true,
+            preserveScroll: true,
+            onFinish: () => {
+                if (!restoreFocus || filterRequest !== latestFilterRequest) return;
+
+                void nextTick(() => {
+                    const restore = (): void => {
+                        searchInput.value?.focus();
+                        searchInput.value?.setSelectionRange(
+                            selectionStart,
+                            selectionEnd,
+                        );
+                    };
+
+                    restore();
+                });
+            },
+        },
+    );
+}
+
+function filterProductsOnKeyup(event: KeyboardEvent): void {
+    if (isComposing.value || event.isComposing) return;
+    filterProducts();
+}
+
+function finishComposition(): void {
+    isComposing.value = false;
+    filterProducts();
+}
+
+function selectCategory(category: string): void {
+    filters.category = category;
+    filterProducts();
+}
 
 const formatMoney = (value: number): string =>
     new Intl.NumberFormat("en-US").format(value);
@@ -131,22 +192,88 @@ function unitPrice(unit: Unit | null, sellingMode = "Single"): number {
     return unit.selling_price;
 }
 
-function addToCart(product: Product, unit = defaultUnit(product)): void {
-    if (!unit || !isUnitAvailable(unit)) return;
-    checkoutStore.addItem(product, unit);
+function translatedUnitName(name: string): string {
+    const exactKey = `products.unit_names.${name}`;
+    const exactTranslation = t(exactKey);
+
+    if (exactTranslation !== exactKey) return exactTranslation;
+
+    return name.replace(
+        /(single|package|carton)$/i,
+        (unit) => t(`products.unit_names.${unit[0].toUpperCase()}${unit.slice(1).toLowerCase()}`),
+    );
 }
 
-function stockLabel(unit: Unit): string {
+function sellingModeFor(product: Product, unit: Unit): SellingMode {
+    if (product.price_mode === "standard") return "Single";
+
+    const name = unit.name.trim().toLowerCase();
+
+    if (/carton(?:\s*\(\d+\))?$/.test(name)) return "Carton";
+    if (/package(?:\s*\(\d+\))?$/.test(name)) return "Package";
+    if (/single(?:\s*\(\d+\))?$/.test(name)) return "Single";
+
+    return "Single";
+}
+
+function sellingOptions(product: Product): SellingOption[] {
+    if (
+        product.price_mode === "single_package_carton" &&
+        product.units.length === 1
+    ) {
+        return ["Single", "Package", "Carton"].map((mode) => ({
+            unit: product.units[0],
+            mode: mode as SellingMode,
+        }));
+    }
+
+    return product.units.map((unit) => ({
+        unit,
+        mode: sellingModeFor(product, unit),
+    }));
+}
+
+function addToCart(
+    product: Product,
+    unit = defaultUnit(product),
+    sellingMode = unit ? sellingModeFor(product, unit) : "Single",
+): void {
+
+    if (!unit || !isUnitAvailable(unit, sellingMode)) return;
+    checkoutStore.addItem(product, unit, sellingMode);
+}
+
+function stockLabel(
+    unit: Unit,
+    sellingMode: SellingMode,
+    product: Product,
+): string {
     const packs = unit.package_quantity ?? 0;
     const bottles = unit.loose_quantity ?? 0;
 
     return packs === 0 && bottles === 0
         ? t("checkout.out_of_stock")
-        : `${packs} pk / ${bottles} btl`;
+        : sellingMode === "Single"
+          ? `${packs} ${translatedUnitName(unit.name)} / ${bottles} ${translatedUnitName(product.base_unit)}`
+          : `${Math.floor((packs * unit.conversion + bottles) / unitConversion(unit, sellingMode))} ${translatedUnitName(sellingMode)}`;
 }
 
-function isUnitAvailable(unit: Unit): boolean {
-    return (unit.package_quantity ?? 0) > 0 || (unit.loose_quantity ?? 0) > 0;
+function unitConversion(unit: Unit, sellingMode: SellingMode): number {
+    if (sellingMode === "Single") return 1;
+    if (sellingMode === "Carton" && !/carton$/i.test(unit.name.trim())) {
+        return unit.conversion * 10;
+    }
+
+    return unit.conversion;
+}
+
+function isUnitAvailable(unit: Unit, sellingMode: SellingMode): boolean {
+    const quantityBase =
+        (unit.package_quantity ?? 0) * unit.conversion +
+        (unit.loose_quantity ?? 0);
+    const requiredBaseQuantity = unitConversion(unit, sellingMode);
+
+    return quantityBase >= requiredBaseQuantity;
 }
 
 function unitLabel(unit: Unit, product: Product): string {
@@ -163,6 +290,17 @@ function unitLabel(unit: Unit, product: Product): string {
             "",
         )
         .trim();
+}
+
+function optionLabel(option: SellingOption, product: Product): string {
+    if (
+        product.price_mode === "single_package_carton" &&
+        product.units.length === 1
+    ) {
+        return option.mode;
+    }
+
+    return unitLabel(option.unit, product);
 }
 
 function handleBarcode(): void {
@@ -193,6 +331,7 @@ function clearFilters(): void {
     filters.query = "";
     filters.category = "all";
     barcodeMessage.value = "";
+    filterProducts();
 }
 
 function changeQuantity(item: CartItem, amount: number): void {
@@ -242,7 +381,9 @@ function handleShortcut(event: KeyboardEvent): void {
 }
 
 onMounted(() => window.addEventListener("keydown", handleShortcut));
-onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
+onBeforeUnmount(() => {
+    window.removeEventListener("keydown", handleShortcut);
+});
 </script>
 
 <template>
@@ -269,6 +410,9 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                             class="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-500"
                             :placeholder="t('checkout.search')"
                             @keydown.enter="handleBarcode"
+                            @compositionstart="isComposing = true"
+                            @compositionend="finishComposition"
+                            @keyup="filterProductsOnKeyup"
                         />
                         <button
                             type="button"
@@ -296,8 +440,8 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                                     ? 'bg-[#1677ff] text-white shadow-lg shadow-blue-950/20'
                                     : 'border border-[#263752] bg-[#17263d] text-slate-400 hover:border-[#3d5475] hover:text-white'
                             "
-                            @click="filters.category = category"
-                        >
+                            @click="selectCategory(category)"
+``                        >
                             {{
                                 category === "all"
                                     ? t("checkout.all_categories")
@@ -322,7 +466,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                 >
                     <div
                         id="product-grid"
-                        class="pos-scroll mt-4 grid min-h-0 h-full grid-cols-2 content-start gap-4 overflow-y-auto pr-2 sm:grid-cols-3 lg:grid-cols-4"
+                        class="pos-scroll mt-4 grid h-full min-h-0 grid-cols-2 content-start gap-4 overflow-y-auto pr-2 sm:grid-cols-3 lg:grid-cols-4"
                     >
                         <article
                             v-for="product in filteredProducts"
@@ -336,7 +480,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                                     v-if="product.image_url"
                                     :src="product.image_url"
                                     :alt="product.name"
-                                    class="size-full object-fit"
+                                    class="object-fit size-full"
                                 />
                                 <span
                                     v-else
@@ -347,13 +491,13 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                             </div>
                             <div class="min-w-0 py-2.5">
                                 <h2
-                                    class="truncate text-[14px] font-bold leading-5 text-white"
+                                    class="truncate text-[14px] leading-5 font-bold text-white"
                                     :title="product.name"
                                 >
                                     {{ product.name }}
                                 </h2>
                                 <p
-                                    class="mt-0.5 truncate text-[10px] font-medium uppercase tracking-[0.08em] text-slate-500"
+                                    class="mt-0.5 truncate text-[10px] font-medium tracking-[0.08em] text-slate-500 uppercase"
                                 >
                                     SKU: {{ product.sku }}
                                 </p>
@@ -361,54 +505,89 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                             <div
                                 class="grid gap-2"
                                 :class="
-                                    product.units.length === 1
+                                    sellingOptions(product).length === 1
                                         ? 'grid-cols-1'
                                         : 'grid-cols-2'
                                 "
                             >
                                 <button
-                                    v-for="(unit, unitIndex) in product.units"
-                                    :key="unit.id"
+                                    v-for="(option, unitIndex) in sellingOptions(
+                                        product,
+                                    )"
+                                    :key="`${option.unit.id}-${option.mode}`"
                                     type="button"
-                                    :disabled="!isUnitAvailable(unit)"
+                                    :disabled="
+                                        !isUnitAvailable(
+                                            option.unit,
+                                            option.mode,
+                                        )
+                                    "
                                     class="unit-tile min-w-0 rounded-lg border px-1.5 py-1 text-center transition duration-100 active:scale-[0.96] disabled:cursor-not-allowed disabled:grayscale"
                                     :class="[
-                                        !isUnitAvailable(unit)
+                                        !isUnitAvailable(
+                                            option.unit,
+                                            option.mode,
+                                        )
                                             ? 'border-[#30415c] bg-[#17263d] text-slate-500 opacity-40'
                                             : unitIndex === 0
                                               ? 'border-[#1677ff] bg-[#1677ff] text-white shadow-md shadow-blue-950/20 hover:bg-[#2584ff]'
                                               : 'border-[#3b506e] bg-[#17263d] text-slate-100 hover:border-[#6e8db9] hover:bg-[#1c304b]',
-                                        product.units.length === 3 &&
+                                        sellingOptions(product).length === 3 &&
                                         unitIndex === 2
                                             ? 'col-span-2'
                                             : '',
                                     ]"
-                                    @click="addToCart(product, unit)"
+                                    @click="
+                                        addToCart(
+                                            product,
+                                            option.unit,
+                                            option.mode,
+                                        )
+                                    "
                                 >
                                     <span
-                                        class="block truncate text-[10px] font-semibold leading-4"
+                                        class="block truncate text-[10px] leading-4 font-semibold"
                                         >{{
-                                            !isUnitAvailable(unit)
+                                            !isUnitAvailable(
+                                                option.unit,
+                                                option.mode,
+                                            )
                                                 ? t("checkout.out_of_stock")
-                                                : unitLabel(unit, product)
+                                            : optionLabel(option, product)
                                         }}</span
                                     >
                                     <span
-                                        v-if="isUnitAvailable(unit)"
-                                        class="mt-0.5 block truncate text-xs font-black leading-4"
+                                        v-if="
+                                            isUnitAvailable(
+                                                option.unit,
+                                                option.mode,
+                                            )
+                                        "
+                                        class="mt-0.5 block truncate text-xs leading-4 font-black"
                                         >{{
-                                            formatMoney(unitPrice(unit))
+                                            formatMoney(
+                                                unitPrice(
+                                                    option.unit,
+                                                    option.mode,
+                                                ),
+                                            )
                                         }}</span
                                     >
                                     <span
-                                        class="mt-0.5 block truncate text-[8px] font-medium leading-3"
+                                        class="mt-0.5 block truncate text-[8px] leading-3 font-medium"
                                         :class="
                                             unitIndex === 0 &&
-                                            isUnitAvailable(unit)
+                                            isUnitAvailable(option.unit, option.mode)
                                                 ? 'text-blue-100'
                                                 : 'text-slate-400'
                                         "
-                                        >{{ stockLabel(unit) }}</span
+                                        >{{
+                                            stockLabel(
+                                                option.unit,
+                                                option.mode,
+                                                product,
+                                            )
+                                        }}</span
                                     >
                                 </button>
                             </div>
@@ -444,7 +623,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                         <div class="relative">
                             <ShoppingCart class="size-5 text-blue-400" /><span
                                 v-if="cart.length"
-                                class="absolute -right-2 -top-2 flex min-w-4 items-center justify-center rounded-full bg-[#1677ff] px-1 text-[9px] font-black text-white"
+                                class="absolute -top-2 -right-2 flex min-w-4 items-center justify-center rounded-full bg-[#1677ff] px-1 text-[9px] font-black text-white"
                                 >{{ cart.length }}</span
                             >
                         </div>
@@ -612,7 +791,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                         </button>
                     </div>
                     <label
-                        class="mb-2 block text-[10px] font-bold uppercase tracking-wider text-slate-500"
+                        class="mb-2 block text-[10px] font-bold tracking-wider text-slate-500 uppercase"
                     >
                         {{ t("checkout.received") }}
                         <input
@@ -620,7 +799,7 @@ onBeforeUnmount(() => window.removeEventListener("keydown", handleShortcut));
                             type="number"
                             min="0"
                             inputmode="numeric"
-                            class="mt-1 h-9 w-full rounded-lg border border-[#30415c] bg-[#101f33] px-3 text-sm font-bold text-white outline-none transition placeholder:text-slate-600 focus:border-[#1677ff]"
+                            class="mt-1 h-9 w-full rounded-lg border border-[#30415c] bg-[#101f33] px-3 text-sm font-bold text-white transition outline-none placeholder:text-slate-600 focus:border-[#1677ff]"
                             placeholder="0"
                         />
                     </label>
