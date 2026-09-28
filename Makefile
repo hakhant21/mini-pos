@@ -1,7 +1,10 @@
-.PHONY: build up down restart logs shell migrate seed
+.PHONY: build rebuild up down restart logs shell migrate seed
 
 build:
 	docker compose build
+
+rebuild:
+	docker compose build --no-cache
 
 up:
 	docker compose up -d
