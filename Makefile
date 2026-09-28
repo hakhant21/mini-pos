@@ -1,10 +1,10 @@
 .PHONY: build rebuild pull up down restart logs shell migrate seed
 
 build:
-	docker compose build
+	docker compose build && docker compose up -d
 
 rebuild:
-	docker compose build --no-cache
+	docker compose build --no-cache && docker compose up -d
 
 pull:
 	sudo git pull origin pos/version-two
